@@ -16,5 +16,9 @@
     "http": {
       "routePrefix": ""
     }
-  }
+  },
+  "functions": [ "signup", "login", "delete_user" ],
+  "functionTimeout": "00:05:00"
+
 }
+
