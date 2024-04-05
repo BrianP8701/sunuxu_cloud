@@ -3,9 +3,9 @@ import unittest
 from dotenv import load_dotenv
 import sys
 sys.path.append("/Users/brianprzezdziecki/sunuxu/sunuxu")
-from sunuxu.database.azure_sql import AzureSQLDatabase
-from sunuxu.models.user import UserOrm, UserTypeEnum
-from sunuxu.models.participant import ParticipantOrm, ParticipantRoleEnum
+from core.database.azure_sql import AzureSQLDatabase
+from core.models.user import UserOrm, UserTypeEnum
+from core.models.participant import ParticipantOrm, ParticipantRoleEnum
 
 load_dotenv()
 

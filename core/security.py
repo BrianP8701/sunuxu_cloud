@@ -1,18 +1,12 @@
-# api/authentication.py
-import azure.functions as func
+# core/security.py
 import bcrypt
 import base64
-import json
 from datetime import datetime, timedelta
 import jwt
 from functools import wraps
 import os
+import json
 
-from sunuxu.database import AzureSQLDatabase
-from sunuxu.models import UserOrm
-
-db = AzureSQLDatabase()
-bp = func.Blueprint()
 
 def hash_password(password: str) -> str:
     hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -36,69 +30,6 @@ def generate_tokens(user_id: str):
     access_token = jwt.encode(access_token_payload, 'your_secret_key', algorithm='HS256')
     refresh_token = jwt.encode(refresh_token_payload, 'your_secret_key', algorithm='HS256')
     return access_token, refresh_token
-
-@bp.route(route="authentication/login", auth_level=func.AuthLevel.FUNCTION)
-@bp.function_name(name="login")
-def login(req: func.HttpRequest) -> func.HttpResponse:
-    username = req.params.get('username')
-    password = req.params.get('password')
-
-    user_orm = db.query(UserOrm, {"username": username})
-    if len(user_orm) == 0:
-        return func.HttpResponse(
-            "Invalid username.",
-            status_code=401
-        )
-    user = user_orm[0]
-    if not check_password(user.password, password):
-        return func.HttpResponse(
-            "Invalid password.",
-            status_code=401
-        )
-    access_token, refresh_token = generate_tokens(user.id)
-    return func.HttpResponse(
-        json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
-        status_code=200,
-        mimetype='application/json'
-    )
-
-@bp.route(route="authentication/signup", auth_level=func.AuthLevel.FUNCTION)
-@bp.function_name(name="signup")
-def signup(req: func.HttpRequest) -> func.HttpResponse:
-    username = req.params.get('username')
-    password = req.params.get('password')
-    email = req.params.get('email')
-    phone = req.params.get('phone')
-    first_name = req.params.get('first_name')
-    middle_name = req.params.get('middle_name')
-    last_name = req.params.get('last_name')
-    user_type = req.params.get('user_type')
-
-    if db.query(UserOrm, {"username": username}):
-        return func.HttpResponse(
-            "Username already exists.",
-            status_code=400
-        )
-
-    user = UserOrm(
-        username=username,
-        password=hash_password(password),
-        email=email,
-        phone=phone,
-        first_name=first_name,
-        middle_name=middle_name,
-        last_name=last_name,
-        user_type=user_type
-
-    )
-    db.insert(user)
-    access_token, refresh_token = generate_tokens(user.id)
-    return func.HttpResponse(
-        json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
-        status_code=200,
-        mimetype='application/json'
-    )
-
 
 def authenticate_user(func):
     """
