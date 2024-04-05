@@ -1,7 +1,5 @@
-from typing import Dict
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
-from pydantic import BaseModel, ConfigDict
 
 from sunuxu.database.abstract import Base
 
@@ -41,13 +39,3 @@ class ParticipantOrm(Base):
     transaction_id = Column(String)
     role = Column(SQLEnum(ParticipantRoleEnum))
     relationships = Column(String)  # Store relationships as JSON string
-
-class Participant(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    participant_id: str
-    person_id: str
-    transaction_id: str
-    role: ParticipantRoleEnum
-    relationships: Dict[str, str]

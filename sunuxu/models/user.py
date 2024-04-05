@@ -1,36 +1,31 @@
-from typing import Optional
 from enum import Enum
-from sqlalchemy import Column, Integer, String, Enum as SQLEnum
-from pydantic import BaseModel, ConfigDict
+from sqlalchemy import Column, Integer, String, CheckConstraint
 
 from sunuxu.database.abstract import Base
 
-class UserTypeEnum(Enum):
-    ADMIN = "admin"
-    AGENT = "agent"
-    PERSON = "person"
 
 class UserOrm(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    username = Column(String)
+    username = Column(String, unique=True)
     password = Column(String)
     email = Column(String)
     phone = Column(String(20))
     first_name = Column(String)
     middle_name = Column(String)
     last_name = Column(String)
-    user_type = Column(SQLEnum(UserTypeEnum))
+    user_type = Column(String, CheckConstraint("user_type IN ('admin', 'agent', 'person')"))
 
-class User(BaseModel):
-    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    def __repr__(self) -> str:
+        return f"<UserOrm(username={self.username}, email={self.email}, phone={self.phone}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name}, user_type={self.user_type})>"
 
-    id: int
-    username: str
-    password: str
-    email: str
-    phone: str
-    first_name: str
-    middle_name: Optional[str]
-    last_name: str
-    user_type: UserTypeEnum
+    def to_dict(self) -> dict:
+        return {
+            "username": self.username,
+            "email": self.email,
+            "phone": self.phone,
+            "first_name": self.first_name,
+            "middle_name": self.middle_name,
+            "last_name": self.last_name,
+            "user_type": self.user_type
+        }

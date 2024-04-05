@@ -1,2 +1,2 @@
-from .user import UserOrm, User, UserTypeEnum
-from .participant import ParticipantOrm, Participant, ParticipantRoleEnum
+from .user import UserOrm
+from .participant import ParticipantOrm, ParticipantRoleEnum

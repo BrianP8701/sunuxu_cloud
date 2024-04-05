@@ -11,8 +11,6 @@ class OurRole(str, Enum):
     buyers_agent = "buyers_agent"
     dual_agent = "dual_agent"
 
-
-
 class Transaction(BaseModel):
     transaction_id: int
     our_role: str

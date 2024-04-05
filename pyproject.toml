@@ -11,7 +11,14 @@ azure-functions = "^1.18.0"
 pydantic = "^2.6.4"
 sqlalchemy = "^2.0.29"
 python-dotenv = "^1.0.1"
+pyodbc = "^5.1.0"
+bcrypt = "^4.1.2"
+pyjwt = "^2.8.0"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+requests = "^2.31.0"
 
 [build-system]
 requires = ["poetry-core"]

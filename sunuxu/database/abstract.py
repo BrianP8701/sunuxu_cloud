@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 class AbstractSQLDatabase(ABC):
+    @abstractmethod
+    def reset_instance(self) -> None:
+        pass
+
     @abstractmethod
     def create_tables(self) -> None:
         pass
@@ -22,6 +26,10 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
+    def delete_by_id(self, model_class: Any, id: int) -> None:
+        pass
+
+    @abstractmethod
     def query(self, model_class: Any, conditions: dict = None) -> list:
         pass
 
@@ -31,4 +39,8 @@ class AbstractSQLDatabase(ABC):
 
     @abstractmethod
     def perform_transaction(self, operations: callable) -> None:
+        pass
+
+    @abstractmethod
+    def clear_database(self, safety: str) -> None:
         pass

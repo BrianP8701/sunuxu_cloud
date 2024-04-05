@@ -241,8 +241,6 @@ I'll merge these into the docs above later
    - The AI will autonomously suggest and run actions to request client reviews and testimonials post-closing, after asking for the agent's referral links and information.
    - The agent will have the option to approve these actions or permanently disable this feature.
 
-
-
 # Further thinking
 ## Workflows & Forms
 We can design a general form object. There's lots of different kinds of forms that agents might send out to various people to fill out. We shouldn't constrain the LLM to have to obtain information purely through text and email. That's unnecessary burden and complexity. We can simply design the concept of Workflows & Forms. 
@@ -272,4 +270,3 @@ Okay so whats the flow? We want to send somebody a link they can just click on t
    - We can on our side just create custom links for each person, and the person just has to fill out the form. 
 Nah. I think we definitely have to make them sign up. For security, so they can keep their stuff private. If its like a public link that if anyone can get hold of and view that's bad.
 So here's the user experience. We'll send them the link. They'll copy the code to connect to their agent. Once they connect to their agent, their agent can assign them forms and paperwork through the site.
-

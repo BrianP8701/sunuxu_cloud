@@ -1,9 +1,13 @@
 import os
+from dotenv import load_dotenv
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 
 from sunuxu.database.abstract import AbstractSQLDatabase, Base
+
+load_dotenv()
 
 class AzureSQLDatabase(AbstractSQLDatabase):
     _instance = None
@@ -50,7 +54,7 @@ class AzureSQLDatabase(AbstractSQLDatabase):
             session.delete(model)
             session.commit()
 
-    def delete_by_id(self, id, model_class):
+    def delete_by_id(self, model_class, id):
         with self.Session() as session:
             # Directly delete the object by primary key without loading it
             session.query(model_class).filter(model_class.id == id).delete()
