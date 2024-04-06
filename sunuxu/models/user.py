@@ -1,7 +1,7 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, CheckConstraint
 
-from core.database.abstract import Base
+from sunuxu.database.abstract import Base
 
 
 class UserOrm(Base):

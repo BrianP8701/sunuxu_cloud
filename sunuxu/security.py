@@ -19,16 +19,16 @@ def check_password(hashed_password: str, user_password: str) -> bool:
 def generate_tokens(user_id: str):
     access_token_payload = {
         'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(minutes=15),
-        'iat': datetime.utcnow()
+        'exp': datetime.now() + timedelta(minutes=15),
+        'iat': datetime.now()
     }
     refresh_token_payload = {
         'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(days=7),
-        'iat': datetime.utcnow()
+        'exp': datetime.now() + timedelta(days=7),
+        'iat': datetime.now()
     }
-    access_token = jwt.encode(access_token_payload, 'your_secret_key', algorithm='HS256')
-    refresh_token = jwt.encode(refresh_token_payload, 'your_secret_key', algorithm='HS256')
+    access_token = jwt.encode(access_token_payload, os.getenv("JWT_SECRET"), algorithm='HS256')
+    refresh_token = jwt.encode(refresh_token_payload, os.getenv("JWT_SECRET"), algorithm='HS256')
     return access_token, refresh_token
 
 def authenticate_user(func):
@@ -62,7 +62,7 @@ def authenticate_user(func):
                 )
         else:
             try:
-                payload = jwt.decode(access_token, 'your_secret_key', algorithms=['HS256'])
+                payload = jwt.decode(access_token, os.getenv("JWT_SECRET"), algorithms=['HS256'])
                 user_id = payload['user_id']
                 kwargs['user_id'] = user_id
                 return func(req, *args, **kwargs)

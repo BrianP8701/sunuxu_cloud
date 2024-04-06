@@ -7,7 +7,7 @@ import os
 import json
 import azure.functions as func
 from api.authentication import signup, login, authenticate_user
-from core.database import AzureSQLDatabase
+from sunuxu.database import AzureSQLDatabase
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 from pydantic import BaseModel, ConfigDict
 

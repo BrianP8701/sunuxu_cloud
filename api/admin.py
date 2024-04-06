@@ -1,15 +1,14 @@
-# api/admin/delete_user/main.py
+# api/admin.py
 import azure.functions as func
 
-from core.database import AzureSQLDatabase
-from core.models import UserOrm
+from sunuxu.database import AzureSQLDatabase
+from sunuxu.models import UserOrm
 
 db = AzureSQLDatabase()
-bp = func.Blueprint()
+blueprint= func.Blueprint()
 
 
-@bp.route(route="sunuxu/admin/delete_user", auth_level=func.AuthLevel.FUNCTION)
-@bp.function_name(name="delete_user")
+@blueprint.route(route="delete_user", auth_level=func.AuthLevel.FUNCTION)
 def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     user_id = req.params.get('user_id')
     username = req.params.get('username')
