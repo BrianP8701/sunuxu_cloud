@@ -1,7 +1,7 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 
-from sunuxu.database.abstract import Base
+from core.database.abstract_sql import Base
 
 class ParticipantRoleEnum(str, Enum):
     Buyer = "Buyer"
@@ -33,8 +33,7 @@ class ParticipantRoleEnum(str, Enum):
 
 class ParticipantOrm(Base):
     __tablename__ = "participants"
-    id = Column(Integer, primary_key=True)
-    participant_id = Column(String)
+    participant_id = Column(String, primary_key=True)
     person_id = Column(String)
     transaction_id = Column(String)
     role = Column(SQLEnum(ParticipantRoleEnum))

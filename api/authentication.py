@@ -2,9 +2,9 @@
 import azure.functions as func
 import json
 
-from sunuxu.database import AzureSQLDatabase
-from sunuxu.models import UserOrm
-from sunuxu.security import check_password, generate_tokens, hash_password
+from core.database import AzureSQLDatabase
+from core.models import UserOrm
+from core.security import check_password, generate_tokens, hash_password
 
 db = AzureSQLDatabase()
 blueprint = func.Blueprint()
