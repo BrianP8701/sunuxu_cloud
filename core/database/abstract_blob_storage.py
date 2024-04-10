@@ -22,7 +22,7 @@ class AbstractBlobStorage(ABC):
         pass
 
     @abstractmethod
-    def update_blob(self, container_name: str, blob_name: str, data: BinaryIO, etag: str = None) -> None:
+    def overwrite_blob(self, container_name: str, blob_name: str, data: BinaryIO, etag: str = None) -> None:
         """ 
         Updates a blob in the blob storage. Optionally include an etag to check for optimistic concurrency.
         Raises an exception if the blob does not exist or the etag does not match.
@@ -35,10 +35,6 @@ class AbstractBlobStorage(ABC):
 
     @abstractmethod
     def blob_exists(self, container_name: str, blob_name: str) -> bool:
-        pass
-
-    @abstractmethod
-    def container_exists(self, container_name: str) -> bool:
         pass
 
     @abstractmethod
@@ -63,14 +59,6 @@ class AbstractBlobStorage(ABC):
 
     @abstractmethod
     def get_blob_properties(self, container_name: str, blob_name: str) -> Any:
-        pass
-
-    @abstractmethod
-    def create_container(self, container_name: str) -> None:
-        pass
-
-    @abstractmethod
-    def delete_container(self, container_name: str) -> None:
         pass
 
     @abstractmethod

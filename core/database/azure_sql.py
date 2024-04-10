@@ -13,7 +13,7 @@ class AzureSQLDatabase(AbstractSQLDatabase):
     _instance = None
 
     def __init__(self):
-        db_url = os.getenv('DB_URL')
+        db_url = os.getenv('AZURE_SQL_URL')
         print(f"Connecting to database: {db_url}")
         self.connection_string = db_url  
         self.engine = create_engine(db_url)
@@ -100,6 +100,8 @@ class AzureSQLDatabase(AbstractSQLDatabase):
         """
         if safety != "I understand this will delete all data":
             raise ValueError("Safety string does not match. Set the safety parameter to 'I understand this will delete all data' to confirm the operation.")
+        if os.getenv('MODE') == 'production':
+            raise Exception("Cannot clear database in production.")
         else:
             session = self.sessionmaker()
             with session as session:
