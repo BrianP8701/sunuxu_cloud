@@ -36,7 +36,7 @@ class AzureSQLDatabase(AbstractSQLDatabase):
     def create_tables(self):
         Base.metadata.create_all(self.engine)
 
-    def insert(self, model: Base):
+    def insert(self, model):
         session = self.sessionmaker()
         with session as session:
             session.add(model)
@@ -44,26 +44,26 @@ class AzureSQLDatabase(AbstractSQLDatabase):
             session.refresh(model)  # Refresh the model to update the id attribute
             return model  # Return the inserted model
 
-    def update(self, model: Base):
+    def update(self, model):
         session = self.sessionmaker()
         with session as session:
             session.merge(model)
             session.commit()
 
-    def delete(self, model: Base):
+    def delete(self, model):
         session = self.sessionmaker()
         with session as session:
             session.delete(model)
             session.commit()
 
-    def delete_by_id(self, model_class: Base, id: int):
+    def delete_by_id(self, model_class, id: int):
         session = self.sessionmaker()
         with session as session:
             # Directly delete the object by primary key without loading it
             session.query(model_class).filter(model_class.id == id).delete()
             session.commit()
 
-    def query(self, model_class: Base, conditions=None):
+    def query(self, model_class, conditions=None):
         session = self.sessionmaker()
         with session as session:
             query = session.query(model_class)

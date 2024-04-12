@@ -1,6 +1,5 @@
 # api/authentication.py
 import azure.functions as func
-import json
 
 from core.database import AzureSQLDatabase
 from core.models import UserOrm
