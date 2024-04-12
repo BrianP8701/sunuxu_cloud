@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 
-from core.database.abstract_sql import AbstractSQLDatabase, Base
+from app.database.abstract_sql import AbstractSQLDatabase, Base
 
 load_dotenv()
 

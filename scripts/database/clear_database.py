@@ -1,4 +1,4 @@
-from core.database import AzureSQLDatabase
+from app.database import AzureSQLDatabase
 
 db = AzureSQLDatabase()
 

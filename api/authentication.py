@@ -1,9 +1,9 @@
 # api/authentication.py
 import azure.functions as func
 
-from core.database import AzureSQLDatabase
-from core.models import UserOrm
-from core.security import check_password, generate_tokens, hash_password
+from app.database import AzureSQLDatabase
+from app.models import UserOrm
+from app.security import check_password, generate_tokens, hash_password
 
 db = AzureSQLDatabase()
 blueprint = func.Blueprint()

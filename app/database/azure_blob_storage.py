@@ -3,7 +3,7 @@ from typing import BinaryIO
 from azure.storage.blob import BlobServiceClient, BlobProperties, BlobLeaseClient
 from dotenv import load_dotenv
 
-from core.database.abstract_blob_storage import AbstractBlobStorage
+from app.database.abstract_blob_storage import AbstractBlobStorage
 
 load_dotenv()
 container_name = os.getenv('AZURE_BLOB_CONTAINER_NAME')

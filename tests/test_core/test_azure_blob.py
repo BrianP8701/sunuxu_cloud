@@ -1,7 +1,7 @@
 import unittest
 from io import BytesIO
 from dotenv import load_dotenv
-from core.database.azure_blob_storage import AzureBlobStorage
+from app.database.azure_blob_storage import AzureBlobStorage
 
 load_dotenv()
 

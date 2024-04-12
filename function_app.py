@@ -8,5 +8,3 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 app.register_functions(authentication_bp)
 app.register_functions(admin_bp)
-
-

@@ -1,8 +1,8 @@
 # api/admin.py
 import azure.functions as func
 
-from core.database import AzureSQLDatabase
-from core.models import UserOrm
+from app.database import AzureSQLDatabase
+from app.models import UserOrm
 
 db = AzureSQLDatabase()
 blueprint= func.Blueprint()

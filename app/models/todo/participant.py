@@ -1,7 +1,7 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 
-from core.database.abstract_sql import Base
+from app.database.abstract_sql import Base
 
 class ParticipantRoleEnum(str, Enum):
     Buyer = "Buyer"

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, CheckConstraint
 
-from core.database.abstract_sql import Base
+from app.database.abstract_sql import Base
 
 class UserOrm(Base):
     __tablename__ = "users"
