@@ -2,7 +2,7 @@
 import os
 import signal
 import subprocess
-from app.database import AzureSQLDatabase
+from core.database import AzureSQLDatabase
 
 db = AzureSQLDatabase()
 

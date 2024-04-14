@@ -1,14 +1,16 @@
 # api/admin.py
 import azure.functions as func
 
-from app.database import AzureSQLDatabase
-from app.models import UserOrm
+from core.database import AzureSQLDatabase
+from core.models import UserOrm
+from core.utils.api_decorator import api_error_handler
 
 db = AzureSQLDatabase()
 blueprint= func.Blueprint()
 
 
-@blueprint.route(route="delete_user", auth_level=func.AuthLevel.FUNCTION)
+@blueprint.route(route="admin/delete_user", auth_level=func.AuthLevel.FUNCTION)
+@api_error_handler
 def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     user_id = req.params.get('user_id')
     username = req.params.get('username')
@@ -33,6 +35,5 @@ def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     db.delete(user)
 
     return func.HttpResponse(
-        "User deleted successfully.",
         status_code=200
     )

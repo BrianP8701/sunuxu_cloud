@@ -1,14 +1,17 @@
 # api/authentication.py
 import azure.functions as func
+import json
 
-from app.database import AzureSQLDatabase
-from app.models import UserOrm
-from app.security import check_password, generate_tokens, hash_password
+from core.database import AzureSQLDatabase
+from core.models import UserOrm
+from core.security import check_password, generate_tokens, hash_password
+from core.utils.api_decorator import api_error_handler
 
 db = AzureSQLDatabase()
 blueprint = func.Blueprint()
 
-@blueprint.route(route="signup", auth_level=func.AuthLevel.FUNCTION)
+@blueprint.route(route="authentication/signup", auth_level=func.AuthLevel.FUNCTION)
+@api_error_handler
 def signup(req: func.HttpRequest) -> func.HttpResponse:
     username = req.params.get('username')
     password = req.params.get('password')
@@ -34,17 +37,18 @@ def signup(req: func.HttpRequest) -> func.HttpResponse:
         middle_name=middle_name,
         last_name=last_name,
         user_type=user_type
-
     )
     db.insert(user)
     access_token, refresh_token = generate_tokens(user.id)
     return func.HttpResponse(
-        params = {'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()},
+        body=json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
         status_code=200,
-        )
+        mimetype="application/json"
+    )
 
-@blueprint.route(route="login", auth_level=func.AuthLevel.FUNCTION)
-def login(req: func.HttpRequest) -> func.HttpResponse:
+@blueprint.route(route="authentication/signin", auth_level=func.AuthLevel.FUNCTION)
+@api_error_handler
+def signin(req: func.HttpRequest) -> func.HttpResponse:
     username = req.params.get('username')
     password = req.params.get('password')
 
@@ -62,6 +66,7 @@ def login(req: func.HttpRequest) -> func.HttpResponse:
         )
     access_token, refresh_token = generate_tokens(user.id)
     return func.HttpResponse(
-        params={'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()},
+        body=json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
         status_code=200,
+        mimetype="application/json"
     )

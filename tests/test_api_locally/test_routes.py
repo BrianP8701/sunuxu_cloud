@@ -1,7 +1,7 @@
 # tests/test_api_locally/test_routes.py
 import requests
 import pytest
-from app.database import AzureSQLDatabase
+from core.database import AzureSQLDatabase
 
 db = AzureSQLDatabase()
 

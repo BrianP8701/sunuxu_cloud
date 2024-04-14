@@ -2,7 +2,7 @@ import json
 import azure.functions as func
 from azure.functions import HttpRequest
 from api.authentication import app
-from app.database import AzureSQLDatabase
+from core.database import AzureSQLDatabase
 
 db = AzureSQLDatabase()
 
