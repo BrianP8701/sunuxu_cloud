@@ -1,0 +1,1 @@
+USER_TYPES = ['agent']

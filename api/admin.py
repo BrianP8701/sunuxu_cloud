@@ -3,36 +3,36 @@ import azure.functions as func
 
 from core.database import AzureSQLDatabase
 from core.models import UserOrm
-from core.utils.api_decorator import api_error_handler
+
+from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
 db = AzureSQLDatabase()
 blueprint= func.Blueprint()
 
 
-@blueprint.route(route="admin/delete_user", auth_level=func.AuthLevel.FUNCTION)
+@blueprint.route(route="sunuxu/admin/delete_user", auth_level=func.AuthLevel.FUNCTION)
 @api_error_handler
 def delete_user(req: func.HttpRequest) -> func.HttpResponse:
-    user_id = req.params.get('user_id')
-    username = req.params.get('username')
-    
+    """
+    Can be called with either user_id or email.
+    """
+    req_body = parse_request_body(req)
+
+    user_id = req_body.get('user_id')
+    email = req_body.get('email')
+
     if user_id:
         user_orm = db.query(UserOrm, {"id": user_id})
-    elif username:
-        user_orm = db.query(UserOrm, {"username": username})
+    elif email:
+        user_orm = db.query(UserOrm, {"email": email})
     else:
-        return func.HttpResponse(
-            "User ID or username is required.",
-            status_code=400
-        )
+        return_server_error("User ID or email is required.", status_code=400)
 
     if len(user_orm) == 0:
-        return func.HttpResponse(
-            "User not found.",
-            status_code=404
-        )
+        return_server_error("User not found.", status_code=404)
 
     user = user_orm[0]
-    db.delete(user)
+    db.delete(UserOrm, {"user_id": user.user_id})
 
     return func.HttpResponse(
         status_code=200

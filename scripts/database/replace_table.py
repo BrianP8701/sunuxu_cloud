@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 
+from core.models.user import UserOrm
+
 # Assuming you have the necessary imports and configurations for your ORM models
 def delete_table(engine, table_name):
     meta = MetaData()
@@ -23,30 +25,13 @@ def create_table(engine, model_class):
 # Example usage
 if __name__ == "__main__":
     # Create the database engine
-    print(os.getenv('DB_URL'))
-    engine = create_engine(os.getenv('DB_URL'))
+    print(os.getenv('AZURE_SQL_URL'))
+    engine = create_engine(os.getenv('AZURE_SQL_URL'))
 
     # Delete the 'users' table
     delete_table(engine, "users")
 
     # Create the 'users' table using the UserOrm model
     Base = declarative_base()
-
-    class UserTypeEnum(Enum):
-        ADMIN = "admin"
-        AGENT = "agent"
-        PERSON = "person"
-
-    class UserOrm(Base):
-        __tablename__ = "users"
-        id = Column(Integer, primary_key=True)
-        username = Column(String)
-        password = Column(String)
-        email = Column(String)
-        phone = Column(String(20))
-        first_name = Column(String)
-        middle_name = Column(String)
-        last_name = Column(String)
-        user_type = Column(SQLEnum(UserTypeEnum))
 
     create_table(engine, UserOrm)

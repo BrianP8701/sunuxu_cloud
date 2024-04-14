@@ -42,17 +42,8 @@ class AbstractSQLDatabase(ABC):
         """
         Deletes a record from the database.
         
-        :param model: The model instance to be deleted.
-        """
-        pass
-
-    @abstractmethod
-    def delete_by_id(self, model_class: Any, id: int) -> None:
-        """
-        Deletes a record from the database by its ID.
-        
         :param model_class: The class of the model to delete.
-        :param id: The ID of the record to delete.
+        :param conditions: A dictionary of conditions to filter the query.
         """
         pass
 
@@ -64,6 +55,17 @@ class AbstractSQLDatabase(ABC):
         :param model_class: The class of the model to query.
         :param conditions: A dictionary of conditions to filter the query.
         :return: A list of model instances that match the query.
+        """
+        pass
+
+    @abstractmethod
+    def exists(self, model_class: Any, conditions: dict) -> bool:
+        """
+        Checks if a record exists in the database.
+        
+        :param model_class: The class of the model to check.
+        :param conditions: A dictionary of conditions to filter the query.
+        :return: True if a record exists, False otherwise.
         """
         pass
 

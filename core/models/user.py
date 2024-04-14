@@ -1,17 +1,17 @@
 from sqlalchemy import Column, Integer, String, CheckConstraint
 
 from core.database.abstract_sql import Base
-
+from core.constants import USER_TYPES
 class UserOrm(Base):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
-    email = Column(String)
+    email = Column(String, unique=True)
     password = Column(String)
     phone = Column(String(20))
     first_name = Column(String)
     middle_name = Column(String)
     last_name = Column(String)
-    user_type = Column(String, CheckConstraint("user_type IN ('admin', 'agent', 'person')"))
+    user_type = Column(String, CheckConstraint("user_type IN ('" + "', '".join(USER_TYPES) + "')"))
 
     def to_dict(self) -> dict:
         return {

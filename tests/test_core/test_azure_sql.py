@@ -1,9 +1,8 @@
 import unittest
 from dotenv import load_dotenv
-import sys
-sys.path.append("/Users/brianprzezdziecki/sunuxu/sunuxu")
+
 from core.database.azure_sql import AzureSQLDatabase
-from core.models.user import UserOrm, UserTypeEnum
+from core.models.user import UserOrm
 from core.models.todo.participant import ParticipantOrm, ParticipantRoleEnum
 
 load_dotenv()
@@ -12,31 +11,29 @@ class AzureSQLDatabaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):        
         cls.db = AzureSQLDatabase()
-        cls.db.create_tables()
 
     @classmethod
     def tearDownClass(cls):
         cls.db.clear_database("I understand this will delete all data")
-        cls.db.Session().close()
-        AzureSQLDatabase.reset_instance()
+        AzureSQLDatabase.dispose_instance()
 
     def test_insert_and_query(self):
         # Create a user
         user = UserOrm(
-            username="john_wick",
-            password="password",
             email="john@example.com",
-            phone=1234567890,
+            password="password",
+            phone="1234567890",
             first_name="John",
+            middle_name="",
             last_name="Doe",
-            user_type=UserTypeEnum.PERSON
+            user_type="person"
         )
         self.db.insert(user)
 
         # Query the user
-        users = self.db.query(UserOrm, {"username": "john_wick"})
+        users = self.db.query(UserOrm, {"email": "john@example.com"})
         self.assertEqual(len(users), 1)
-        self.assertEqual(users[0].username, "john_wick")
+        self.assertEqual(users[0].email, "john@example.com")
 
     def test_update(self):
         # Delete the previously created participant
@@ -64,41 +61,21 @@ class AzureSQLDatabaseTestCase(unittest.TestCase):
     def test_delete(self):
         # Create a user
         user = UserOrm(
-            username="jane_doe",
-            password="password",
             email="jane@example.com",
-            phone=9876543210,
+            password="password",
+            phone="9876543210",
             first_name="Jane",
+            middle_name="",
             last_name="Doe",
-            user_type=UserTypeEnum.AGENT
+            user_type="agent"
         )
         self.db.insert(user)
 
         # Delete the user
-        self.db.delete(user)
+        self.db.delete(UserOrm, {"email": "jane@example.com"})
 
         # Query the deleted user
-        users = self.db.query(UserOrm, {"username": "jane_doe"})
-        self.assertEqual(len(users), 0)
-
-    def test_delete_by_id(self):
-        # Create a user
-        user = UserOrm(
-            username="delete_by_id",
-            password="password",
-            email="delete_by_id@example.com",
-            phone="1111111111",
-            first_name="Delete",
-            last_name="ById",
-            user_type=UserTypeEnum.PERSON
-        )
-        user = self.db.insert(user)  # Use the returned user object
-
-        # Delete the user by ID
-        self.db.delete_by_id(user.id, UserOrm)
-
-        # Query the deleted user
-        users = self.db.query(UserOrm, {"username": "delete_by_id"})
+        users = self.db.query(UserOrm, {"email": "jane@example.com"})
         self.assertEqual(len(users), 0)
 
     def test_execute_raw_sql(self):
@@ -129,13 +106,13 @@ class AzureSQLDatabaseTestCase(unittest.TestCase):
         # Define the operations to perform within the transaction
         def operations(session):
             user = UserOrm(
-                username="alice",
-                password="password",
                 email="alice@example.com",
-                phone=1111111111,
+                password="password",
+                phone="1111111111",
                 first_name="Alice",
+                middle_name="",
                 last_name="Smith",
-                user_type=UserTypeEnum.PERSON
+                user_type="person"
             )
             session.add(user)
 
@@ -143,8 +120,29 @@ class AzureSQLDatabaseTestCase(unittest.TestCase):
         self.db.perform_transaction(operations)
 
         # Query the user after the transaction
-        users = self.db.query(UserOrm, {"username": "alice"})
+        users = self.db.query(UserOrm, {"email": "alice@example.com"})
         self.assertEqual(len(users), 1)
+
+    def test_exists(self):
+        # Create a user
+        user = UserOrm(
+            email="test_exists@example.com",
+            password="password",
+            phone="1234567890",
+            first_name="Test",
+            middle_name="",
+            last_name="Exists",
+            user_type="person"
+        )
+        self.db.insert(user)
+
+        # Check if the user exists
+        exists = self.db.exists(UserOrm, {"email": "test_exists@example.com"})
+        self.assertTrue(exists)
+
+        # Check if a non-existing user exists
+        not_exists = self.db.exists(UserOrm, {"email": "non_existing_user@example.com"})
+        self.assertFalse(not_exists)
 
 if __name__ == "__main__":
     unittest.main()

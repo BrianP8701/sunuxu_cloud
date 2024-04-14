@@ -50,17 +50,11 @@ class AzureSQLDatabase(AbstractSQLDatabase):
             session.merge(model)
             session.commit()
 
-    def delete(self, model):
+    def delete(self, model_class, conditions):
         session = self.sessionmaker()
         with session as session:
-            session.delete(model)
-            session.commit()
-
-    def delete_by_id(self, model_class, id: int):
-        session = self.sessionmaker()
-        with session as session:
-            # Directly delete the object by primary key without loading it
-            session.query(model_class).filter(model_class.id == id).delete()
+            query = session.query(model_class).filter_by(**conditions)
+            query.delete()
             session.commit()
 
     def query(self, model_class, conditions=None):
@@ -70,6 +64,14 @@ class AzureSQLDatabase(AbstractSQLDatabase):
             if conditions:
                 query = query.filter_by(**conditions)
             return query.all()
+
+    def exists(self, model_class, conditions=None):
+        session = self.sessionmaker()
+        with session as session:
+            query = session.query(model_class)
+            if conditions:
+                query = query.filter_by(**conditions)
+            return query.limit(1).count() > 0
 
     def execute_raw_sql(self, sql: str):
         session = self.sessionmaker()
@@ -82,7 +84,7 @@ class AzureSQLDatabase(AbstractSQLDatabase):
                 return None
 
     def perform_transaction(self, operations: callable):
-        session = self.Session()
+        session = self.sessionmaker()
         try:
             operations(session)
             session.commit()
