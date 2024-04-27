@@ -1,13 +1,15 @@
-# tests/test_api_locally/test_routes.py
-# pytest tests/test_api_locally/test_routes.py
+# tests/test_api_cloud/test_routes.py
+# pytest tests/test_api_cloud/test_routes.py
 import requests
 import pytest
+
 from core.database import AzureSQLDatabase
+from tests.test_api_cloud.utils import get_function_url
 
 db = AzureSQLDatabase()
 
 def test_signup():
-    url = "http://localhost:7071/api/signup"
+    url = get_function_url("authentication/signup")
     data = {
         "email": "test@example.com",
         "password": "testpassword",
@@ -15,6 +17,7 @@ def test_signup():
         "first_name": "Test",
         "middle_name": "",
         "last_name": "User",
+        "user_type": "agent"
     }
 
     try:
@@ -26,6 +29,7 @@ def test_signup():
         assert "refresh_token" in response_data
         assert "user" in response_data
         assert response_data["user"]["email"] == "test@example.com"
+        assert response_data["user"]["user_type"] == "agent"
 
         print("test_signup passed")
     except requests.exceptions.RequestException as e:
@@ -36,7 +40,7 @@ def test_signup():
         raise
 
 def test_signin():
-    url = "http://localhost:7071/api/signin"
+    url = get_function_url("authentication/signin")
     data = {
         "email": "test@example.com",
         "password": "testpassword"
@@ -51,6 +55,7 @@ def test_signin():
         assert "refresh_token" in response_data
         assert "user" in response_data
         assert response_data["user"]["email"] == "test@example.com"
+        assert response_data["user"]["user_type"] == "agent"
 
         print("test_signin passed")
     except requests.exceptions.RequestException as e:
@@ -61,7 +66,7 @@ def test_signin():
         raise
 
 def test_delete_user():
-    url = "http://localhost:7071/api/sunuxu/admin/delete_user"
+    url = get_function_url("sunuxu/admin/delete_user")
     data = {
         "email": "test@example.com"
     }
@@ -82,4 +87,3 @@ def test_delete_user():
 def clear_database():
     yield
     db.clear_database("I understand this will delete all data")
-

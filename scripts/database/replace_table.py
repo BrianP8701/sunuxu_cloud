@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 
-from core.models.user import UserOrm
+from core.models.users import UserOrm
 
 # Assuming you have the necessary imports and configurations for your ORM models
 def delete_table(engine, table_name):

@@ -14,16 +14,13 @@ blueprint= func.Blueprint()
 @api_error_handler
 def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     """
-    Can be called with either user_id or email.
+    Called with email.
     """
     req_body = parse_request_body(req)
 
-    user_id = req_body.get('user_id')
     email = req_body.get('email')
 
-    if user_id:
-        user_orm = db.query(UserOrm, {"id": user_id})
-    elif email:
+    if email:
         user_orm = db.query(UserOrm, {"email": email})
     else:
         return_server_error("User ID or email is required.", status_code=400)
@@ -32,7 +29,7 @@ def delete_user(req: func.HttpRequest) -> func.HttpResponse:
         return_server_error("User not found.", status_code=404)
 
     user = user_orm[0]
-    db.delete(UserOrm, {"user_id": user.user_id})
+    db.delete(UserOrm, {"email": user.email})
 
     return func.HttpResponse(
         status_code=200

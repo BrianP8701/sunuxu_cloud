@@ -31,45 +31,21 @@ def generate_tokens(user_id: str):
     refresh_token = jwt.encode(refresh_token_payload, os.getenv("JWT_SECRET"), algorithm='HS256')
     return access_token, refresh_token
 
-def authenticate_user(func):
-    """
-    Decorator function to authenticate user using JWT tokens.
-    """
-    @wraps(func)
-    def wrapper(req: func.HttpRequest, *args, **kwargs):
-        access_token = req.headers.get('Authorization')
-        if not access_token:
-            refresh_token = req.headers.get('Refresh-Token')
-            if not refresh_token:
-                return func.HttpResponse(
-                    json.dumps({'error': 'No token provided.'}),
-                    status_code=401,
-                    mimetype='application/json'
-                )
-            try:
-                payload = jwt.decode(refresh_token, os.getenv("JWT_SECRET"), algorithms=['HS256'])
-                user_id = payload['user_id']
-                access_token, refresh_token = generate_tokens(user_id)
-                kwargs['user_id'] = user_id
-                req.headers['Authorization'] = access_token
-                req.headers['Refresh-Token'] = refresh_token
-                return func(req, *args, **kwargs)
-            except jwt.ExpiredSignatureError:
-                return func.HttpResponse(
-                    json.dumps({'error': 'Refresh token expired.'}),
-                    status_code=401,
-                    mimetype='application/json'
-                )
+def validate_token(token: str, is_access_token: bool = True) -> str:
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=['HS256'])
+        return payload['user_id']
+    except jwt.ExpiredSignatureError:
+        if is_access_token:
+            raise ValueError("Access token expired.")
         else:
-            try:
-                payload = jwt.decode(access_token, os.getenv("JWT_SECRET"), algorithms=['HS256'])
-                user_id = payload['user_id']
-                kwargs['user_id'] = user_id
-                return func(req, *args, **kwargs)
-            except jwt.ExpiredSignatureError:
-                return func.HttpResponse(
-                    json.dumps({'error': 'Access token expired.'}),
-                    status_code=401,
-                    mimetype='application/json'
-                )
-    return wrapper
+            raise ValueError("Refresh token expired.")
+    except jwt.InvalidTokenError:
+        raise ValueError("Invalid token.")
+
+def refresh_access_token(refresh_token: str):
+    try:
+        user_id = validate_token(refresh_token, is_access_token=False)
+        return generate_tokens(user_id)
+    except ValueError as e:
+        raise ValueError(str(e))

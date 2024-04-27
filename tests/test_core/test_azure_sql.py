@@ -2,7 +2,7 @@ import unittest
 from dotenv import load_dotenv
 
 from core.database.azure_sql import AzureSQLDatabase
-from core.models.user import UserOrm
+from core.models.users import UserOrm
 from core.models.todo.participant import ParticipantOrm, ParticipantRoleEnum
 
 load_dotenv()
