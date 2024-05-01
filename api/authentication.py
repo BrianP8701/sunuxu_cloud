@@ -3,7 +3,7 @@ import azure.functions as func
 import json
 
 from core.database import AzureSQLDatabase
-from core.models import UserOrm, AccountOrm
+from core.models import UserOrm
 from core.security import check_password, generate_tokens, hash_password, validate_token, refresh_access_token
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
@@ -18,23 +18,18 @@ def signup(req: func.HttpRequest) -> func.HttpResponse:
     if db.exists(UserOrm, {"email": req_body['email']}):
         return return_server_error("Email already exists.", status_code=400)
 
-    account = AccountOrm(
-        email=req_body['email'],
-        password=hash_password(req_body['password']),
-    )
-
     user = UserOrm(
         email=req_body['email'],
         phone=req_body['phone'],
         first_name=req_body['first_name'],
         middle_name=req_body['middle_name'],
         last_name=req_body['last_name'],
+        password=hash_password(req_body['password'])
     )
 
     db.insert(user)
-    db.insert(account)
     
-    access_token, refresh_token = generate_tokens(user.email)
+    access_token, refresh_token = generate_tokens(user.id)
     return func.HttpResponse(
         body=json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
         status_code=200,
@@ -49,15 +44,14 @@ def signin(req: func.HttpRequest) -> func.HttpResponse:
     if not db.exists(UserOrm, {"email": req_body['email']}):
         return return_server_error("An account with this email does not exist.", status_code=400)
 
-    account = db.query(AccountOrm, {"email": req_body['email']})[0]
-    
-
-    if not check_password(account.password, req_body['password']):
-        return_server_error("Incorrect password.", status_code=400)
-
     user = db.query(UserOrm, {"email": req_body['email']})[0]
 
-    access_token, refresh_token = generate_tokens(user.email)
+
+    if not check_password(user.password, req_body['password']):
+        return_server_error("Incorrect password.", status_code=400)
+
+
+    access_token, refresh_token = generate_tokens(user.id)
     return func.HttpResponse(
         body=json.dumps({'access_token': access_token, 'refresh_token': refresh_token, 'user': user.to_dict()}),
         status_code=200,
@@ -72,8 +66,9 @@ def authenticate_token(req: func.HttpRequest) -> func.HttpResponse:
         return_server_error("No access token provided.", status_code=401)
 
     try:
-        email = validate_token(access_token)
-        user = db.query(UserOrm, {"email": email})[0]
+        id = validate_token(access_token)
+        user = db.query(UserOrm, {"id": id})[0]
+
         return func.HttpResponse(
             body=json.dumps({'user': user.to_dict()}),
             status_code=200,

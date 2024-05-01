@@ -1,7 +1,6 @@
 from core.database.azure_sql import AzureSQLDatabase
 
-from core.models.accounts import AccountOrm
-from core.models.users import UserOrm
+from core.models import *
 
 db = AzureSQLDatabase()
 

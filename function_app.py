@@ -3,7 +3,7 @@ import azure.functions as func
 
 from api.authentication import blueprint as authentication_bp
 from api.admin import blueprint as admin_bp
-from core.models import UserOrm, AccountOrm
+from core.models import *
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
