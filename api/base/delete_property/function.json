@@ -5,9 +5,9 @@
         "type": "httpTrigger",
         "direction": "in",
         "name": "req",
-        "route": "delete_property/{id}",
+        "route": "delete_property",
         "methods": [
-          "delete"
+          "post"
         ]
       },
       {

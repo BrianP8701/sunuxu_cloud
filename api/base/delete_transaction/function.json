@@ -5,9 +5,9 @@
         "type": "httpTrigger",
         "direction": "in",
         "name": "req",
-        "route": "delete_transaction/{id}",
+        "route": "delete_transaction",
         "methods": [
-          "delete"
+          "post"
         ]
       },
       {

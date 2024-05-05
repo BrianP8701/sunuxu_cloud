@@ -22,6 +22,7 @@ from api.base.update_property.main import blueprint as update_property_bp
 from api.base.update_transaction.main import blueprint as update_transaction_bp
 
 from api.crm.get_table_data.main import blueprint as get_table_data_bp
+from api.crm.download_people.main import blueprint as download_people_bp
 
 from core.models import *
 
@@ -47,3 +48,4 @@ app.register_functions(add_transaction_bp)
 app.register_functions(update_person_bp)
 app.register_functions(update_property_bp)
 app.register_functions(update_transaction_bp)
+app.register_functions(download_people_bp)

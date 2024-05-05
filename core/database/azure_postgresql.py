@@ -159,6 +159,28 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             await session.commit()
 
     @retry_on_disconnection()
+    async def batch_query(self, model_class, conditions=None, columns=None):
+        async with self.sessionmaker() as session:
+            if columns:
+                column_objects = [getattr(model_class, column) for column in columns]  # Removed .expression for testing
+                query = select(*column_objects)
+            else:
+                query = select(model_class)
+
+            if conditions:
+                for key, value in conditions.items():
+                    if isinstance(value, list):
+                        query = query.filter(getattr(model_class, key).in_(value))
+                    else:
+                        query = query.filter(getattr(model_class, key) == value)
+
+            print(query)  # Debug: Print the actual query
+            result = await session.execute(query)
+            all_results = result.fetchall()  # Changed from result.scalars().all() to fetchall()
+            print(all_results)  # Debug: Print the results
+            return all_results
+
+    @retry_on_disconnection()
     async def clear_database(self, safety: str):
         if safety != "I understand this will delete all data":
             raise ValueError("Safety string does not match. Set the safety parameter to 'I understand this will delete all data' to confirm the operation.")

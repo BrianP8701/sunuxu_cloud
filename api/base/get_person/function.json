@@ -5,9 +5,9 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "get_person/{id}",
+      "route": "get_person",
       "methods": [
-        "get"
+        "post"
       ]
     },
     {

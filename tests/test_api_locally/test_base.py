@@ -1,6 +1,5 @@
 # test/test_api_locally/test_base.py
 import unittest
-import aiounittest
 import requests
 from dotenv import load_dotenv
 
@@ -20,7 +19,6 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         # Ensure each test gets a fresh instance if needed.
         self.db = AzurePostgreSQLDatabase()
-        print("Database instance created.")
 
     async def asyncTearDown(self):
         # Properly dispose of the instance after each test to prevent connection leaks.
@@ -44,7 +42,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     def test_2_get_person(self):
         url = get_function_url("get_person")
         id = TestBaseRoutes.person_id
-        response = requests.get(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         print("Get Person Response:\n", response.json())
         self.assertEqual(response.status_code, 200)
 
@@ -72,7 +70,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     async def test_4_delete_person(self):
         url = get_function_url("delete_person")
         id = TestBaseRoutes.person_id
-        response = requests.delete(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
         is_deleted = await self.db.exists(PersonOrm, {"id": id})
         self.assertFalse(is_deleted)
@@ -100,7 +98,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     def test_2_get_property(self):
         url = get_function_url("get_property")
         id = TestBaseRoutes.property_id
-        response = requests.get(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         print("Get Property Response:\n", response.json())
         self.assertEqual(response.status_code, 200)
 
@@ -135,7 +133,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     async def test_4_delete_property(self):
         url = get_function_url("delete_property")
         id = TestBaseRoutes.property_id
-        response = requests.delete(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
         is_deleted = await self.db.exists(PropertyOrm, {"id": id})
         self.assertFalse(is_deleted)
@@ -157,7 +155,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     def test_2_get_transaction(self):
         url = get_function_url("get_transaction")
         id = TestBaseRoutes.transaction_id
-        response = requests.get(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         print("Get Transaction Response:\n", response.json())
         self.assertEqual(response.status_code, 200)
 
@@ -184,7 +182,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     async def test_4_delete_transaction(self):
         url = get_function_url("delete_transaction")
         id = TestBaseRoutes.transaction_id
-        response = requests.delete(f"{url}/{id}")
+        response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
         is_deleted = await self.db.exists(TransactionOrm, {"id": id})
         self.assertFalse(is_deleted)

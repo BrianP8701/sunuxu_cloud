@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "get_transaction",
+      "route": "download_people",
       "methods": [
         "post"
       ]

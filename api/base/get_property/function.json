@@ -5,9 +5,9 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "get_property/{id}",
+      "route": "get_property",
       "methods": [
-        "get"
+        "post"
       ]
     },
     {
