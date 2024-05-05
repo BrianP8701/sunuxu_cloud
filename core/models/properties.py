@@ -11,14 +11,14 @@ class PropertyOrm(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     
-    street_number = Column(String(255))
-    street_name = Column(String(255))
-    street_suffix = Column(String(255))
-    city = Column(String(255))
+    street_number = Column(String(255), nullable=False)
+    street_name = Column(String(255), nullable=False)
+    street_suffix = Column(String(255), nullable=False)
+    city = Column(String(255), nullable=False)
     unit_number = Column(String(255))
-    state = Column(String(255))
-    zip_code = Column(String(255))
-    country = Column(String(255))
+    state = Column(String(255), nullable=False)
+    zip_code = Column(String(255), nullable=False)
+    country = Column(String(255), nullable=False)
     
     type = Column(Enum('residential', 'condo', 'coop', 'commercial', 'land', 'hoa', 'industrial', 'rental', 'other', name='property_types'), index=True)
     status = Column(Enum('active', 'inactive', name='property_status'), index=True)
@@ -32,13 +32,15 @@ class PropertyOrm(Base):
     kitchens = Column(Integer)
     families = Column(Integer)
     lot_sqft = Column(Integer)
-    built_year = Column(Integer)
+    building_sqft = Column(Integer)
+    year_built = Column(Integer)
     list_start_date = Column(DateTime)
     list_end_date = Column(DateTime)
     expiration_date = Column(DateTime)
     attached_type = Column(Enum('attached', 'semi_attached', 'detached', name='property_attached_types'))
     section = Column(String)
     school_district = Column(String)
+    property_tax = Column(Float)
 
     pictures = Column(String) # List of picture URLs/ids
 
@@ -46,7 +48,7 @@ class PropertyOrm(Base):
     description = Column(String)
 
     created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, onupdate=func.now(), index=True)
+    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
     user = relationship("UserOrm", back_populates="properties")
@@ -76,19 +78,21 @@ class PropertyOrm(Base):
             "kitchens": self.kitchens,
             "families": self.families,
             "lot_sqft": self.lot_sqft,
-            "built_year": self.built_year,
-            "list_start_date": self.list_start_date,
-            "list_end_date": self.list_end_date,
-            "expiration_date": self.expiration_date,
+            "building_sqft": self.building_sqft,
+            "year_built": self.year_built,
+            "list_start_date": self.list_start_date.isoformat() if self.list_start_date else None,
+            "list_end_date": self.list_end_date.isoformat() if self.list_end_date else None,
+            "expiration_date": self.expiration_date.isoformat() if self.expiration_date else None,
             "attached_type": self.attached_type,
             "section": self.section,
             "school_district": self.school_district,
             "pictures": self.pictures,
             "notes": self.notes,
+            "property_tax": self.property_tax,
             "description": self.description,
-            "created_at": self.created_at,
-            "last_updated": self.last_updated,
-            "last_viewed": self.last_viewed
+            "created": self.created.isoformat() if self.created else None,
+            "updated": self.updated.isoformat() if self.updated else None,
+            "viewed": self.viewed.isoformat() if self.viewed else None
         }
 
     def to_table_row(self) -> dict:

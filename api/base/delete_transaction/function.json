@@ -1,0 +1,21 @@
+{
+    "bindings": [
+      {
+        "authLevel": "function",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "route": "delete_transaction/{id}",
+        "methods": [
+          "delete"
+        ]
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "$return"
+      }
+    ],
+    "scriptFile": "main.py"
+}
+

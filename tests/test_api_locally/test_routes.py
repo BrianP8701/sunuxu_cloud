@@ -2,9 +2,12 @@
 # pytest tests/test_api_locally/test_routes.py
 import requests
 import pytest
-from core.database import AzureSQLDatabase
+import asyncio
 
-db = AzureSQLDatabase()
+from core.database import AzurePostgreSQLDatabase
+from core.models import UserOrm
+
+db = AzurePostgreSQLDatabase()
 
 def test_signup():
     url = "http://localhost:7071/api/signup"
@@ -67,7 +70,7 @@ def test_delete_user():
     }
 
     try:
-        response = requests.post(url, json=data)
+        response = requests.delete(url, json=data)
         assert response.status_code == 200
 
         print("test_delete_user passed")
@@ -79,7 +82,9 @@ def test_delete_user():
         raise
 
 @pytest.fixture(scope="module", autouse=True)
-def clear_database():
+async def clear_database():
     yield
-    db.clear_database("I understand this will delete all data")
+    if await db.exists(UserOrm, {"email": "test@example.com"}):
+        await db.delete(UserOrm, {"email": "test@example.com"})
+    db.dispose_instance()
 

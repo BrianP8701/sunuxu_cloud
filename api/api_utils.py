@@ -6,12 +6,16 @@ from core.types.api_error import APIError
 
 def api_error_handler(route_handler):
     @functools.wraps(route_handler)
-    def wrapper(req: func.HttpRequest) -> func.HttpResponse:
+    async def wrapper(req: func.HttpRequest) -> func.HttpResponse:
         try:
-            return route_handler(req)
+            return await route_handler(req)
         except Exception as e:
             tb = traceback.format_exc()
-            return_server_error(f"An unexpected error occurred: {str(e)}", data={"inputs": req.get_json(), "traceback": tb, "error": str(e)})
+            try:
+                inputs = req.get_json()
+            except ValueError:
+                inputs = {}
+            return return_server_error(f"An unexpected error occurred: {str(e)}", data={"inputs": inputs, "traceback": tb, "error": str(e)})
 
     return wrapper
 

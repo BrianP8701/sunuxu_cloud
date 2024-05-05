@@ -13,7 +13,7 @@ class ParticipantOrm(Base):
     notes = Column(String)
 
     created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, onupdate=func.now(), index=True)
+    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
     transaction = relationship("TransactionOrm", back_populates="participants")

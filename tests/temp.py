@@ -11,5 +11,4 @@
 # from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 # from pydantic import BaseModel, ConfigDict
 # from core.models import UserOrm
-import pycountry
 # db = AzureSQLDatabase()

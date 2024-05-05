@@ -2,12 +2,12 @@
 from faker import Faker
 import random
 from core.models import *
-import datetime
+import asyncio
 
 from core.security import hash_password
-from core.database import AzureSQLDatabase
+from core.database import AzurePostgreSQLDatabase
 
-db = AzureSQLDatabase()
+db = AzurePostgreSQLDatabase()
 fake = Faker()
 
 def generate_property(user_id: int):
@@ -18,14 +18,14 @@ def generate_property(user_id: int):
         street_name=fake.street_name(),
         street_suffix=fake.street_suffix(),
         city=fake.city(),
-        unit_number=fake.random_int(min=1, max=200),
+        unit_number=str(fake.random_int(min=1, max=200)),
         state=fake.state(),
         zip_code=fake.zipcode(),
         country=fake.country(),
         status=random.choice(['active', 'inactive']),
         type=random.choice(['residential', 'condo', 'coop', 'commercial', 'land', 'hoa', 'industrial', 'rental', 'other']),
         price=random.randint(50000, 1000000),
-        mls_number=fake.random_number(digits=8),
+        mls_number=str(fake.random_number(digits=8)),
         bedrooms=random.randint(1, 10),
         bathrooms=random.uniform(1, 10),
         floors=random.randint(1, 5),
@@ -33,7 +33,8 @@ def generate_property(user_id: int):
         kitchens=random.randint(1, 5),
         families=random.randint(1, 5),
         lot_sqft=random.randint(500, 15000),
-        built_year=random.randint(1900, 2021),
+        building_sqft=random.randint(500, 15000),
+        year_built=random.randint(1900, 2021),
         list_start_date=fake.date_time_this_decade(),
         list_end_date=fake.date_time_this_decade(),
         expiration_date=fake.date_time_this_decade(),
@@ -42,7 +43,8 @@ def generate_property(user_id: int):
         attached_type=random.choice(['attached', 'semi_attached', 'detached']),
         section=fake.word(),
         school_district=fake.word(),
-        pictures=[fake.image_url() for _ in range(random.randint(1, 5))],
+        property_tax=random.uniform(0, 10000),
+        pictures=str([fake.image_url() for _ in range(random.randint(1, 5))]),
         viewed=fake.date_time_this_decade()
     )
 
@@ -59,7 +61,7 @@ def generate_user(user_id, email):
         first_name=fake.first_name(),
         middle_name=middle_name,
         last_name=fake.last_name(),
-        phone=fake.random_number(digits=10)
+        phone=str(fake.random_number(digits=10))  # Generates a random 10-digit number,
     )
 
 def generate_person(user_id):
@@ -68,7 +70,7 @@ def generate_person(user_id):
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
         last_name=fake.last_name(),
-        phone=fake.random_number(digits=10),  # Generates a random 10-digit number,
+        phone=str(fake.random_number(digits=10)),  # Generates a random 10-digit number,
         email=fake.email(),
         
         notes=fake.text(),
@@ -98,34 +100,20 @@ def generate_participant(person_id, transaction_id):
 
 # Generate and add properties to session
 if __name__ == "__main__":
-    # For now we'll just make standalone objects, without any relationships
-    number_of_people_to_generate = random.randint(100, 200)
-    number_of_properties_to_generate = random.randint(100, 200)
-    number_of_transactions_to_generate = random.randint(100, 200)
+    async def main():
+        user_id = 1
+        email = "brian@example.com"
+        user = generate_user(user_id, email)
 
-    user_id = 1
-    email = "brian"
+        await db.insert(user)
 
-    user = generate_user(user_id, email)
+        all_people = [generate_person(user_id) for _ in range(random.randint(100, 200))]
+        all_properties = [generate_property(user_id) for _ in range(random.randint(100, 200))]
+        all_transactions = [generate_transaction(user_id) for _ in range(random.randint(100, 200))]
 
-    all_data = [user]
+        await db.batch_insert(all_people)
+        await db.batch_insert(all_properties)
+        await db.batch_insert(all_transactions)
+        await db.dispose_instance()
 
-    for i in range(number_of_people_to_generate):
-        print(f"Generating person {i}")
-        person = generate_person(user_id)
-        all_data.append(person)
-
-    for i in range(number_of_properties_to_generate):
-        print(f"Generating property {i}")
-        property = generate_property(user_id)
-        all_data.append(property)
-
-    for i in range(number_of_transactions_to_generate):
-        print(f"Generating transaction {i}")
-        transaction = generate_transaction(user_id)
-        all_data.append(transaction)
-
-    print("Inserting all data")
-    db.batch_insert(all_data)
-    print("Done")
-    db.dispose_instance()
+    asyncio.run(main())

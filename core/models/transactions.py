@@ -13,9 +13,10 @@ class TransactionOrm(Base):
     status = Column(Enum('pending', 'closed', 'expired', 'withdrawn', 'off_market', 'other', name='transaction_status'), index=True)
     type = Column(Enum('sale', 'rent', 'lease', 'buy', 'other', name='transaction_types'), index=True) # From the perspective of our user
     notes = Column(String)
+    description = Column(String)
 
     created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, onupdate=func.now(), index=True)
+    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
     user = relationship("UserOrm", back_populates="transactions")
@@ -26,6 +27,12 @@ class TransactionOrm(Base):
         return {
             "id": self.id,
             "type": self.type,
+            "status": self.status,
+            "notes": self.notes,
+            "description": self.description,
+            "created": self.created.isoformat() if self.created else None,
+            "updated": self.updated.isoformat() if self.updated else None,
+            "viewed": self.viewed.isoformat() if self.viewed else None
         }
 
     def to_table_row(self) -> dict:

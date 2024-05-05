@@ -1,0 +1,21 @@
+{
+    "bindings": [
+      {
+        "authLevel": "function",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "route": "update_person",
+        "methods": [
+          "put"
+        ]
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "$return"
+      }
+    ],
+    "scriptFile": "main.py"
+}
+

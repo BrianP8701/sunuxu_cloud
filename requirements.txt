@@ -13,3 +13,6 @@ bcrypt==4.1.2
 python-dotenv==1.0.1
 pypdf==4.2.0
 azure-storage-blob==12.19.1
+asyncio==3.4.3
+asyncpg==0.29.0
+greenlet==3.0.3

@@ -1,8 +1,11 @@
-from core.database.azure_sql import AzureSQLDatabase
+import asyncio
 
+from core.database.azure_postgresql import AzurePostgreSQLDatabase
 from core.models import *
 
-db = AzureSQLDatabase()
+async def update_columns():
+    db = AzurePostgreSQLDatabase()
+    await db.delete_tables()
+    await db.create_tables()
 
-db.delete_tables()
-db.create_tables()
+asyncio.run(update_columns())

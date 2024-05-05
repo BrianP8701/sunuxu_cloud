@@ -10,9 +10,9 @@ class PersonOrm(Base):
     __tablename__ = "people"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    first_name = Column(String(255))
+    first_name = Column(String(255), nullable=False)
     middle_name = Column(String(255))
-    last_name = Column(String(255))
+    last_name = Column(String(255), nullable=False)
     phone = Column(String(20))
     email = Column(String(255))
     
@@ -22,7 +22,7 @@ class PersonOrm(Base):
     language = Column(String(255), default='english')
 
     created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, onupdate=func.now(), index=True)
+    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
     user = relationship("UserOrm", back_populates="people")
@@ -39,7 +39,10 @@ class PersonOrm(Base):
             "email": self.email,
             "notes": self.notes,
             "type": self.type,
-            "language": self.language
+            "language": self.language,
+            "created": self.created.isoformat() if self.created else None,
+            "updated": self.updated.isoformat() if self.updated else None,
+            "viewed": self.viewed.isoformat() if self.viewed else None,
         }
 
     def to_table_row(self) -> dict:

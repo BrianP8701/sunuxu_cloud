@@ -6,21 +6,21 @@ Base = declarative_base()
 
 class AbstractSQLDatabase(ABC):
     @abstractmethod
-    def dispose_instance(self) -> None:
+    async def dispose_instance(self) -> None:
         """
         Disposes the database instance, effectively clearing any existing connections.
         """
         pass
 
     @abstractmethod
-    def create_tables(self) -> None:
+    async def create_tables(self) -> None:
         """
         Creates tables in the database based on the defined models.
         """
         pass
 
     @abstractmethod
-    def insert(self, model: Any) -> None:
+    async def insert(self, model: Any) -> None:
         """
         Inserts a new record into the database.
         
@@ -29,7 +29,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def update(self, model: Any) -> None:
+    async def update(self, model: Any) -> None:
         """
         Updates an existing record in the database.
         
@@ -38,7 +38,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def delete(self, model: Any) -> None:
+    async def delete(self, model: Any) -> None:
         """
         Deletes a record from the database.
         
@@ -48,7 +48,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def query(self, model_class: Any, conditions: dict = None) -> list:
+    async def query(self, model_class: Any, conditions: dict = None) -> list:
         """
         Queries the database for records matching the specified conditions.
         
@@ -59,7 +59,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def exists(self, model_class: Any, conditions: dict) -> bool:
+    async def exists(self, model_class: Any, conditions: dict) -> bool:
         """
         Checks if a record exists in the database.
         
@@ -70,7 +70,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def execute_raw_sql(self, sql: str) -> Any:
+    async def execute_raw_sql(self, sql: str) -> Any:
         """
         Executes a raw SQL query against the database.
         
@@ -80,7 +80,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def perform_transaction(self, operations: callable) -> None:
+    async def perform_transaction(self, operations: callable) -> None:
         """
         Performs a series of operations within a database transaction.
         
@@ -89,7 +89,7 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    def clear_database(self, safety: str) -> None:
+    async def clear_database(self, safety: str) -> None:
         """
         Clears all data from the database. This operation is irreversible.
         
