@@ -7,6 +7,7 @@ from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, func, text
+from sqlalchemy.orm import joinedload
 
 from core.database.abstract_sql import AbstractSQLDatabase, Base
 
@@ -41,7 +42,14 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
     def __init__(self):
         db_url = os.getenv('AZURE_POSTGRES_CONN_STRING')
         self.connection_string = db_url  
-        self.engine = create_async_engine(self.connection_string, pool_pre_ping=True)
+        self.engine = create_async_engine(
+            self.connection_string,
+            pool_pre_ping=True,
+            pool_size=20,  # Adjust based on your typical workload
+            max_overflow=30,  # Allows 30 additional connections beyond the pool size
+            pool_timeout=30,  # Number of seconds to wait before giving up on getting a connection from the pool
+            pool_recycle=1800,  # Forces connections to be recycled every half hour
+        )
         Base.metadata.bind = self.engine  
         self.sessionmaker = sessionmaker(bind=self.engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -195,9 +203,20 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             print("Database cleared.")
 
     @retry_on_disconnection()
-    async def paginate_query(self, model_class, page_number: int, page_size: int, sort_by: str, sort_direction: bool, columns: list = None, join=None, **conditions):
+    async def paginate_query(self, model_class, page_number: int, page_size: int, sort_by: str, sort_direction: bool, columns: list = None, join=None, eagerloads=None, **conditions):
         async with self.sessionmaker() as session:
             query = select(model_class)
+            
+            # Apply eager loading with specific columns
+            if eagerloads:
+                for load in eagerloads:
+                    relationship = getattr(model_class, load['relationship'])  # Ensure this is a direct attribute reference
+                    if 'columns' in load and load['columns']:
+                        # Convert column names to class attributes
+                        only_columns = [getattr(relationship.property.mapper.class_, col) for col in load['columns']]
+                        query = query.options(joinedload(relationship).load_only(*only_columns))
+                    else:
+                        query = query.options(joinedload(relationship))
             
             # Apply joins if specified
             if join:

@@ -14,7 +14,6 @@ blueprint = func.Blueprint()
 async def signup(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
 
-
     req_body = parse_request_body(req)
 
     if await db.exists(UserOrm, {"email": req_body['email']}):

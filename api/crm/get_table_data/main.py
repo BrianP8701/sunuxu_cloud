@@ -16,7 +16,6 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
     try:
         db = AzurePostgreSQLDatabase()
 
-
         req_body = parse_request_body(req)
 
         table = req_body.get('table')
@@ -60,19 +59,27 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
         elif table == 'transactions':
             columns = ['property_id', 'status', 'type', 'id']
             # Ensure the property relationship is loaded, adjust according to your ORM setup
+            eagerloads = [
+                {
+                    'relationship': 'property',
+                    'columns': ['street_name', 'street_number', 'street_suffix', 'unit_number', 'city', 'state', 'zip_code', 'country', 'price']
+                }
+            ]
+
             data, total_items, total_pages = await db.paginate_query(
                 TransactionOrm, page_index, page_size, sort_by, sort_direction,
-                columns=columns, join=PropertyOrm, **conditions
+                columns=columns, eagerloads=eagerloads, **conditions
             )
 
+            # Use the eager-loaded data to format the response
             formatted_data = [{
                 'id': item.id,
-                'property_id': item.property_id,
+                'address': f"{item.property.street_number} {item.property.unit_number if item.property.unit_number else ''} {item.property.street_name}, {item.property.city}, {item.property.state} {item.property.zip_code}, {item.property.country}" if item.property else "No property attached",
                 'status': item.status,
                 'type': item.type,
-                'address': f"{item.property.street_number} {item.property.unit_number if item.property.unit_number else ''} {item.property.street_name}, {item.property.city}, {item.property.state} {item.property.zip_code}, {item.property.country}" if item.property else "No property attached",
                 'price': item.property.price if item.property else "N/A"
             } for item in data]
+
         else:
             return func.HttpResponse(
                 body=json.dumps({"message": "Invalid table name provided", "data": []}),

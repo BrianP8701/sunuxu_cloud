@@ -92,6 +92,8 @@ def generate_transaction(user_id):
 
 def generate_participant(person_id, transaction_id):
     return ParticipantOrm(
+        person_id=person_id,
+        transaction_id=transaction_id,
         role=random.choice(['buyer', 'seller', 'buyer_agent', 'seller_agent', 'buyer_attorney', 'seller_attorney', 'buyer_agent_broker', 'seller_agent_broker']),
         notes=fake.text(),
         
@@ -107,13 +109,40 @@ if __name__ == "__main__":
 
         await db.insert(user)
 
-        all_people = [generate_person(user_id) for _ in range(random.randint(100, 200))]
-        all_properties = [generate_property(user_id) for _ in range(random.randint(100, 200))]
-        all_transactions = [generate_transaction(user_id) for _ in range(random.randint(100, 200))]
+        all_people = [generate_person(user_id) for _ in range(200)]
+        all_properties = [generate_property(user_id) for _ in range(200)]
+        all_transactions = [generate_transaction(user_id) for _ in range(200)]
+        all_participants = []
 
+        print(f'inseting {len(all_people)} people')
         await db.batch_insert(all_people)
+
+        for property in all_properties:
+            number_of_owners = random.randint(0, 5)
+            print("Number of owners:", number_of_owners)
+            property.owners = random.sample(all_people, number_of_owners)
+
+        print(f'inseting {len(all_properties)} properties')
         await db.batch_insert(all_properties)
+        
+        property_ids = [property.id for property in all_properties]
+        
+        for transaction in all_transactions:
+            property_id = random.choice(property_ids)
+            property_ids.remove(property_id)
+            transaction.property_id = property_id
+
+        print(f'inseting {len(all_transactions)} transactions')
         await db.batch_insert(all_transactions)
+
+        for transaction in all_transactions:
+            number_of_participants = random.randint(0, 5)
+            all_participants.extend([generate_participant(person_id, transaction.id) for person_id in random.sample(range(1, 200), number_of_participants)])
+
+        print(f'inseting {len(all_participants)} participants')
+        await db.batch_insert(all_participants)
+
+        print("Done")
         await db.dispose_instance()
 
     asyncio.run(main())

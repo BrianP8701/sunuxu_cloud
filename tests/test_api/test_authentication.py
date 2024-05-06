@@ -1,16 +1,16 @@
 # tests/test_api_locally/test_routes.py
-# pytest tests/test_api_locally/test_routes.py
+# pytest -s tests/test_api/test_authentication.py
 import requests
 import pytest
-import asyncio
 
 from core.database import AzurePostgreSQLDatabase
 from core.models import UserOrm
+from tests.utils import get_function_url
 
 db = AzurePostgreSQLDatabase()
 
 def test_signup():
-    url = "http://localhost:7071/api/signup"
+    url = get_function_url("signup")
     data = {
         "email": "test@example.com",
         "password": "testpassword",
@@ -31,15 +31,15 @@ def test_signup():
         assert response_data["user"]["email"] == "test@example.com"
 
         print("test_signup passed")
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+    except:
+        print(f"Request failed: {response}")
         if response:
             print(f"Response status code: {response.status_code}")
             print(f"Response content: {response.text}")
         raise
 
 def test_signin():
-    url = "http://localhost:7071/api/signin"
+    url = get_function_url("signin")
     data = {
         "email": "test@example.com",
         "password": "testpassword"
@@ -56,15 +56,15 @@ def test_signin():
         assert response_data["user"]["email"] == "test@example.com"
 
         print("test_signin passed")
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+    except:
+        print(f"Request failed: {response}")
         if response:
             print(f"Response status code: {response.status_code}")
             print(f"Response content: {response.text}")
         raise
 
 def test_delete_user():
-    url = "http://localhost:7071/api/sunuxu/admin/delete_user"
+    url = get_function_url("sunuxu/admin/delete_user")
     data = {
         "email": "test@example.com"
     }
@@ -74,8 +74,8 @@ def test_delete_user():
         assert response.status_code == 200
 
         print("test_delete_user passed")
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+    except:
+        print(f"Request failed: {response}")
         if response:
             print(f"Response status code: {response.status_code}")
             print(f"Response content: {response.text}")
