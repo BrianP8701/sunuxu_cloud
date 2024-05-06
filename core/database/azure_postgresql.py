@@ -6,7 +6,7 @@ from functools import wraps
 from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, or_
 from sqlalchemy.orm import joinedload
 
 from core.database.abstract_sql import AbstractSQLDatabase, Base
@@ -203,10 +203,10 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             print("Database cleared.")
 
     @retry_on_disconnection()
-    async def paginate_query(self, model_class, page_number: int, page_size: int, sort_by: str, sort_direction: bool, columns: list = None, join=None, eagerloads=None, **conditions):
+    async def paginate_query(self, model_class, page_number: int, page_size: int, sort_by: str, sort_ascending: bool, columns: list = None, join=None, eagerloads=None, **conditions):
         async with self.sessionmaker() as session:
             query = select(model_class)
-            
+
             # Apply eager loading with specific columns
             if eagerloads:
                 for load in eagerloads:
@@ -229,17 +229,33 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             # Apply filters based on conditions
             if conditions:
                 for key, value in conditions.items():
+                    column_attr = getattr(model_class, key)
                     if isinstance(value, list):
-                        query = query.filter(getattr(model_class, key).in_(value))
+                        # Check if None is one of the values and needs special handling
+                        if None in value:
+                            non_null_values = [v for v in value if v is not None]
+                            if non_null_values:
+                                # Combine 'in_' for non-null values and 'is_(None)' for null
+                                condition = or_(column_attr.in_(non_null_values), column_attr.is_(None))
+                            else:
+                                # Only null values are specified
+                                condition = column_attr.is_(None)
+                        else:
+                            condition = column_attr.in_(value)
+                        query = query.filter(condition)
                     else:
-                        query = query.filter(getattr(model_class, key) == value)
+                        # Handle single value which might be None
+                        if value is None:
+                            query = query.filter(column_attr.is_(None))
+                        else:
+                            query = query.filter(column_attr == value)
 
             # Count total items matching the conditions
             total_items = await session.scalar(select(func.count()).select_from(query.subquery()))
 
             # Apply sorting
             if sort_by:
-                if sort_direction:
+                if sort_ascending:
                     query = query.order_by(getattr(model_class, sort_by))
                 else:
                     query = query.order_by(getattr(model_class, sort_by).desc())

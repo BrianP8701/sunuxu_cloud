@@ -4,6 +4,7 @@ import azure.functions as func
 import json
 import logging
 import traceback
+from sqlalchemy import null
 
 from core.database import AzurePostgreSQLDatabase
 from core.models import *
@@ -26,15 +27,35 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
         include_types = req_body.get('include_types')
         include_statuses = req_body.get('include_statuses')
 
+        sort_ascending = None
+        if type(sort_direction) == str:
+            if sort_direction.lower() == 'new': sort_ascending = False
+            elif sort_direction.lower() == 'old': sort_ascending = True
+            else: return return_server_error(f"Invalid sort direction provided: {sort_direction}")
+
         conditions = {}
         if include_types:
-            conditions['type'] = [type for type, include in include_types.items() if include]
+            include_types_list = []
+            for type_ in include_types:
+                if type_ == 'unknown' and include_types[type_]:
+                    include_types_list.append(None)
+                elif include_types[type_]:
+                    include_types_list.append(type_)
+            conditions['type'] = include_types_list
         if include_statuses:
-            conditions['status'] = [status for status, include in include_statuses.items() if include]
+            include_statuses_list = []
+            for status in include_statuses:
+                if status == 'unknown' and include_statuses[status]:
+                    include_statuses_list.append(None)
+                elif include_statuses[status]:
+                    include_statuses_list.append(status)
+            conditions['status'] = include_statuses_list
 
+        print(conditions)
+        
         if table == 'properties':
             columns = ['street_number', 'street_name', 'city', 'unit_number', 'state', 'zip_code', 'country', 'status', 'type', 'price', 'id']
-            data, total_items, total_pages = await db.paginate_query(PropertyOrm, page_index, page_size, sort_by, sort_direction, columns=columns, **conditions)
+            data, total_items, total_pages = await db.paginate_query(PropertyOrm, page_index, page_size, sort_by, sort_ascending, columns=columns, **conditions)
 
             # Format the address and prepare the response data
             formatted_data = [{
@@ -46,7 +67,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             } for item in data]
         elif table == 'people':
             columns = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'type', 'status', 'id']
-            data, total_items, total_pages = await db.paginate_query(PersonOrm, page_index, page_size, sort_by, sort_direction, columns=columns, **conditions)
+            data, total_items, total_pages = await db.paginate_query(PersonOrm, page_index, page_size, sort_by, sort_ascending, columns=columns, **conditions)
             
             formatted_data = [{
                 'id': item.id,
@@ -67,7 +88,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             ]
 
             data, total_items, total_pages = await db.paginate_query(
-                TransactionOrm, page_index, page_size, sort_by, sort_direction,
+                TransactionOrm, page_index, page_size, sort_by, sort_ascending,
                 columns=columns, eagerloads=eagerloads, **conditions
             )
 
@@ -82,7 +103,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
 
         else:
             return func.HttpResponse(
-                body=json.dumps({"message": "Invalid table name provided", "data": []}),
+                body=json.dumps({"message": "Invalid table name provided"}),
                 status_code=400,
                 mimetype="application/json"
             )
