@@ -3,6 +3,7 @@ import azure.functions as func
 import aiohttp
 import os
 import json
+
 from dotenv import load_dotenv
 
 from core.models import *
