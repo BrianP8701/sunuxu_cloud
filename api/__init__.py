@@ -20,7 +20,9 @@ blueprint_modules = [
     "api.authentication.refresh_token.main",
     "api.authentication.signin.main",
     "api.authentication.signup.main",
-    "api.admin.delete_user.main"
+    "api.admin.delete_user.main",
+    "api.google_places.address_autocomplete.main",
+    "api.google_places.get_place_details.main",
 ]
 
 # Function to dynamically import blueprints

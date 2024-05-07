@@ -20,6 +20,8 @@ class PropertyOrm(Base):
     zip_code = Column(String(255), nullable=False)
     country = Column(String(255), nullable=False)
     
+    google_place_id = Column(String(255))
+    
     type = Column(Enum('residential', 'condo', 'coop', 'commercial', 'land', 'hoa', 'industrial', 'rental', 'other', name='property_types'), index=True)
     status = Column(Enum('active', 'inactive', name='property_status'), index=True)
 
