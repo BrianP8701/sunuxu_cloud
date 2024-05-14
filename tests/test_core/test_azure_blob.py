@@ -5,6 +5,7 @@ from core.database.azure_blob_storage import AzureBlobStorage
 
 load_dotenv()
 
+
 class AzureBlobStorageTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -53,10 +54,14 @@ class AzureBlobStorageTestCase(unittest.TestCase):
     def test_add_update_delete_custom_blob_property(self):
         self.blob_name = "test_add_update_delete_custom_blob_property"
         self.blob_storage.upload_blob(self.blob_name, BytesIO(self.blob_data))
-        self.blob_storage.add_custom_blob_property(self.blob_name, "test_key", "test_value")
+        self.blob_storage.add_custom_blob_property(
+            self.blob_name, "test_key", "test_value"
+        )
         properties = self.blob_storage.get_blob_properties(self.blob_name)
         self.assertEqual(properties.metadata["test_key"], "test_value")
-        self.blob_storage.update_custom_blob_property(self.blob_name, "test_key", "updated_value")
+        self.blob_storage.update_custom_blob_property(
+            self.blob_name, "test_key", "updated_value"
+        )
         properties = self.blob_storage.get_blob_properties(self.blob_name)
         self.assertEqual(properties.metadata["test_key"], "updated_value")
         self.blob_storage.delete_custom_blob_property(self.blob_name, "test_key")
@@ -72,19 +77,26 @@ class AzureBlobStorageTestCase(unittest.TestCase):
     def test_acquire_and_release_blob_lease(self):
         self.blob_name = "test_acquire_and_release_blob_lease"
         self.blob_storage.upload_blob(self.blob_name, BytesIO(self.blob_data))
-        lease_id = self.blob_storage.acquire_blob_lease(self.blob_name, lease_duration=15)
+        lease_id = self.blob_storage.acquire_blob_lease(
+            self.blob_name, lease_duration=15
+        )
         self.assertIsNotNone(lease_id)
         self.blob_storage.release_blob_lease(self.blob_name, lease_id)
 
     def test_upload_blob_with_lease(self):
         self.blob_name = "test_upload_blob_with_lease"
         self.blob_storage.upload_blob(self.blob_name, BytesIO(self.blob_data))
-        lease_id = self.blob_storage.acquire_blob_lease(self.blob_name, lease_duration=15)
+        lease_id = self.blob_storage.acquire_blob_lease(
+            self.blob_name, lease_duration=15
+        )
         updated_data = b"Updated test data with lease"
-        self.blob_storage.upload_blob_with_lease(self.blob_name, BytesIO(updated_data), lease_id)
+        self.blob_storage.upload_blob_with_lease(
+            self.blob_name, BytesIO(updated_data), lease_id
+        )
         downloaded_data = self.blob_storage.download_blob(self.blob_name)
         self.assertEqual(downloaded_data, updated_data)
         self.blob_storage.release_blob_lease(self.blob_name, lease_id)
+
 
 if __name__ == "__main__":
     unittest.main()

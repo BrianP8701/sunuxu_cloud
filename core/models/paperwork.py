@@ -1,16 +1,18 @@
 from pydantic import BaseModel
 from typing import Dict, List
 
+
 class Paperwork(BaseModel):
     """
     This model represents a paperwork object. Paperwork corresponds to a pdf and
     all the fillable fields in the pdf.
     """
+
     paperwork_id: int
     name: str
     description: str
     # Find descriptions for each field in the Paperwork Field Dictionary
-    fields: List[str] # List of field names
+    fields: List[str]  # List of field names
 
 
 class PaperworkStage(BaseModel):
@@ -18,11 +20,14 @@ class PaperworkStage(BaseModel):
     PaperworkStage represents a stage in the paperwork process, defining
     which fields are required to be filled out and field default values.
     """
+
     paperwork_stage_id: int
     paperwork_id: int
-    required_fields: List[str] # List of required field names
+    required_fields: List[str]  # List of required field names
     # required fields cannot have default values
-    default_values: Dict[str, str] # Dict[field_name, default_value]
+    default_values: Dict[str, str]  # Dict[field_name, default_value]
+
+
 """
 Now theres some problems with the above model.
 The required and default fields are not exactly tied to the paperwork class.

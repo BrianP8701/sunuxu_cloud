@@ -8,7 +8,10 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route(route="delete_transaction", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
+
+@blueprint.route(
+    route="delete_transaction", methods=["POST"], auth_level=func.AuthLevel.FUNCTION
+)
 @api_error_handler
 async def delete_transaction(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -19,7 +22,4 @@ async def delete_transaction(req: func.HttpRequest) -> func.HttpResponse:
     else:
         await db.delete(TransactionOrm, {"id": data})
 
-    return func.HttpResponse(
-        status_code=200,
-        mimetype="application/json"
-    )
+    return func.HttpResponse(status_code=200, mimetype="application/json")

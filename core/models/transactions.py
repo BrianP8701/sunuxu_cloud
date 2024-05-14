@@ -4,14 +4,31 @@ from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
+
 class TransactionOrm(Base):
     __tablename__ = "transactions"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    property_id = Column(Integer, ForeignKey('properties.id'))
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    property_id = Column(Integer, ForeignKey("properties.id"))
 
-    status = Column(Enum('pending', 'closed', 'expired', 'withdrawn', 'off_market', 'other', name='transaction_status'), index=True)
-    type = Column(Enum('sale', 'rent', 'lease', 'buy', 'other', name='transaction_types'), index=True) # From the perspective of our user
+    status = Column(
+        Enum(
+            "pending",
+            "closed",
+            "expired",
+            "withdrawn",
+            "off_market",
+            "other",
+            name="transaction_status",
+        ),
+        index=True,
+    )
+    type = Column(
+        Enum("sale", "rent", "lease", "buy", "other", name="transaction_types"),
+        index=True,
+    )  # From the perspective of our user
     notes = Column(String)
     description = Column(String)
 
@@ -21,7 +38,7 @@ class TransactionOrm(Base):
 
     user = relationship("UserOrm", back_populates="transactions")
     property = relationship("PropertyOrm", back_populates="transactions")
-    participants = relationship("ParticipantOrm", back_populates="transaction", cascade="all, delete, delete-orphan")
+    participants = relationship("ParticipantOrm", back_populates="transaction")
 
     def to_dict(self) -> dict:
         return {
@@ -32,7 +49,7 @@ class TransactionOrm(Base):
             "description": self.description,
             "created": self.created.isoformat() if self.created else None,
             "updated": self.updated.isoformat() if self.updated else None,
-            "viewed": self.viewed.isoformat() if self.viewed else None
+            "viewed": self.viewed.isoformat() if self.viewed else None,
         }
 
     def to_table_row(self) -> dict:

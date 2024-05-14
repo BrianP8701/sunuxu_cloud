@@ -25,9 +25,11 @@ blueprint_modules = [
     "api.google_places.get_place_details.main",
 ]
 
+
 # Function to dynamically import blueprints
 def get_blueprints():
     from importlib import import_module
+
     blueprints = []
     for module_path in blueprint_modules:
         module = import_module(module_path)

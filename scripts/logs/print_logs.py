@@ -6,6 +6,7 @@ from azure.monitor.query import LogsQueryClient, LogsQueryStatus
 
 load_dotenv()
 
+
 def fetch_function_app_logs(app_name, time_period):
     credential = DefaultAzureCredential()
     client = LogsQueryClient(credential)
@@ -17,12 +18,14 @@ def fetch_function_app_logs(app_name, time_period):
     num = int(num)
 
     now = datetime.utcnow()
-    if unit == 'minutes':
+    if unit == "minutes":
         time_ago = now - timedelta(minutes=num)
-    elif unit == 'hours':
+    elif unit == "hours":
         time_ago = now - timedelta(hours=num)
     else:
-        raise ValueError("Time period should be in the format '<number> minutes' or '<number> hours'")
+        raise ValueError(
+            "Time period should be in the format '<number> minutes' or '<number> hours'"
+        )
 
     kql_query = f"""
     traces
@@ -34,7 +37,9 @@ def fetch_function_app_logs(app_name, time_period):
     """
 
     try:
-        response = client.query_workspace(workspace_id, kql_query, timespan=(time_ago, now))
+        response = client.query_workspace(
+            workspace_id, kql_query, timespan=(time_ago, now)
+        )
         if response.status == LogsQueryStatus.SUCCESS:
             for log in response.tables[0].rows:
                 print(f"Timestamp: {log[0]}, Message: {log[1]}, Severity: {log[2]}")
@@ -43,5 +48,6 @@ def fetch_function_app_logs(app_name, time_period):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
 # Example usage: Fetch logs for the past 5 minutes
-fetch_function_app_logs('sunuxu-test-functions', '5 minutes')
+fetch_function_app_logs("sunuxu-test-functions", "5 minutes")

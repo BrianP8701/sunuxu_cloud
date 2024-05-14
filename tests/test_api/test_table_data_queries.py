@@ -3,6 +3,7 @@ import unittest
 
 from tests.utils import get_function_url
 
+
 class TestTableDataRoutes(unittest.TestCase):
     def setUp(self):
         self.base_url = get_function_url("get_table_data")
@@ -28,8 +29,18 @@ class TestTableDataRoutes(unittest.TestCase):
             "page_index": 0,
             "sort_by": "created",
             "sort_direction": "new",
-            "include_types": {"lead": True, "client": True, "prospect": True, "past_client": True, "agent": True, "broker": True, "attorney": True, "other": False, "unknown": True},
-            "include_statuses": {"active": True, "inactive": False, "unknown": True}
+            "include_types": {
+                "lead": True,
+                "client": True,
+                "prospect": True,
+                "past_client": True,
+                "agent": True,
+                "broker": True,
+                "attorney": True,
+                "other": False,
+                "unknown": True,
+            },
+            "include_statuses": {"active": True, "inactive": True, "unknown": True},
         }
         response = requests.post(self.base_url, json=data)
         self.assertEqual(response.status_code, 200)
@@ -49,5 +60,6 @@ class TestTableDataRoutes(unittest.TestCase):
     #     self.assertEqual(response.status_code, 200)
     #     print("Transactions Data:", response.json())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

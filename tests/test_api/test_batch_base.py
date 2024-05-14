@@ -9,6 +9,7 @@ from core.models import *
 
 load_dotenv()
 
+
 class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
@@ -34,7 +35,8 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
                 "email": f"test.person{i}@example.com",
                 "phone": f"123456789{i}",
                 "description": f"Test Person Description {i}",
-            } for i in range(3)
+            }
+            for i in range(3)
         ]
         responses = [requests.post(url, json=data) for data in persons_data]
         for response in responses:
@@ -69,8 +71,9 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
                 "country": "US",
                 "type": "residential",
                 "status": "active",
-                "description": f"Test Property Description {i}"
-            } for i in range(3)
+                "description": f"Test Property Description {i}",
+            }
+            for i in range(3)
         ]
         responses = [requests.post(url, json=data) for data in properties_data]
         for response in responses:
@@ -100,7 +103,8 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
                 "type": "sale",
                 "notes": f"Test Transaction Notes {i}",
                 "description": f"Test Transaction Description {i}",
-            } for i in range(3)
+            }
+            for i in range(3)
         ]
         responses = [requests.post(url, json=data) for data in transactions_data]
         for response in responses:
@@ -121,5 +125,6 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
             is_deleted = await self.db.exists(TransactionOrm, {"id": id})
             self.assertFalse(is_deleted)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

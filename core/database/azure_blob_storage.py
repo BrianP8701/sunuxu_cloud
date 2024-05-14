@@ -6,14 +6,17 @@ from dotenv import load_dotenv
 from core.database.abstract_blob_storage import AbstractBlobStorage
 
 load_dotenv()
-container_name = os.getenv('AZURE_BLOB_CONTAINER_NAME')
+container_name = os.getenv("AZURE_BLOB_CONTAINER_NAME")
+
 
 class AzureBlobStorage(AbstractBlobStorage):
     _instance = None
 
     def __init__(self):
-        connection_string = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
-        self.blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+        self.blob_service_client = BlobServiceClient.from_connection_string(
+            connection_string
+        )
 
     @classmethod
     def __new__(cls, *args, **kwargs):
@@ -118,7 +121,9 @@ class AzureBlobStorage(AbstractBlobStorage):
         if not blob_client.exists():
             raise Exception(f"Blob {blob_name} does not exist, cannot acquire lease.")
         lease_client = BlobLeaseClient(blob_client)
-        lease_client.acquire(lease_duration=lease_duration)  # This updates lease_client.id
+        lease_client.acquire(
+            lease_duration=lease_duration
+        )  # This updates lease_client.id
         return lease_client.id  # Access the updated id attribute for the lease ID
 
     def release_blob_lease(self, blob_name: str, lease_id: str) -> None:
@@ -127,19 +132,23 @@ class AzureBlobStorage(AbstractBlobStorage):
         lease_client = BlobLeaseClient(blob_client, lease_id)
         lease_client.release()
 
-    def upload_blob_with_lease(self, blob_name: str, data: BinaryIO, lease_id: str, etag: str = None) -> None:
+    def upload_blob_with_lease(
+        self, blob_name: str, data: BinaryIO, lease_id: str, etag: str = None
+    ) -> None:
         container_client = self.blob_service_client.get_container_client(container_name)
         blob_client = container_client.get_blob_client(blob_name)
         if etag:
             match_condition = "{}".format(etag)
-            blob_client.upload_blob(data, etag=match_condition, overwrite=True, lease=lease_id)
+            blob_client.upload_blob(
+                data, etag=match_condition, overwrite=True, lease=lease_id
+            )
         else:
             blob_client.upload_blob(data, overwrite=True, lease=lease_id)
 
     def clear_container(self, safety: str) -> None:
         if safety != "I understand this will clear the container.":
             raise Exception("Safety string does not match.")
-        if os.getenv('MODE') == 'production':
+        if os.getenv("MODE") == "production":
             raise Exception("Cannot clear container in production.")
         container_client = self.blob_service_client.get_container_client(container_name)
         # Delete the entire container

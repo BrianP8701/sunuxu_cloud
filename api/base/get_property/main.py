@@ -8,7 +8,10 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route(route="get_property", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
+
+@blueprint.route(
+    route="get_property", methods=["POST"], auth_level=func.AuthLevel.FUNCTION
+)
 @api_error_handler
 async def get_property(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -20,7 +23,7 @@ async def get_property(req: func.HttpRequest) -> func.HttpResponse:
         results = await db.query(PropertyOrm, {"id": data})
 
     return func.HttpResponse(
-        body=json.dumps({'data': [result.to_dict() for result in results]}),
+        body=json.dumps({"data": [result.to_dict() for result in results]}),
         status_code=200,
-        mimetype="application/json"
+        mimetype="application/json",
     )

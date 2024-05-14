@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
 
+
 class UserOrm(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
@@ -15,9 +16,18 @@ class UserOrm(Base):
 
     created = Column(DateTime, default=func.now())
 
-    people = relationship("PersonOrm", back_populates="user", cascade="all, delete, delete-orphan")
-    properties = relationship("PropertyOrm", back_populates="user", cascade="all, delete, delete-orphan")
-    transactions = relationship("TransactionOrm", back_populates="user", cascade="all, delete, delete-orphan")
+    people = relationship(
+        "PersonOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
+    properties = relationship(
+        "PropertyOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
+    transactions = relationship(
+        "TransactionOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
+    participants = relationship(
+        "ParticipantOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
 
     def to_dict(self) -> dict:
         return {
@@ -26,5 +36,5 @@ class UserOrm(Base):
             "phone": self.phone,
             "first_name": self.first_name,
             "middle_name": self.middle_name,
-            "last_name": self.last_name
+            "last_name": self.last_name,
         }

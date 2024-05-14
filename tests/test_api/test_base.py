@@ -9,6 +9,7 @@ from core.models import *
 
 load_dotenv()
 
+
 class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
@@ -37,7 +38,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json=data)
         print("Add Person Response:\n", response.json())
         self.assertEqual(response.status_code, 200)
-        TestBaseRoutes.person_id = response.json()["data"]["id"] 
+        TestBaseRoutes.person_id = response.json()["data"]["id"]
 
     def test_2_get_person(self):
         url = get_function_url("get_person")
@@ -59,7 +60,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         }
         response = requests.put(url, json=data)
         self.assertEqual(response.status_code, 200)
-    
+
         updated_person = await self.db.query(PersonOrm, {"id": id})
         updated_person = updated_person[0]
         self.assertEqual(updated_person.first_name, "Updated")
@@ -88,7 +89,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
             "country": "US",
             "type": "residential",
             "status": "active",
-            "description": "Test Property Description"
+            "description": "Test Property Description",
         }
         response = requests.post(url, json=data)
         print("Add Property Response:\n", response.json())
@@ -117,7 +118,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
             "country": "US",
             "type": "residential",
             "status": "active",
-            "description": "Updated Property Description"
+            "description": "Updated Property Description",
         }
         response = requests.put(url, json=data)
 
@@ -177,7 +178,9 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(updated_transaction.status, "closed")
         self.assertEqual(updated_transaction.type, "rent")
         self.assertEqual(updated_transaction.notes, "Updated Transaction Notes")
-        self.assertEqual(updated_transaction.description, "Updated Transaction Description")
+        self.assertEqual(
+            updated_transaction.description, "Updated Transaction Description"
+        )
 
     async def test_4_delete_transaction(self):
         url = get_function_url("delete_transaction")
@@ -187,5 +190,6 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         is_deleted = await self.db.exists(TransactionOrm, {"id": id})
         self.assertFalse(is_deleted)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

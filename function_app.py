@@ -1,5 +1,5 @@
 # function_app.py
-import azure.functions as func 
+import azure.functions as func
 from dotenv import load_dotenv
 
 from api import get_blueprints

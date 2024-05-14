@@ -10,7 +10,8 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route('download_people', methods=['POST'])
+
+@blueprint.route("download_people", methods=["POST"])
 @api_error_handler
 async def download_people(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -20,11 +21,13 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
     people_ids = data.get("people_ids")
     columns = data.get("columns")
 
-    people = await db.batch_query(PersonOrm, conditions={"id": people_ids}, columns=columns)
+    people = await db.batch_query(
+        PersonOrm, conditions={"id": people_ids}, columns=columns
+    )
 
     print(people)
     print(type(people))
-    
+
     # Check the structure of 'people' and convert accordingly
     if people:
         # If 'people' is a list of tuples, convert it to a list of dicts
@@ -36,8 +39,8 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
 
     # Create an Excel writer object and convert the DataFrame to an Excel file in memory
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='People')
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="People")
 
     # Get the Excel file content
     excel_data = output.getvalue()
@@ -47,7 +50,5 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
         body=excel_data,
         status_code=200,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={
-            'Content-Disposition': 'attachment; filename="download_people.xlsx"'
-        }
+        headers={"Content-Disposition": 'attachment; filename="download_people.xlsx"'},
     )

@@ -10,7 +10,8 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route('download_properties', methods=['POST'])
+
+@blueprint.route("download_properties", methods=["POST"])
 @api_error_handler
 async def download_properties(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -20,7 +21,9 @@ async def download_properties(req: func.HttpRequest) -> func.HttpResponse:
     property_ids = data.get("transaction_ids")
     columns = data.get("columns")
 
-    properties = await db.batch_query(PropertyOrm, conditions={"id": property_ids}, columns=columns)
+    properties = await db.batch_query(
+        PropertyOrm, conditions={"id": property_ids}, columns=columns
+    )
 
     # Check the structure of 'properties' and convert accordingly
     if properties:
@@ -33,18 +36,18 @@ async def download_properties(req: func.HttpRequest) -> func.HttpResponse:
 
     # Create an Excel writer object and convert the DataFrame to an Excel file in memory
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Properties')
-    
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="Properties")
+
     # Get the Excel file content
     excel_data = output.getvalue()
-    
+
     # Set the response with the Excel file
     return func.HttpResponse(
         body=excel_data,
         status_code=200,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            'Content-Disposition': 'attachment; filename="download_properties.xlsx"'
-        }
+            "Content-Disposition": 'attachment; filename="download_properties.xlsx"'
+        },
     )

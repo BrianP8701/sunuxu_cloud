@@ -8,7 +8,10 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route(route="add_property", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
+
+@blueprint.route(
+    route="add_property", methods=["POST"], auth_level=func.AuthLevel.FUNCTION
+)
 @api_error_handler
 async def add_property(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -19,7 +22,7 @@ async def add_property(req: func.HttpRequest) -> func.HttpResponse:
         street_number=data.get("street_number"),
         street_name=data.get("street_name"),
         street_suffix=data.get("street_suffix"),
-        unit_number=data.get("unit_number"),
+        unit=data.get("unit"),
         city=data.get("city"),
         state=data.get("state"),
         zip_code=data.get("zip_code"),
@@ -51,7 +54,7 @@ async def add_property(req: func.HttpRequest) -> func.HttpResponse:
     inserted_property = await db.insert(property)
 
     return func.HttpResponse(
-        body=json.dumps({'data': inserted_property.to_dict()}),
+        body=json.dumps({"data": inserted_property.to_dict()}),
         status_code=200,
-        mimetype="application/json"
-   )
+        mimetype="application/json",
+    )

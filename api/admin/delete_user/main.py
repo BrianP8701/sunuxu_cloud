@@ -6,18 +6,21 @@ from core.models import UserOrm
 
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
-blueprint= func.Blueprint()
+blueprint = func.Blueprint()
 
 
-@blueprint.route(route="sunuxu/admin/delete_user", methods=["DELETE"], auth_level=func.AuthLevel.FUNCTION)
+@blueprint.route(
+    route="sunuxu/admin/delete_user",
+    methods=["DELETE"],
+    auth_level=func.AuthLevel.FUNCTION,
+)
 @api_error_handler
 async def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
 
-
     req_body = parse_request_body(req)
 
-    email = req_body.get('email')
+    email = req_body.get("email")
 
     if not await db.exists(UserOrm, {"email": email}):
         return return_server_error("User not found.", status_code=404)
@@ -26,6 +29,4 @@ async def delete_user(req: func.HttpRequest) -> func.HttpResponse:
     user = user_orm[0]
     await db.delete(UserOrm, {"email": user.email})
 
-    return func.HttpResponse(
-        status_code=200
-    )
+    return func.HttpResponse(status_code=200)

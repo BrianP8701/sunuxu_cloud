@@ -9,6 +9,7 @@ from tests.utils import get_function_url
 
 db = AzurePostgreSQLDatabase()
 
+
 def test_signup():
     url = get_function_url("signup")
     data = {
@@ -38,12 +39,10 @@ def test_signup():
             print(f"Response content: {response.text}")
         raise
 
+
 def test_signin():
     url = get_function_url("signin")
-    data = {
-        "email": "test@example.com",
-        "password": "testpassword"
-    }
+    data = {"email": "test@example.com", "password": "testpassword"}
 
     try:
         response = requests.post(url, json=data)
@@ -63,11 +62,10 @@ def test_signin():
             print(f"Response content: {response.text}")
         raise
 
+
 def test_delete_user():
     url = get_function_url("sunuxu/admin/delete_user")
-    data = {
-        "email": "test@example.com"
-    }
+    data = {"email": "test@example.com"}
 
     try:
         response = requests.delete(url, json=data)
@@ -81,10 +79,10 @@ def test_delete_user():
             print(f"Response content: {response.text}")
         raise
 
+
 @pytest.fixture(scope="module", autouse=True)
 async def clear_database():
     yield
     if await db.exists(UserOrm, {"email": "test@example.com"}):
         await db.delete(UserOrm, {"email": "test@example.com"})
     db.dispose_instance()
-

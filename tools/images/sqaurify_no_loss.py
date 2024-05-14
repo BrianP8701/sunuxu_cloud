@@ -1,6 +1,7 @@
 from PIL import Image
 import os
 
+
 def make_image_square(image_path):
     with Image.open(image_path) as img:
         width, height = img.size
@@ -16,6 +17,7 @@ def make_image_square(image_path):
         new_image_path = os.path.join(dir_name, f"square_{file_name}")
         new_img.save(new_image_path)
         print(f"Square image saved to {new_image_path}")
+
 
 # Example usage
 make_image_square("/Users/brianprzezdziecki/Downloads/ww.jpeg")

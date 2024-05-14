@@ -7,7 +7,10 @@ from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
-@blueprint.route(route="update_transaction", methods=["PUT"], auth_level=func.AuthLevel.FUNCTION)
+
+@blueprint.route(
+    route="update_transaction", methods=["PUT"], auth_level=func.AuthLevel.FUNCTION
+)
 @api_error_handler
 async def update_transaction(req: func.HttpRequest) -> func.HttpResponse:
     db = AzurePostgreSQLDatabase()
@@ -26,7 +29,4 @@ async def update_transaction(req: func.HttpRequest) -> func.HttpResponse:
 
     await db.update(transaction)
 
-    return func.HttpResponse(
-        status_code=200,
-        mimetype="application/json"
-    )
+    return func.HttpResponse(status_code=200, mimetype="application/json")

@@ -7,11 +7,12 @@ from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, func, text, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 
 from core.database.abstract_sql import AbstractSQLDatabase, Base
 
 load_dotenv()
+
 
 def retry_on_disconnection(retries=3, delay=2):
     def decorator(func):
@@ -25,7 +26,9 @@ def retry_on_disconnection(retries=3, delay=2):
                     if attempts == retries - 1:
                         print(f"Failed after {retries} attempts: {str(e)}")
                         raise
-                    print(f"Attempt {attempts+1} failed, retrying in {delay} seconds...")
+                    print(
+                        f"Attempt {attempts+1} failed, retrying in {delay} seconds..."
+                    )
                     attempts += 1
                     await asyncio.sleep(delay)
                 except SQLAlchemyError as e:
@@ -33,15 +36,18 @@ def retry_on_disconnection(retries=3, delay=2):
                 except Exception as e:
                     print(f"An unexpected error occurred: {str(e)}")
                     raise e
+
         return wrapper
+
     return decorator
+
 
 class AzurePostgreSQLDatabase(AbstractSQLDatabase):
     _instance = None
 
     def __init__(self):
-        db_url = os.getenv('AZURE_POSTGRES_CONN_STRING')
-        self.connection_string = db_url  
+        db_url = os.getenv("AZURE_POSTGRES_CONN_STRING")
+        self.connection_string = db_url
         self.engine = create_async_engine(
             self.connection_string,
             pool_pre_ping=True,
@@ -50,8 +56,10 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             pool_timeout=30,  # Number of seconds to wait before giving up on getting a connection from the pool
             pool_recycle=1800,  # Forces connections to be recycled every half hour
         )
-        Base.metadata.bind = self.engine  
-        self.sessionmaker = sessionmaker(bind=self.engine, class_=AsyncSession, expire_on_commit=False)
+        Base.metadata.bind = self.engine
+        self.sessionmaker = sessionmaker(
+            bind=self.engine, class_=AsyncSession, expire_on_commit=False
+        )
 
     @classmethod
     def __new__(cls, *args, **kwargs):
@@ -107,11 +115,11 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
                 query = select([getattr(model_class, column) for column in columns])
             else:
                 query = select(model_class)
-            
+
             if conditions:
                 for key, value in conditions.items():
                     query = query.filter(getattr(model_class, key) == value)
-            
+
             result = await session.execute(query)
             return result.scalars().all()
 
@@ -170,7 +178,9 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
     async def batch_query(self, model_class, conditions=None, columns=None):
         async with self.sessionmaker() as session:
             if columns:
-                column_objects = [getattr(model_class, column) for column in columns]  # Removed .expression for testing
+                column_objects = [
+                    getattr(model_class, column) for column in columns
+                ]  # Removed .expression for testing
                 query = select(*column_objects)
             else:
                 query = select(model_class)
@@ -184,15 +194,19 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
 
             print(query)  # Debug: Print the actual query
             result = await session.execute(query)
-            all_results = result.fetchall()  # Changed from result.scalars().all() to fetchall()
+            all_results = (
+                result.fetchall()
+            )  # Changed from result.scalars().all() to fetchall()
             print(all_results)  # Debug: Print the results
             return all_results
 
     @retry_on_disconnection()
     async def clear_database(self, safety: str):
         if safety != "I understand this will delete all data":
-            raise ValueError("Safety string does not match. Set the safety parameter to 'I understand this will delete all data' to confirm the operation.")
-        if os.getenv('MODE') == 'production':
+            raise ValueError(
+                "Safety string does not match. Set the safety parameter to 'I understand this will delete all data' to confirm the operation."
+            )
+        if os.getenv("MODE") == "production":
             raise Exception("Cannot clear database in production.")
         else:
             async with self.sessionmaker() as session:
@@ -203,21 +217,39 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
             print("Database cleared.")
 
     @retry_on_disconnection()
-    async def paginate_query(self, model_class, page_number: int, page_size: int, sort_by: str, sort_ascending: bool, columns: list = None, join=None, eagerloads=None, **conditions):
+    async def paginate_query(
+        self,
+        model_class,
+        page_number: int,
+        page_size: int,
+        sort_by: str,
+        sort_ascending: bool,
+        columns: list = None,
+        join=None,
+        eagerloads=None,
+        **conditions,
+    ):
         async with self.sessionmaker() as session:
             query = select(model_class)
 
             # Apply eager loading with specific columns
             if eagerloads:
                 for load in eagerloads:
-                    relationship = getattr(model_class, load['relationship'])  # Ensure this is a direct attribute reference
-                    if 'columns' in load and load['columns']:
+                    relationship = getattr(
+                        model_class, load["relationship"]
+                    )  # Ensure this is a direct attribute reference
+                    if "columns" in load and load["columns"]:
                         # Convert column names to class attributes
-                        only_columns = [getattr(relationship.property.mapper.class_, col) for col in load['columns']]
-                        query = query.options(joinedload(relationship).load_only(*only_columns))
+                        only_columns = [
+                            getattr(relationship.property.mapper.class_, col)
+                            for col in load["columns"]
+                        ]
+                        query = query.options(
+                            joinedload(relationship).load_only(*only_columns)
+                        )
                     else:
                         query = query.options(joinedload(relationship))
-            
+
             # Apply joins if specified
             if join:
                 if isinstance(join, list):
@@ -236,7 +268,10 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
                             non_null_values = [v for v in value if v is not None]
                             if non_null_values:
                                 # Combine 'in_' for non-null values and 'is_(None)' for null
-                                condition = or_(column_attr.in_(non_null_values), column_attr.is_(None))
+                                condition = or_(
+                                    column_attr.in_(non_null_values),
+                                    column_attr.is_(None),
+                                )
                             else:
                                 # Only null values are specified
                                 condition = column_attr.is_(None)
@@ -251,7 +286,9 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
                             query = query.filter(column_attr == value)
 
             # Count total items matching the conditions
-            total_items = await session.scalar(select(func.count()).select_from(query.subquery()))
+            total_items = await session.scalar(
+                select(func.count()).select_from(query.subquery())
+            )
 
             # Apply sorting
             if sort_by:
@@ -268,5 +305,50 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
 
             # Calculate total pages
             total_pages = (total_items + page_size - 1) // page_size
-            
+
             return result.scalars().all(), total_items, total_pages
+
+    @retry_on_disconnection()
+    async def similarity_search(
+        self,
+        model_class,
+        columns: list = None,
+        **conditions,
+    ):
+        async with self.sessionmaker() as session:
+            query = select(model_class)
+
+            # Apply filters based on conditions
+            for key, value in conditions.items():
+                if key == "name":
+                    query = query.filter(
+                        or_(
+                            model_class.first_name.ilike(f"%{value}%"),
+                            model_class.middle_name.ilike(f"%{value}%"),
+                            model_class.last_name.ilike(f"%{value}%")
+                        )
+                    )
+                elif key == "email":
+                    query = query.filter(
+                        model_class.email.ilike(f"%{value}%")
+                    )
+                elif key == "phone":
+                    query = query.filter(
+                        model_class.phone.ilike(f"%{value}%")
+                    )
+                else:
+                    query = query.filter(
+                        getattr(model_class, key) == value
+                    )
+
+            # Select specific columns if specified
+            if columns:
+                column_attributes = [getattr(model_class, col) for col in columns]
+                query = query.options(
+                    load_only(*column_attributes)
+                )
+
+            # Execute the query
+            result = await session.execute(query)
+
+            return result.scalars().all()

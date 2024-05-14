@@ -1,1 +1,1 @@
-USER_TYPES = ['agent']
+USER_TYPES = ["agent"]
