@@ -48,8 +48,12 @@ class AzurePostgreSQLDatabase(AbstractSQLDatabase):
     def __init__(self):
         db_url = os.getenv("AZURE_POSTGRES_CONN_STRING")
         self.connection_string = db_url
+        ssl_args = {
+            "ssl": "require"
+        }
         self.engine = create_async_engine(
             self.connection_string,
+            connect_args=ssl_args,
             pool_pre_ping=True,
             pool_size=20,  # Adjust based on your typical workload
             max_overflow=30,  # Allows 30 additional connections beyond the pool size
