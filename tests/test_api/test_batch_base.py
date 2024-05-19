@@ -3,7 +3,7 @@ import unittest
 import requests
 from dotenv import load_dotenv
 
-from tests.utils import get_function_url
+from tests.utils.generate_url import get_function_url
 from core.database import AzurePostgreSQLDatabase
 from core.models import *
 

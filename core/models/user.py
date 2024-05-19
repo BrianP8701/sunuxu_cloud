@@ -19,11 +19,20 @@ class UserOrm(Base):
     people = relationship(
         "PersonOrm", back_populates="user", cascade="all, delete, delete-orphan"
     )
+    people_rows = relationship(
+        "PersonRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
     properties = relationship(
         "PropertyOrm", back_populates="user", cascade="all, delete, delete-orphan"
     )
+    property_rows = relationship(
+        "PropertyRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
     transactions = relationship(
         "TransactionOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    )
+    transaction_rows = relationship(
+        "TransactionRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
     )
     participants = relationship(
         "ParticipantOrm", back_populates="user", cascade="all, delete, delete-orphan"

@@ -5,7 +5,7 @@ import pytest
 
 from core.database import AzurePostgreSQLDatabase
 from core.models import UserOrm
-from tests.utils import get_function_url
+from tests.utils.generate_url import get_function_url
 
 db = AzurePostgreSQLDatabase()
 

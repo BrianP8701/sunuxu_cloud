@@ -1,0 +1,33 @@
+2024-05-18 15:06:50,148 - root - INFO - Logging started.
+
+
+2024-05-18 15:08:11,685 - root - INFO - Logging started.
+
+
+2024-05-18 15:08:11,991 - root - INFO - Starting global setup...
+
+
+2024-05-18 15:08:15,100 - root - INFO - Deleted tables.
+
+
+2024-05-18 15:08:22,793 - root - INFO - Created tables.
+
+
+2024-05-18 15:09:00,743 - root - INFO - Logging started.
+
+
+2024-05-18 15:09:01,110 - root - INFO - Starting global setup...
+
+
+2024-05-18 15:09:07,218 - root - INFO - Deleted tables.
+
+
+2024-05-18 15:09:15,284 - root - INFO - Created tables.
+
+
+2024-05-18 15:09:21,978 - root - INFO - Generated fake data.
+
+
+2024-05-18 15:09:41,258 - root - INFO - Global setup completed.
+
+

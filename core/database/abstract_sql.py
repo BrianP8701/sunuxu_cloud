@@ -90,10 +90,8 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def clear_database(self, safety: str) -> None:
+    async def clear_tables(self) -> None:
         """
         Clears all data from the database. This operation is irreversible.
-
-        :param safety: A safety string that must match a specific value to confirm the operation.
         """
         pass

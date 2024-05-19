@@ -10,38 +10,16 @@ from core.models.association import property_owner_association_table
 class PersonOrm(Base):
     __tablename__ = "people"
     id = Column(Integer, primary_key=True)
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    notes = Column(String)
+    language = Column(String(255), default="english")
+
     first_name = Column(String(255), nullable=False)
     middle_name = Column(String(255))
     last_name = Column(String(255), nullable=False)
-    phone = Column(String(20))
-    email = Column(String(255))
-
-    notes = Column(String)
-    type = Column(
-        Enum(
-            "lead",
-            "prospect",
-            "client",
-            "past_client",
-            "agent",
-            "broker",
-            "attorney",
-            "other",
-            name="person_types",
-        ),
-        index=True,
-    )
-    status = Column(Enum("active", "inactive", name="person_status"), index=True)
-    language = Column(String(255), default="english")
-
-    created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
-    viewed = Column(DateTime, index=True)
 
     user = relationship("UserOrm", back_populates="people")
+    summary_row = relationship("PersonRowOrm", back_populates="person", uselist=False, cascade="all, delete-orphan")
     participants = relationship("ParticipantOrm", back_populates="person")
     properties = relationship(
         "PropertyOrm",
@@ -52,17 +30,10 @@ class PersonOrm(Base):
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "first_name": self.first_name,
-            "middle_name": self.middle_name,
-            "last_name": self.last_name,
             "phone": self.phone,
             "email": self.email,
             "notes": self.notes,
-            "type": self.type,
-            "language": self.language,
-            "created": self.created.isoformat() if self.created else None,
-            "updated": self.updated.isoformat() if self.updated else None,
-            "viewed": self.viewed.isoformat() if self.viewed else None,
+            "language": self.language
         }
 
     def to_table_row(self) -> dict:

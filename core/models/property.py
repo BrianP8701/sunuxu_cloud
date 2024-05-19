@@ -14,8 +14,6 @@ class PropertyOrm(Base):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
-    address = Column(String(255), nullable=False)  # Full address
-
     # Address components
     street_number = Column(String(255), nullable=False)
     street_name = Column(String(255), nullable=False)
@@ -28,25 +26,6 @@ class PropertyOrm(Base):
 
     google_place_id = Column(String(255))
 
-    type = Column(
-        Enum(
-            "residential",
-            "condo",
-            "coop",
-            "commercial",
-            "land",
-            "hoa",
-            "industrial",
-            "rental",
-            "other",
-            name="property_types",
-        ),
-        index=True,
-    )
-    status = Column(Enum("active", "inactive", name="property_status"), index=True)
-
-    price = Column(Integer)
-    mls_number = Column(String(255))
     bedrooms = Column(Integer)
     bathrooms = Column(Float)
     floors = Column(Integer)
@@ -71,11 +50,8 @@ class PropertyOrm(Base):
     notes = Column(String)
     description = Column(String)
 
-    created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
-    viewed = Column(DateTime, index=True)
-
     user = relationship("UserOrm", back_populates="properties")
+    summary_row = relationship("PropertyRowOrm", back_populates="property", uselist=False, cascade="all, delete-orphan")
     transactions = relationship("TransactionOrm", back_populates="property")
     owners = relationship(
         "PersonOrm",
@@ -95,9 +71,6 @@ class PropertyOrm(Base):
             "state": self.state,
             "zip_code": self.zip_code,
             "country": self.country,
-            "status": self.status,
-            "type": self.type,
-            "price": self.price,
             "mls_number": self.mls_number,
             "bedrooms": self.bedrooms,
             "bathrooms": self.bathrooms,
@@ -123,20 +96,5 @@ class PropertyOrm(Base):
             "pictures": self.pictures,
             "notes": self.notes,
             "property_tax": self.property_tax,
-            "description": self.description,
-            "created": self.created.isoformat() if self.created else None,
-            "updated": self.updated.isoformat() if self.updated else None,
-            "viewed": self.viewed.isoformat() if self.viewed else None,
-        }
-
-    def to_table_row(self) -> dict:
-        full_address = f"{self.street_number} {self.street_name} {self.street_suffix if self.street_suffix else ''} {self.unit if self.unit else ''}, {self.city}, {self.state} {self.zip_code}".replace(
-            "  ", " "
-        )
-        return {
-            "id": self.id,
-            "address": full_address,
-            "price": self.price,
-            "status": self.status,
-            "type": self.type,
+            "description": self.description
         }
