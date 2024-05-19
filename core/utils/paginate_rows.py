@@ -2,7 +2,7 @@
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import joinedload
 
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
+from core.database import Database
 
 async def paginate_rows(
     model_class,
@@ -14,7 +14,7 @@ async def paginate_rows(
     eagerloads=None,
     **conditions,
 ):
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async with db.sessionmaker() as session:
         query = select(model_class)
 

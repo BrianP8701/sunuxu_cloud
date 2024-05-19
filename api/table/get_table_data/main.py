@@ -5,7 +5,7 @@ import json
 import logging
 import traceback
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 from core.utils.paginate_rows import paginate_rows
 
@@ -30,7 +30,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
     :param include_statuses: The statuses to include in the query
     """
     try:
-        db = AzurePostgreSQLDatabase()
+        db = Database()
 
         req_body = parse_request_body(req)
 

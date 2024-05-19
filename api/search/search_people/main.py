@@ -4,7 +4,7 @@ import azure.functions as func
 import json
 import logging
 import traceback
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 
 blueprint = func.Blueprint()
@@ -15,8 +15,8 @@ blueprint = func.Blueprint()
 @api_error_handler
 async def search_people(req: func.HttpRequest) -> func.HttpResponse:
     try:
-        db = AzurePostgreSQLDatabase()
-        
+        db = Database()
+
         req_body = req.get_json()
         user_id = req_body.get("user_id")
         search_term = req_body.get("search_term")
@@ -29,16 +29,16 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
                 search_type = 'phone'
             else:
                 search_type = 'name'
-        
+
         conditions = {"user_id": user_id}
-        
+
         if search_type == "name":
             conditions["name"] = search_term
         elif search_type == "email":
             conditions["email"] = search_term
         elif search_type == "phone":
             conditions["phone"] = search_term
-        
+
         columns = [
             "first_name",
             "middle_name",
@@ -49,11 +49,11 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
             "status",
             "id",
         ]
-        
+
         data = await db.similarity_search(
             PersonOrm, columns=columns, **conditions
         )
-        
+
         formatted_data = [
             {
                 "id": item.id,

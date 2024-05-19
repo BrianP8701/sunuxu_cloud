@@ -1,7 +1,7 @@
 # api/base/update_property/main.py
 import azure.functions as func
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 from api.api_utils import api_error_handler
 
@@ -13,7 +13,7 @@ blueprint = func.Blueprint()
 )
 @api_error_handler
 async def update_property(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     data = req.get_json()
 

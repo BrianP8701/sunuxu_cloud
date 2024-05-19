@@ -1,7 +1,6 @@
 # tests/test_core/test_search.py
 import pytest
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models import *
+from core.database import Databasefrom core.models import *
 from core.utils.search import search
 from core.security import hash_password
 import faker
@@ -11,14 +10,14 @@ user_id = 2
 
 @pytest.fixture(scope="module")
 async def setup_database():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     yield
     await db.delete(UserOrm, conditions={"id": user_id})
     await db.dispose_instance()
 
 @pytest.fixture(scope="module")
 async def insert_test_data():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     email = "testuser@example.com"
     user = UserOrm(
         id=user_id,

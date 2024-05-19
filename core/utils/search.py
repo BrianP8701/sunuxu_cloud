@@ -3,15 +3,14 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import load_only
 from sqlalchemy.sql.expression import func
 
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models import *
+from core.database import Databasefrom core.models import *
 
 async def search(
     table: str,
     query: str,
     user_id: int
 ):
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async with db.sessionmaker() as session:
         match table:
             case "people":
@@ -22,7 +21,7 @@ async def search(
                 return await search_transactions(query, user_id)
 
 async def search_people(query: str, user_id: int):
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async with db.sessionmaker() as session:
         if any(char.isdigit() for char in query):
             if sum(char.isdigit() for char in query) > 6:
@@ -71,7 +70,7 @@ async def search_people(query: str, user_id: int):
         return rows
 
 async def search_transactions(query: str, user_id: int):
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async with db.sessionmaker() as session:
         stmt = select(TransactionRowOrm).where(
             TransactionRowOrm.user_id == user_id,
@@ -85,7 +84,7 @@ async def search_transactions(query: str, user_id: int):
         return rows
 
 async def search_properties(query: str, user_id: int):
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async with db.sessionmaker() as session:
         if any(char.isdigit() for char in query) and sum(char.isdigit() for char in query) > 6:
             # Query the mls_number column

@@ -5,9 +5,9 @@ from core.models import *
 import asyncio
 
 from core.security import hash_password
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 
-db = AzurePostgreSQLDatabase()
+db = Database()
 fake = Faker()
 
 
@@ -25,6 +25,10 @@ def generate_user(user_id, email):
         middle_name=middle_name,
         last_name=fake.last_name(),
         phone=str(fake.random_number(digits=10)),  # Generates a random 10-digit number,
+        custom_person_types=[fake.word() for _ in range(random.randint(1, 5))],
+        custom_property_types=[fake.word() for _ in range(random.randint(1, 5))],
+        custom_transaction_types=[fake.word() for _ in range(random.randint(1, 5))],
+        custom_transaction_statuses=[fake.word() for _ in range(random.randint(1, 5))]
     )
 
 
@@ -43,6 +47,7 @@ def generate_person_row(user_id, person_id):
         user_id=user_id,
         id=person_id,
         name=fake.name(),
+        address=fake.address(),
         type=random.choice(
             [
                 "lead",
@@ -53,6 +58,7 @@ def generate_person_row(user_id, person_id):
                 "broker",
                 "attorney",
                 "other",
+                "?",
             ]
         ),
         active=random.choice([True, False]),
@@ -109,6 +115,7 @@ def generate_property_row(user_id, property_id):
                 "industrial",
                 "rental",
                 "other",
+                "?",
             ]
         ),
         price=random.randint(50000, 1000000),
@@ -129,9 +136,9 @@ def generate_transaction_row(user_id, transaction_id):
         id=transaction_id,
         name=random.choice([fake.address(), fake.company(), fake.name()]),
         status=random.choice(
-            ["pending", "closed", "expired", "withdrawn", "off_market", "other"]
+            ["pending", "closed", "expired", "withdrawn", "off_market", "other", "?"]
         ),
-        type=random.choice(["sell", "buy", "dual"]),
+        type=random.choice(["sell", "buy", "dual", "?"]),
         viewed=fake.date_time_this_decade(),
     )
 
@@ -149,6 +156,8 @@ def generate_participant(person_id, transaction_id):
                 "seller_attorney",
                 "buyer_agent_broker",
                 "seller_agent_broker",
+                "other",
+                "?",
             ]
         ),
         notes=fake.text(),

@@ -1,7 +1,7 @@
 # api/admin/delete_user/main.py
 import azure.functions as func
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import UserOrm
 
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
@@ -16,7 +16,7 @@ blueprint = func.Blueprint()
 )
 @api_error_handler
 async def delete_user(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     req_body = parse_request_body(req)
 

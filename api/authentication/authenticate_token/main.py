@@ -2,7 +2,7 @@
 import azure.functions as func
 import json
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import UserOrm
 from core.security import validate_token
 from api.api_utils import api_error_handler, return_server_error
@@ -15,7 +15,7 @@ blueprint = func.Blueprint()
 )
 @api_error_handler
 async def authenticate_token(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     access_token = req.headers.get("Authorization", "").split(" ")[1]
     if not access_token:

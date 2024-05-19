@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
@@ -15,6 +15,8 @@ class TransactionOrm(Base):
 
     notes = Column(String)
     description = Column(String)
+
+    custom_fields = Column(JSON)
 
     user = relationship("UserOrm", back_populates="transactions")
     summary_row = relationship("TransactionRowOrm", back_populates="transaction", uselist=False, cascade="all, delete-orphan")

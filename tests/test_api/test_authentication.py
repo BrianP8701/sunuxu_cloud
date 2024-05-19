@@ -3,11 +3,11 @@
 import requests
 import pytest
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import UserOrm
 from tests.utils.generate_url import get_function_url
 
-db = AzurePostgreSQLDatabase()
+db = Database()
 
 
 def test_signup():

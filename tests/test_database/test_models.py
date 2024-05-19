@@ -1,11 +1,10 @@
 import pytest
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models import *
+from core.database import Databasefrom core.models import *
 
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_person_orm():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     person = PersonOrm(
         user_id=1,
         first_name="John",
@@ -38,7 +37,7 @@ async def test_person_orm():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_property_orm():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     # Create a new property
     new_property = PropertyOrm(
         user_id=1,
@@ -75,7 +74,7 @@ async def test_property_orm():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_transaction_orm():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     # Create a new transaction
     new_transaction = TransactionOrm(
         user_id=1,

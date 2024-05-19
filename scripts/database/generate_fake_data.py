@@ -5,9 +5,9 @@ from core.models import *
 import asyncio
 
 from core.security import hash_password
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 
-db = AzurePostgreSQLDatabase()
+db = Database()
 fake = Faker()
 
 

@@ -2,7 +2,7 @@
 import azure.functions as func
 import json
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 from api.api_utils import api_error_handler
 
@@ -14,7 +14,7 @@ blueprint = func.Blueprint()
 )
 @api_error_handler
 async def add_property(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     data = req.get_json()
     property = PropertyOrm(

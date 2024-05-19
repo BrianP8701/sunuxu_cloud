@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, JSON
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
@@ -46,6 +46,8 @@ class PropertyOrm(Base):
     property_tax = Column(Float)
 
     pictures = Column(String)  # List of picture URLs/ids
+
+    custom_fields = Column(JSON)
 
     notes = Column(String)
     description = Column(String)

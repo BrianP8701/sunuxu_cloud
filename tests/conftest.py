@@ -2,8 +2,7 @@
 import pytest
 import logging
 
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from tests.utils.generate_fake_data import generate_fake_data
+from core.database import Databasefrom tests.utils.generate_fake_data import generate_fake_data
 
 # # Configure logging to write to a local file called logs.txt with 2 new lines in between each log
 # logging.basicConfig(
@@ -19,7 +18,7 @@ async def global_setup():
     """
     Clear and update database tables and generate fake data before running tests
     """
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     await db.delete_tables()
     await db.create_tables()
     await generate_fake_data()

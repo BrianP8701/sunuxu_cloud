@@ -4,7 +4,7 @@ import pandas as pd
 from io import BytesIO
 from typing import List
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 from api.api_utils import api_error_handler
 
@@ -14,7 +14,7 @@ blueprint = func.Blueprint()
 @blueprint.route("download_people", methods=["POST"])
 @api_error_handler
 async def download_people(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     data = req.get_json()
 

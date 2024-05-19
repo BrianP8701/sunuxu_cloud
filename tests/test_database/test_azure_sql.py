@@ -1,27 +1,26 @@
 import pytest
 from dotenv import load_dotenv
 
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models.user import UserOrm
+from core.database import Databasefrom core.models.user import UserOrm
 
 load_dotenv()
 
 @pytest.fixture
 async def db_instance():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     print("Database instance created.")
     yield db
     await AzurePostgreSQLDatabase.dispose_instance()
 
 @pytest.fixture(autouse=True)
 async def reset_db_sequence():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     await db.execute_raw_sql("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))")
 
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_insert_query_and_delete():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     user = UserOrm(
         email="john@example.com",
         password="password",
@@ -39,7 +38,7 @@ async def test_insert_query_and_delete():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_update():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     # Create a user
     user = UserOrm(
         email="update@example.com",
@@ -65,7 +64,7 @@ async def test_update():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_execute_raw_sql():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     # Create a user
     user = UserOrm(
         email="rawsql@example.com",
@@ -88,7 +87,7 @@ async def test_execute_raw_sql():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_transactions():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     async def operations(session):
         user = UserOrm(
             email="transaction@example.com",
@@ -113,7 +112,7 @@ async def test_transactions():
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_exists():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     # Create a user
     user = UserOrm(
         email="exists@example.com",

@@ -8,24 +8,29 @@ class PersonRowOrm(Base):
     __tablename__ = "people_rows"
     id = Column(Integer, ForeignKey('people.id'), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    
     name = Column(String, index=True)
     email = Column(String, index=True)
     phone = Column(String, index=True)
-
     type = Column(
         Enum(
-            "lead", "prospect", "client", "past_client", "agent", "broker", "attorney", "other",
+            "lead", "prospect", "client", "past_client", "agent", "broker", "attorney", "custom", "?",
             name="person_types",
         ),
         index=True,
+        nullable=False,
+        default="?"
     )
+    custom_type = Column(String, index=True)
     active = Column(Boolean, default=False, index=True)
+
     created = Column(DateTime, default=func.now(), index=True)
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
     user = relationship("UserOrm", back_populates="people_rows")
     person = relationship("PersonOrm", back_populates="summary_row", uselist=False)
+    participants = relationship("ParticipantRowOrm", back_populates="person_row")
 
     def to_dict(self) -> dict:
         return {

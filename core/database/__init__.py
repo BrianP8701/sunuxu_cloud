@@ -1,1 +1,1 @@
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
+from core.database.azure_postgresql import AzurePostgreSQLDatabase as Database

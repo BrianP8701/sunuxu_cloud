@@ -2,7 +2,7 @@
 import azure.functions as func
 import json
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import UserOrm
 from core.security import check_password, generate_tokens
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
@@ -13,7 +13,7 @@ blueprint = func.Blueprint()
 @blueprint.route(route="signin", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
 @api_error_handler
 async def signin(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     req_body = parse_request_body(req)
 

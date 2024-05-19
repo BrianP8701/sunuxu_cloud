@@ -1,6 +1,5 @@
 import asyncio
-from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models import *
+from core.database import Databasefrom core.models import *
 from core.utils.search import search
 from core.security import hash_password
 import faker
@@ -9,7 +8,7 @@ fake = faker.Faker()
 user_id = 2
 
 async def main():
-    db = AzurePostgreSQLDatabase()
+    db = Database()
     
     # Insert test data
     email = "testuser@example.com"

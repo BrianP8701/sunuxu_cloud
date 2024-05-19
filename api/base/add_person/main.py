@@ -2,7 +2,7 @@
 import azure.functions as func
 import json
 
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 from api.api_utils import api_error_handler
 
@@ -14,23 +14,32 @@ blueprint = func.Blueprint()
 )
 @api_error_handler
 async def add_person(req: func.HttpRequest) -> func.HttpResponse:
-    db = AzurePostgreSQLDatabase()
+    db = Database()
 
     data = req.get_json()
+    first_name = data.get("first_name")
+    middle_name = data.get("middle_name", "")
+    last_name = data.get("last_name")
+    full_name = f"{first_name} {middle_name} {last_name}".replace("  ", " ").strip()
+
     person = PersonOrm(
         user_id=data.get("user_id"),
-        first_name=data.get("first_name"),
-        middle_name=data.get("middle_name"),
-        last_name=data.get("last_name"),
-        email=data.get("email"),
-        phone=data.get("phone"),
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
         notes=data.get("notes"),
-        type=data.get("type"),
-        status=data.get("status"),
         language=data.get("language"),
     )
-
     inserted_person = await db.insert(person)
+    person_row = PersonRowOrm(
+        id=inserted_person.id,
+        name=full_name,
+        email=data.get("email"),
+        phone=data.get("phone"),
+        type=data.get("type"),
+        active=False
+    )
+    await db.insert(person_row)
 
     return func.HttpResponse(
         body=json.dumps({"data": inserted_person.to_dict()}),

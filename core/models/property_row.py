@@ -24,9 +24,12 @@ class PropertyRowOrm(Base):
             "industrial",
             "rental",
             "other",
+            "?",
             name="property_types",
         ),
         index=True,
+        nullable=False,
+        default="?"
     )
     active = Column(Boolean, default=False, index=True)
     price = Column(Integer)

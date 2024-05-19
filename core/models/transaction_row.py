@@ -22,13 +22,14 @@ class TransactionRowOrm(Base):
             "withdrawn",
             "off_market",
             "other",
+            "?",
             name="transaction_status",
         ),
-        index=True,
+        index=True, default="?", nullable=False
     )
     type = Column(
-        Enum("buy", "sell", "dual", name="transaction_types"),
-        index=True,
+        Enum("buy", "sell", "dual", "?", name="transaction_types"),
+        index=True, default="?", nullable=False
     )  # From the perspective of our user
 
     created = Column(DateTime, default=func.now(), index=True)

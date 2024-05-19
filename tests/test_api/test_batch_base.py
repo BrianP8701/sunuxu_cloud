@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 
 from tests.utils.generate_url import get_function_url
-from core.database import AzurePostgreSQLDatabase
+from core.database import Database
 from core.models import *
 
 load_dotenv()
@@ -19,7 +19,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         # Ensure each test gets a fresh instance if needed.
-        self.db = AzurePostgreSQLDatabase()
+        self.db = Database()
 
     async def asyncTearDown(self):
         # Properly dispose of the instance after each test to prevent connection leaks.
