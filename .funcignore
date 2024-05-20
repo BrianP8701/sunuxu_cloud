@@ -9,6 +9,9 @@ poetry.lock
 pyproject.toml
 .env
 docs/
+
 tests/
 tools/
 scripts/
+my_stuff/
+playground/

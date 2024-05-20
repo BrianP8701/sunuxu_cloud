@@ -7,4 +7,6 @@ class TransactionStatus(Enum):
     EXPIRED = "expired"
     WITHDRAWN = "withdrawn"
     OFF_MARKET = "off_market"
-    OTHER = "other"
+    CUSTOM = "custom"
+    UNKNOWN = "unknown"
+    

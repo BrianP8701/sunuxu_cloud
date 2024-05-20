@@ -9,7 +9,7 @@ from core.enums import TransactionStatus, TransactionType
 class TransactionRow(BaseModel):
     id: Optional[int] = None
     user_id: int
-    name: Optional[str] = None
+    name: str = None
     status: TransactionStatus = Field(default=TransactionStatus.UNKNOWN)
     type: TransactionType = Field(default=TransactionType.UNKNOWN)
 

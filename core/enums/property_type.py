@@ -10,4 +10,4 @@ class PropertyType(Enum):
     INDUSTRIAL = "industrial"
     RENTAL = "rental"
     CUSTOM = "custom"
-    UNKNOWN = "?"
+    UNKNOWN = "unknown"

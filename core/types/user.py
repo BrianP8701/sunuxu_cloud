@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from core.database import Database
 from core.models import UserOrm
-
+from core.enums.brokerage import Brokerage
 
 class User(BaseModel):
     id: int
@@ -12,6 +12,7 @@ class User(BaseModel):
     first_name: str
     middle_name: Optional[str]
     last_name: str
+
     custom_person_types: List = []
     custom_property_types: List = []
     custom_transaction_types: List = []

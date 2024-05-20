@@ -1,5 +1,6 @@
 import pytest
-from core.database import Databasefrom core.models import *
+from core.database import Database
+from core.models import *
 
 @pytest.mark.database
 @pytest.mark.asyncio

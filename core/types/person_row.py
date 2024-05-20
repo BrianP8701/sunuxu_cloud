@@ -9,7 +9,7 @@ from core.enums.person_type import PersonType
 class PersonRow(BaseModel):
     id: Optional[int] = None
     user_id: int
-    name: Optional[str] = None
+    name: str
     email: Optional[str] = None
     phone: Optional[str] = None
     type: PersonType = Field(default=PersonType.UNKNOWN)

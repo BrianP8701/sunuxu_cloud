@@ -15,4 +15,4 @@ class PersonType(Enum):
     APPRAISER = "appraiser"
     TITLE_OFFICER = "title_officer"
     CUSTOM = "custom"
-    UNKNOWN = "?"
+    UNKNOWN = "unknown"

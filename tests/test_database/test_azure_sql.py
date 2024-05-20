@@ -1,7 +1,8 @@
 import pytest
 from dotenv import load_dotenv
 
-from core.database import Databasefrom core.models.user import UserOrm
+from core.database import Database
+from core.models.user import UserOrm
 
 load_dotenv()
 
@@ -10,7 +11,7 @@ async def db_instance():
     db = Database()
     print("Database instance created.")
     yield db
-    await AzurePostgreSQLDatabase.dispose_instance()
+    await db.dispose_instance()
 
 @pytest.fixture(autouse=True)
 async def reset_db_sequence():

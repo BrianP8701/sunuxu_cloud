@@ -7,7 +7,7 @@ import traceback
 
 from core.database import Database
 from core.models import *
-from core.utils.paginate_rows import paginate_rows
+from core.queries.paginate_rows import paginate_rows
 
 blueprint = func.Blueprint()
 

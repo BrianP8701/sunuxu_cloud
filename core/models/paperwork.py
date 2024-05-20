@@ -8,3 +8,17 @@ from sqlalchemy import Enum
 class Document(Base):
     __tablename__ = "documents"
     id = Column(Integer, primary_key=True)
+
+
+"""
+paperwork tags:
+
+State
+Brokerage
+Transaction Type
+Property Type
+Transaction Stage
+Client Type
+Legal Requirements
+Custom Tags
+"""
