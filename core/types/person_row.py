@@ -1,27 +1,66 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from enum import Enum as PyEnum
-from datetime import datetime
+from typing import Optional, List
 
-class PersonType(PyEnum):
-    lead = "lead"
-    prospect = "prospect"
-    client = "client"
-    past_client = "past_client"
-    agent = "agent"
-    broker = "broker"
-    attorney = "attorney"
-    custom = "custom"
-    mystery = "?"
+from core.database import Database
+from core.models import PersonRowOrm
+from core.enums.person_type import PersonType
+
 
 class PersonRow(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
-    type: Optional[PersonType] = None
-    active: Optional[bool] = Field(default=False)
-    created: Optional[datetime] = None
-    updated: Optional[datetime] = None
-    viewed: Optional[datetime] = None
+    type: PersonType = Field(default=PersonType.UNKNOWN)
+    custom_type: Optional[str] = None
+    active: bool = Field(default=False)
+
+    @classmethod
+    def get(cls, person_id: int) -> "PersonRow":
+        db = Database()
+        person = db.get(
+            PersonRowOrm,
+            person_id,
+            columns=[
+                "id",
+                "user_id",
+                "name",
+                "email",
+                "phone",
+                "type",
+                "custom_type",
+                "active",
+            ],
+        )
+        return cls(**person.to_dict())
+
+    @classmethod
+    def batch_get(cls, person_ids: List[int]) -> List["PersonRow"]:
+        db = Database()
+        people = db.batch_query(
+            PersonRowOrm,
+            person_ids,
+            columns=[
+                "id",
+                "user_id",
+                "name",
+                "email",
+                "phone",
+                "type",
+                "custom_type",
+                "active",
+            ],
+        )
+        return [cls(**person.to_dict()) for person in people]
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "type": self.type,
+            "custom_type": self.custom_type,
+            "active": self.active,
+        }

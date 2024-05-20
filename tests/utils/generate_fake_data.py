@@ -28,7 +28,7 @@ def generate_user(user_id, email):
         custom_person_types=[fake.word() for _ in range(random.randint(1, 5))],
         custom_property_types=[fake.word() for _ in range(random.randint(1, 5))],
         custom_transaction_types=[fake.word() for _ in range(random.randint(1, 5))],
-        custom_transaction_statuses=[fake.word() for _ in range(random.randint(1, 5))]
+        custom_transaction_statuses=[fake.word() for _ in range(random.randint(1, 5))],
     )
 
 
@@ -41,6 +41,7 @@ def generate_person(user_id):
         notes=fake.text(),
         language=fake.language_name(),
     )
+
 
 def generate_person_row(user_id, person_id):
     return PersonRowOrm(
@@ -64,6 +65,7 @@ def generate_person_row(user_id, person_id):
         active=random.choice([True, False]),
         viewed=fake.date_time_this_decade(),
     )
+
 
 def generate_property(user_id: int):
     return PropertyOrm(
@@ -98,6 +100,7 @@ def generate_property(user_id: int):
         pictures=str([fake.image_url() for _ in range(random.randint(1, 5))]),
     )
 
+
 def generate_property_row(user_id, property_id):
     return PropertyRowOrm(
         user_id=user_id,
@@ -123,12 +126,14 @@ def generate_property_row(user_id, property_id):
         viewed=fake.date_time_this_decade(),
     )
 
+
 def generate_transaction(user_id):
     return TransactionOrm(
         user_id=user_id,
         description=fake.text(),
         notes=fake.text(),
     )
+
 
 def generate_transaction_row(user_id, transaction_id):
     return TransactionRowOrm(
@@ -141,6 +146,7 @@ def generate_transaction_row(user_id, transaction_id):
         type=random.choice(["sell", "buy", "dual", "?"]),
         viewed=fake.date_time_this_decade(),
     )
+
 
 def generate_participant(person_id, transaction_id):
     return ParticipantOrm(
@@ -189,7 +195,9 @@ async def generate_fake_data():
 
     print(f"inseting {len(all_properties)} properties")
     await db.batch_insert(all_properties)
-    all_property_rows = [generate_property_row(user_id, property.id) for property in all_properties]
+    all_property_rows = [
+        generate_property_row(user_id, property.id) for property in all_properties
+    ]
     await db.batch_insert(all_property_rows)
 
     property_ids = [property.id for property in all_properties]
@@ -201,7 +209,10 @@ async def generate_fake_data():
 
     print(f"inseting {len(all_transactions)} transactions")
     await db.batch_insert(all_transactions)
-    all_transaction_rows = [generate_transaction_row(user_id, transaction.id) for transaction in all_transactions]
+    all_transaction_rows = [
+        generate_transaction_row(user_id, transaction.id)
+        for transaction in all_transactions
+    ]
     await db.batch_insert(all_transaction_rows)
 
     for transaction in all_transactions:
@@ -209,9 +220,7 @@ async def generate_fake_data():
         all_participants.extend(
             [
                 generate_participant(person_id, transaction.id)
-                for person_id in random.sample(
-                    range(1, 200), number_of_participants
-                )
+                for person_id in random.sample(range(1, 200), number_of_participants)
             ]
         )
 

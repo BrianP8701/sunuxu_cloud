@@ -1,28 +1,44 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from enum import Enum as PyEnum
-from datetime import datetime
+from typing import Optional, List
 
-class TransactionStatus(PyEnum):
-    pending = "pending"
-    closed = "closed"
-    expired = "expired"
-    withdrawn = "withdrawn"
-    off_market = "off_market"
-    other = "other"
+from core.database import Database
+from core.models import TransactionRowOrm
+from core.enums import TransactionStatus, TransactionType
 
-class TransactionType(PyEnum):
-    buy = "buy"
-    sell = "sell"
-    dual = "dual"
 
 class TransactionRow(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
-    property_id: Optional[int] = None
     name: Optional[str] = None
-    status: Optional[TransactionStatus] = None
-    type: Optional[TransactionType] = None
-    created: Optional[datetime] = None
-    updated: Optional[datetime] = None
-    viewed: Optional[datetime] = None
+    status: TransactionStatus = Field(default=TransactionStatus.UNKNOWN)
+    type: TransactionType = Field(default=TransactionType.UNKNOWN)
+
+    @classmethod
+    def get(cls, transaction_id: int) -> "TransactionRow":
+        db = Database()
+        transaction = db.get(
+            TransactionRowOrm,
+            transaction_id,
+            columns=["id", "user_id", "name", "status", "type"],
+        )
+        return cls(**transaction.to_dict())
+
+    @classmethod
+    def batch_get(cls, transaction_ids: List[int]) -> List["TransactionRow"]:
+        db = Database()
+        transactions = db.batch_query(
+            TransactionRowOrm,
+            transaction_ids,
+            columns=["id", "user_id", "name", "status", "type"],
+        )
+        return [cls(**transaction.to_dict()) for transaction in transactions]
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "property_id": self.property_id,
+            "name": self.name,
+            "status": self.status,
+            "type": self.type,
+        }

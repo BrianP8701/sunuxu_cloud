@@ -1,12 +1,22 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Boolean,
+    Enum as SqlEnum,
+)
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
-from sqlalchemy import Enum
+
+from core.enums.property_type import PropertyType
+
 
 class PropertyRowOrm(Base):
     __tablename__ = "property_rows"
-    id = Column(Integer, ForeignKey('properties.id'), primary_key=True)
+    id = Column(Integer, ForeignKey("properties.id"), primary_key=True)
     user_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
@@ -14,24 +24,10 @@ class PropertyRowOrm(Base):
     address = Column(String(255), nullable=False, index=True)
     mls_number = Column(String(255), index=True)
     type = Column(
-        Enum(
-            "residential",
-            "condo",
-            "coop",
-            "commercial",
-            "land",
-            "hoa",
-            "industrial",
-            "rental",
-            "other",
-            "?",
-            name="property_types",
-        ),
-        index=True,
-        nullable=False,
-        default="?"
+        SqlEnum(PropertyType), index=True, nullable=False, default=PropertyType.UNKNOWN
     )
-    active = Column(Boolean, default=False, index=True)
+    custom_type = Column(String(255), index=True)
+    active = Column(Boolean, default=False, index=True, nullable=False)
     price = Column(Integer)
 
     created = Column(DateTime, default=func.now(), index=True)

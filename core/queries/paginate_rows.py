@@ -4,6 +4,7 @@ from sqlalchemy.orm import joinedload
 
 from core.database import Database
 
+
 async def paginate_rows(
     model_class,
     page_number: int,

@@ -37,7 +37,7 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
         email=data.get("email"),
         phone=data.get("phone"),
         type=data.get("type"),
-        active=False
+        active=False,
     )
     await db.insert(person_row)
 

@@ -19,7 +19,12 @@ class TransactionOrm(Base):
     custom_fields = Column(JSON)
 
     user = relationship("UserOrm", back_populates="transactions")
-    summary_row = relationship("TransactionRowOrm", back_populates="transaction", uselist=False, cascade="all, delete-orphan")
+    summary_row = relationship(
+        "TransactionRowOrm",
+        back_populates="transaction",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
     property = relationship("PropertyOrm", back_populates="transactions")
     participants = relationship("ParticipantOrm", back_populates="transaction")
 

@@ -53,7 +53,12 @@ class PropertyOrm(Base):
     description = Column(String)
 
     user = relationship("UserOrm", back_populates="properties")
-    summary_row = relationship("PropertyRowOrm", back_populates="property", uselist=False, cascade="all, delete-orphan")
+    summary_row = relationship(
+        "PropertyRowOrm",
+        back_populates="property",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
     transactions = relationship("TransactionOrm", back_populates="property")
     owners = relationship(
         "PersonOrm",
@@ -98,5 +103,5 @@ class PropertyOrm(Base):
             "pictures": self.pictures,
             "notes": self.notes,
             "property_tax": self.property_tax,
-            "description": self.description
+            "description": self.description,
         }

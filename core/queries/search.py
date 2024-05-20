@@ -3,7 +3,8 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import load_only
 from sqlalchemy.sql.expression import func
 
-from core.database import Databasefrom core.models import *
+from core.database import Database
+from core.models import *
 
 async def search(
     table: str,

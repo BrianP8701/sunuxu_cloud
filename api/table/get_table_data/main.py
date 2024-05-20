@@ -19,7 +19,7 @@ blueprint = func.Blueprint()
 async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
     """
     This endpoint fetches data to fill a table in the CRM frontend.
-    
+
     :param user_id: The ID of the user whose data is being fetched
     :param table: The name of the table [properties, people, transactions]
     :param page_size: The number of items to fetch per page
@@ -79,7 +79,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             if table == "transactions":
                 conditions["status"] = include_statuses_list
             else:
-                conditions["active"] = include_statuses_list             
+                conditions["active"] = include_statuses_list
 
         conditions["user_id"] = user_id
 

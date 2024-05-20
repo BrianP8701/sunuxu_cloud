@@ -14,7 +14,7 @@ class UserOrm(Base):
     first_name = Column(String(255), nullable=False)
     middle_name = Column(String(255))
     last_name = Column(String(255), nullable=False)
-    
+
     custom_person_types = Column(MutableList.as_mutable(JSON), default=list)
     custom_property_types = Column(MutableList.as_mutable(JSON), default=list)
     custom_transaction_types = Column(MutableList.as_mutable(JSON), default=list)
@@ -57,5 +57,5 @@ class UserOrm(Base):
             "custom_property_types": self.custom_property_types,
             "custom_transaction_types": self.custom_transaction_types,
             "custom_transaction_statuses": self.custom_transaction_statuses,
-            "custom_participant_roles": self.custom_participant_roles
+            "custom_participant_roles": self.custom_participant_roles,
         }

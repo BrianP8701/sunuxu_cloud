@@ -1,27 +1,66 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from enum import Enum as PyEnum
-from datetime import datetime
+from typing import Optional, List
 
-class PropertyType(PyEnum):
-    residential = "residential"
-    condo = "condo"
-    coop = "coop"
-    commercial = "commercial"
-    land = "land"
-    hoa = "hoa"
-    industrial = "industrial"
-    rental = "rental"
-    other = "other"
+from core.database import Database
+from core.models import PropertyRowOrm
+from core.enums.property_type import PropertyType
+
 
 class PropertyRow(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
     address: str = Field(..., max_length=255)
     mls_number: Optional[str] = Field(None, max_length=255)
-    type: Optional[PropertyType] = None
-    active: Optional[bool] = Field(default=False)
+    type: PropertyType = Field(default=PropertyType.UNKNOWN)
+    custom_type: Optional[str] = None
+    active: bool = Field(default=False)
     price: Optional[int] = None
-    created: Optional[datetime] = None
-    updated: Optional[datetime] = None
-    viewed: Optional[datetime] = None
+
+    @classmethod
+    def get(cls, property_id: int) -> "PropertyRow":
+        db = Database()
+        property = db.get(
+            PropertyRowOrm,
+            property_id,
+            columns=[
+                "id",
+                "user_id",
+                "address",
+                "mls_number",
+                "type",
+                "custom_type",
+                "active",
+                "price",
+            ],
+        )
+        return cls(**property.to_dict())
+
+    @classmethod
+    def batch_get(cls, property_ids: List[int]) -> List["PropertyRow"]:
+        db = Database()
+        properties = db.batch_query(
+            PropertyRowOrm,
+            property_ids,
+            columns=[
+                "id",
+                "user_id",
+                "address",
+                "mls_number",
+                "type",
+                "custom_type",
+                "active",
+                "price",
+            ],
+        )
+        return [cls(**property.to_dict()) for property in properties]
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "address": self.address,
+            "mls_number": self.mls_number,
+            "type": self.type,
+            "active": self.active,
+            "price": self.price,
+        }

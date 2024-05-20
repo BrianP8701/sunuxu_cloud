@@ -63,6 +63,7 @@ def print_bitwise_and_of_i_and_neg_i(number):
     result = number & -number
     print(f"The result of {number} & -{number} is: {result}")
 
+
 # Example usage
 for i in range(1, 128):
     print_bitwise_and_of_i_and_neg_i(i)

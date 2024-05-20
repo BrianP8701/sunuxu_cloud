@@ -1,28 +1,32 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Boolean,
+    Enum as SqlEnum,
+)
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
-from sqlalchemy import Enum
+
+from core.enums.person_type import PersonType
+
 
 class PersonRowOrm(Base):
     __tablename__ = "people_rows"
-    id = Column(Integer, ForeignKey('people.id'), primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
+    id = Column(Integer, ForeignKey("people.id"), primary_key=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
     name = Column(String, index=True)
     email = Column(String, index=True)
     phone = Column(String, index=True)
-    type = Column(
-        Enum(
-            "lead", "prospect", "client", "past_client", "agent", "broker", "attorney", "custom", "?",
-            name="person_types",
-        ),
-        index=True,
-        nullable=False,
-        default="?"
-    )
+    type = Column(SqlEnum(PersonType), index=True, nullable=False, default="?")
     custom_type = Column(String, index=True)
-    active = Column(Boolean, default=False, index=True)
+    active = Column(Boolean, default=False, index=True, nullable=False)
 
     created = Column(DateTime, default=func.now(), index=True)
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)

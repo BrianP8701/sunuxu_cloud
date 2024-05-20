@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def get_function_url(func_name: str) -> str:
     mode = os.getenv("MODE")
     if mode == "local" or mode == "dev" or mode == "development":

@@ -8,20 +8,26 @@ from core.models.association import property_owner_association_table
 class PersonOrm(Base):
     __tablename__ = "people"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
     first_name = Column(String(255), nullable=False)
     middle_name = Column(String(255))
     last_name = Column(String(255), nullable=False)
     notes = Column(String)
     language = Column(String(255), default="english")
-    address = Column(String(255)) # Person's current address of residence
-    
+    address = Column(String(255))  # Person's current address of residence
+
     custom_fields = Column(JSON)
 
     user = relationship("UserOrm", back_populates="people")
-    summary_row = relationship("PersonRowOrm", back_populates="person", uselist=False, cascade="all, delete-orphan")
+    summary_row = relationship(
+        "PersonRowOrm",
+        back_populates="person",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
     participants = relationship("ParticipantOrm", back_populates="person")
     properties = relationship(
         "PropertyOrm",
@@ -35,7 +41,7 @@ class PersonOrm(Base):
             "phone": self.phone,
             "email": self.email,
             "notes": self.notes,
-            "language": self.language
+            "language": self.language,
         }
 
     def to_table_row(self) -> dict:

@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum as PyEnum
 
+
 class PersonType(PyEnum):
     lead = "lead"
     prospect = "prospect"
@@ -12,6 +13,7 @@ class PersonType(PyEnum):
     attorney = "attorney"
     other = "other"
     mystery = "?"
+
 
 class Person(BaseModel):
     id: int

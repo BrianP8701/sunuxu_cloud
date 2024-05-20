@@ -9,6 +9,7 @@ from core.models import *
 
 blueprint = func.Blueprint()
 
+
 @blueprint.route(
     route="search_people", methods=["POST"], auth_level=func.AuthLevel.FUNCTION
 )
@@ -24,11 +25,11 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
 
         if not search_type:
             if "@" in search_term and "." in search_term:
-                search_type = 'email'
+                search_type = "email"
             elif search_term.isdigit():
-                search_type = 'phone'
+                search_type = "phone"
             else:
-                search_type = 'name'
+                search_type = "name"
 
         conditions = {"user_id": user_id}
 
@@ -50,9 +51,7 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
             "id",
         ]
 
-        data = await db.similarity_search(
-            PersonOrm, columns=columns, **conditions
-        )
+        data = await db.similarity_search(PersonOrm, columns=columns, **conditions)
 
         formatted_data = [
             {
@@ -65,7 +64,7 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
             }
             for item in data
         ]
-        
+
         return func.HttpResponse(
             body=json.dumps(
                 {

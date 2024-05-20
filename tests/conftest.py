@@ -1,8 +1,8 @@
 # conftest.py
 import pytest
-import logging
 
-from core.database import Databasefrom tests.utils.generate_fake_data import generate_fake_data
+from core.database import Database
+from tests.utils.generate_fake_data import generate_fake_data
 
 # # Configure logging to write to a local file called logs.txt with 2 new lines in between each log
 # logging.basicConfig(
@@ -24,7 +24,6 @@ async def global_setup():
     await generate_fake_data()
     yield
     await db.clear_tables()
-
 
 
 # @pytest.fixture(scope="module", autouse=True)

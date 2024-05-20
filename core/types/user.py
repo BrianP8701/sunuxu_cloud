@@ -4,6 +4,7 @@ from typing import List, Optional
 from core.database import Database
 from core.models import UserOrm
 
+
 class User(BaseModel):
     id: int
     email: str
@@ -18,13 +19,13 @@ class User(BaseModel):
     custom_participant_roles: List = []
 
     @classmethod
-    def get(cls, user_id: int) -> 'User':
+    def get(cls, user_id: int) -> "User":
         db = Database()
         user = db.get(UserOrm, user_id)
         return cls(**user.to_dict())
 
     @classmethod
-    def batch_get(cls, user_ids: List[int]) -> List['User']:
+    def batch_get(cls, user_ids: List[int]) -> List["User"]:
         db = Database()
         users = db.batch_query(UserOrm, {"id": user_ids})
         return [cls(**user.to_dict()) for user in users]

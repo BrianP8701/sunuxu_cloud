@@ -9,7 +9,9 @@ class ParticipantRowOrm(Base):
     __tablename__ = "participant_rows"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    person_id = Column(Integer, ForeignKey("people_rows.id", ondelete="CASCADE"), nullable=False)
+    person_id = Column(
+        Integer, ForeignKey("people_rows.id", ondelete="CASCADE"), nullable=False
+    )
 
     role = Column(
         Enum(
