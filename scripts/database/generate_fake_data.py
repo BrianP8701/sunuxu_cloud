@@ -12,7 +12,7 @@ fake = Faker()
 
 
 def generate_property(user_id: int):
-    return PropertyOrm(
+    return PropertyDetailsOrm(
         user_id=user_id,
         address=fake.address(),
         street_number=fake.building_number(),
@@ -81,7 +81,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonOrm(
+    return PersonDetailsOrm(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -108,7 +108,7 @@ def generate_person(user_id):
 
 
 def generate_transaction(user_id):
-    return TransactionOrm(
+    return DealDetailsOrm(
         user_id=user_id,
         type=random.choice(["sale", "rent", "lease", "buy", "other"]),
         status=random.choice(
@@ -120,7 +120,7 @@ def generate_transaction(user_id):
 
 
 def generate_participant(person_id, transaction_id):
-    return ParticipantOrm(
+    return ParticipantDetailsOrm(
         person_id=person_id,
         transaction_id=transaction_id,
         role=random.choice(

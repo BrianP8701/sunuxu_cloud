@@ -1,47 +1,55 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean,
+    Enum as SqlEnum
+)
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
+from sqlalchemy.sql import func
 
-from core.models.association import property_owner_association_table
-
+from core.enums.person_type import PersonType
+from core.models.associations import user_person_association
 
 class PersonOrm(Base):
     __tablename__ = "people"
     id = Column(Integer, primary_key=True)
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-
+    
     first_name = Column(String(255), nullable=False)
     middle_name = Column(String(255))
-    last_name = Column(String(255), nullable=False)
-    notes = Column(String)
-    language = Column(String(255), default="english")
-    address = Column(String(255))  # Person's current address of residence
+    last_name = Column(String(255), nullable=False)    
+    email = Column(String, index=True)
+    phone = Column(String, index=True)
+    type = Column(SqlEnum(PersonType), index=True, nullable=False, default="?")
+    custom_type = Column(String, index=True)
+    active = Column(Boolean, default=False, index=True, nullable=False)
 
-    custom_fields = Column(JSON)
+    created = Column(DateTime, default=func.now(), index=True)
+    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
+    viewed = Column(DateTime, index=True)
 
-    user = relationship("UserOrm", back_populates="people")
-    summary_row = relationship(
-        "PersonRowOrm",
-        back_populates="person",
-        uselist=False,
-        cascade="all, delete-orphan",
+    users = relationship("UserOrm", secondary=user_person_association, back_populates="people")
+    person_details = relationship(
+        "PersonDetailsOrm", 
+        back_populates="person", 
+        uselist=False, 
+        cascade="all, delete-orphan"
     )
-    participants = relationship("ParticipantOrm", back_populates="person")
-    properties = relationship(
-        "PropertyOrm",
-        secondary=property_owner_association_table,
-        back_populates="owners",
-    )
+
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "phone": self.phone,
-            "email": self.email,
-            "notes": self.notes,
-            "language": self.language,
+            "first_name": self.first_name,
+            "middle_name": self.middle_name,
+            "last_name": self.last_name,
+            "type": self.type,
+            "active": self.active,
+            "created": self.created.isoformat() if self.created else None,
+            "updated": self.updated.isoformat() if self.updated else None,
+            "viewed": self.viewed.isoformat() if self.viewed else None,
         }
 
     def to_table_row(self) -> dict:

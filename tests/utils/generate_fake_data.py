@@ -33,7 +33,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonOrm(
+    return PersonDetailsOrm(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -44,7 +44,7 @@ def generate_person(user_id):
 
 
 def generate_person_row(user_id, person_id):
-    return PersonRowOrm(
+    return PersonOrm(
         user_id=user_id,
         id=person_id,
         name=fake.name(),
@@ -68,7 +68,7 @@ def generate_person_row(user_id, person_id):
 
 
 def generate_property(user_id: int):
-    return PropertyOrm(
+    return PropertyDetailsOrm(
         user_id=user_id,
         street_number=fake.building_number(),
         street_name=fake.street_name(),
@@ -102,7 +102,7 @@ def generate_property(user_id: int):
 
 
 def generate_property_row(user_id, property_id):
-    return PropertyRowOrm(
+    return PropertyOrm(
         user_id=user_id,
         id=property_id,
         address=fake.address(),
@@ -128,7 +128,7 @@ def generate_property_row(user_id, property_id):
 
 
 def generate_transaction(user_id):
-    return TransactionOrm(
+    return DealDetailsOrm(
         user_id=user_id,
         description=fake.text(),
         notes=fake.text(),
@@ -136,7 +136,7 @@ def generate_transaction(user_id):
 
 
 def generate_transaction_row(user_id, transaction_id):
-    return TransactionRowOrm(
+    return DealOrm(
         user_id=user_id,
         id=transaction_id,
         name=random.choice([fake.address(), fake.company(), fake.name()]),
@@ -149,7 +149,7 @@ def generate_transaction_row(user_id, transaction_id):
 
 
 def generate_participant(person_id, transaction_id):
-    return ParticipantOrm(
+    return ParticipantDetailsOrm(
         person_id=person_id,
         transaction_id=transaction_id,
         role=random.choice(

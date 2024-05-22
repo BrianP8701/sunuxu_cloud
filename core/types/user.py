@@ -3,10 +3,9 @@ from typing import List, Optional
 
 from core.database import Database
 from core.models import UserOrm
-from core.enums.brokerage import Brokerage
 
 class User(BaseModel):
-    id: int
+    id: Optional[int]
     email: str
     phone: Optional[str]
     first_name: str
@@ -25,8 +24,33 @@ class User(BaseModel):
         user = db.get(UserOrm, user_id)
         return cls(**user.to_dict())
 
+    def insert(self) -> "User":
+        if self.id:
+            raise ValueError("User already exists")
+        db = Database()
+        user = UserOrm(**self.model_dump())
+        db.insert(user)
+        self.id = user.id
+        return self
+
     @classmethod
     def batch_get(cls, user_ids: List[int]) -> List["User"]:
         db = Database()
         users = db.batch_query(UserOrm, {"id": user_ids})
         return [cls(**user.to_dict()) for user in users]
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "phone": self.phone,
+            "first_name": self.first_name,
+            "middle_name": self.middle_name,
+            "last_name": self.last_name,
+            "custom_person_types": self.custom_person_types,
+            "custom_property_types": self.custom_property_types,
+            "custom_transaction_types": self.custom_transaction_types,
+            "custom_transaction_statuses": self.custom_transaction_statuses,
+            "custom_participant_roles": self.custom_participant_roles
+        }
+

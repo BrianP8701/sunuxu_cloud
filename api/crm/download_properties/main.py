@@ -22,7 +22,7 @@ async def download_properties(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     properties = await db.batch_query(
-        PropertyOrm, conditions={"id": property_ids}, columns=columns
+        PropertyDetailsOrm, conditions={"id": property_ids}, columns=columns
     )
 
     # Check the structure of 'properties' and convert accordingly

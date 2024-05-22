@@ -22,7 +22,7 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     people = await db.batch_query(
-        PersonOrm, conditions={"id": people_ids}, columns=columns
+        PersonDetailsOrm, conditions={"id": people_ids}, columns=columns
     )
 
     print(people)

@@ -1,17 +1,17 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
 
-class ParticipantRowOrm(Base):
-    __tablename__ = "participant_rows"
+class ParticipantOrm(Base):
+    __tablename__ = "participants"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    person_id = Column(
-        Integer, ForeignKey("people_rows.id", ondelete="CASCADE"), nullable=False
+    deal_id = Column(
+        Integer, ForeignKey("deals.id", ondelete="CASCADE"), nullable=False
     )
+
 
     role = Column(
         Enum(
@@ -33,8 +33,13 @@ class ParticipantRowOrm(Base):
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
-    user = relationship("UserOrm", back_populates="participants")
-    person_row = relationship("PersonRowOrm", back_populates="participants")
+    deal = relationship("DealOrm")
+    participant_details = relationship(
+        "ParticipantDetailsOrm", 
+        back_populates="participant", 
+        uselist=False, 
+        cascade="all, delete-orphan"
+    )    
 
     def to_dict(self) -> dict:
         return {

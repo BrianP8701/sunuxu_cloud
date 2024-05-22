@@ -18,9 +18,9 @@ async def get_property(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        results = await db.batch_query(PropertyOrm, {"id": data})
+        results = await db.batch_query(PropertyDetailsOrm, {"id": data})
     else:
-        results = await db.query(PropertyOrm, {"id": data})
+        results = await db.query(PropertyDetailsOrm, {"id": data})
 
     return func.HttpResponse(
         body=json.dumps({"data": [result.to_dict() for result in results]}),

@@ -2,12 +2,12 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 from core.database import Database
-from core.models import PersonRowOrm
+from core.models import PersonOrm
 from core.enums.person_type import PersonType
 
 
 class PersonRow(BaseModel):
-    id: Optional[int] = None
+    id: int = None
     user_id: int
     name: str
     email: Optional[str] = None
@@ -20,7 +20,7 @@ class PersonRow(BaseModel):
     def get(cls, person_id: int) -> "PersonRow":
         db = Database()
         person = db.get(
-            PersonRowOrm,
+            PersonOrm,
             person_id,
             columns=[
                 "id",
@@ -39,7 +39,7 @@ class PersonRow(BaseModel):
     def batch_get(cls, person_ids: List[int]) -> List["PersonRow"]:
         db = Database()
         people = db.batch_query(
-            PersonRowOrm,
+            PersonOrm,
             person_ids,
             columns=[
                 "id",

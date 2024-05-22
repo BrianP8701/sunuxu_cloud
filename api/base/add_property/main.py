@@ -17,7 +17,7 @@ async def add_property(req: func.HttpRequest) -> func.HttpResponse:
     db = Database()
 
     data = req.get_json()
-    property = PropertyOrm(
+    property = PropertyDetailsOrm(
         user_id=data.get("user_id"),
         street_number=data.get("street_number"),
         street_name=data.get("street_name"),

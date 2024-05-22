@@ -27,42 +27,42 @@ async def search_people(query: str, user_id: int):
         if any(char.isdigit() for char in query):
             if sum(char.isdigit() for char in query) > 6:
                 # Query only the phone column
-                stmt = select(PersonRowOrm).where(
-                    PersonRowOrm.user_id == user_id,
+                stmt = select(PersonOrm).where(
+                    PersonOrm.user_id == user_id,
                     or_(
-                        func.levenshtein(PersonRowOrm.phone, query) <= 3,  # Allowing up to 3 typos
-                        PersonRowOrm.phone.ilike(f"%{query}%")  # Partial match
+                        func.levenshtein(PersonOrm.phone, query) <= 3,  # Allowing up to 3 typos
+                        PersonOrm.phone.ilike(f"%{query}%")  # Partial match
                     )
                 )
             else:
                 # Query both email and phone columns
-                stmt = select(PersonRowOrm).where(
-                    PersonRowOrm.user_id == user_id,
+                stmt = select(PersonOrm).where(
+                    PersonOrm.user_id == user_id,
                     or_(
-                        func.levenshtein(PersonRowOrm.email, query) <= 3,  # Allowing up to 3 typos
-                        PersonRowOrm.email.ilike(f"%{query}%"),  # Partial match
-                        func.levenshtein(PersonRowOrm.phone, query) <= 3,  # Allowing up to 3 typos
-                        PersonRowOrm.phone.ilike(f"%{query}%")  # Partial match
+                        func.levenshtein(PersonOrm.email, query) <= 3,  # Allowing up to 3 typos
+                        PersonOrm.email.ilike(f"%{query}%"),  # Partial match
+                        func.levenshtein(PersonOrm.phone, query) <= 3,  # Allowing up to 3 typos
+                        PersonOrm.phone.ilike(f"%{query}%")  # Partial match
                     )
                 )
         elif "@" in query:
             # Query the email column
-            stmt = select(PersonRowOrm).where(
-                PersonRowOrm.user_id == user_id,
+            stmt = select(PersonOrm).where(
+                PersonOrm.user_id == user_id,
                 or_(
-                    func.levenshtein(PersonRowOrm.email, query) <= 3,  # Allowing up to 3 typos
-                    PersonRowOrm.email.ilike(f"%{query}%")  # Partial match
+                    func.levenshtein(PersonOrm.email, query) <= 3,  # Allowing up to 3 typos
+                    PersonOrm.email.ilike(f"%{query}%")  # Partial match
                 )
             )
         else:
             # Query the name column
-            stmt = select(PersonRowOrm).where(
-                PersonRowOrm.user_id == user_id,
+            stmt = select(PersonOrm).where(
+                PersonOrm.user_id == user_id,
                 or_(
-                    func.levenshtein(PersonRowOrm.name, query) <= 3,  # Allowing up to 3 typos
-                    PersonRowOrm.name.ilike(f"%{query}%"),  # Partial match
-                    func.levenshtein(PersonRowOrm.email, query) <= 3,  # Allowing up to 3 typos
-                    PersonRowOrm.email.ilike(f"%{query}%")  # Partial match
+                    func.levenshtein(PersonOrm.name, query) <= 3,  # Allowing up to 3 typos
+                    PersonOrm.name.ilike(f"%{query}%"),  # Partial match
+                    func.levenshtein(PersonOrm.email, query) <= 3,  # Allowing up to 3 typos
+                    PersonOrm.email.ilike(f"%{query}%")  # Partial match
                 )
             )
 
@@ -73,11 +73,11 @@ async def search_people(query: str, user_id: int):
 async def search_transactions(query: str, user_id: int):
     db = Database()
     async with db.sessionmaker() as session:
-        stmt = select(TransactionRowOrm).where(
-            TransactionRowOrm.user_id == user_id,
+        stmt = select(DealOrm).where(
+            DealOrm.user_id == user_id,
             or_(
-                func.levenshtein(TransactionRowOrm.name, query) <= 3,  # Allowing up to 3 typos
-                TransactionRowOrm.name.ilike(f"%{query}%")  # Partial match
+                func.levenshtein(DealOrm.name, query) <= 3,  # Allowing up to 3 typos
+                DealOrm.name.ilike(f"%{query}%")  # Partial match
             )
         )
         result = await session.execute(stmt)
@@ -89,20 +89,20 @@ async def search_properties(query: str, user_id: int):
     async with db.sessionmaker() as session:
         if any(char.isdigit() for char in query) and sum(char.isdigit() for char in query) > 6:
             # Query the mls_number column
-            stmt = select(PropertyRowOrm).where(
-                PropertyRowOrm.user_id == user_id,
+            stmt = select(PropertyOrm).where(
+                PropertyOrm.user_id == user_id,
                 or_(
-                    func.levenshtein(PropertyRowOrm.mls_number, query) <= 3,  # Allowing up to 3 typos
-                    PropertyRowOrm.mls_number.ilike(f"%{query}%")  # Partial match
+                    func.levenshtein(PropertyOrm.mls_number, query) <= 3,  # Allowing up to 3 typos
+                    PropertyOrm.mls_number.ilike(f"%{query}%")  # Partial match
                 )
             )
         else:
             # Query the address column
-            stmt = select(PropertyRowOrm).where(
-                PropertyRowOrm.user_id == user_id,
+            stmt = select(PropertyOrm).where(
+                PropertyOrm.user_id == user_id,
                 or_(
-                    func.levenshtein(PropertyRowOrm.address, query) <= 3,  # Allowing up to 3 typos
-                    PropertyRowOrm.address.ilike(f"%{query}%")  # Partial match
+                    func.levenshtein(PropertyOrm.address, query) <= 3,  # Allowing up to 3 typos
+                    PropertyOrm.address.ilike(f"%{query}%")  # Partial match
                 )
             )
         

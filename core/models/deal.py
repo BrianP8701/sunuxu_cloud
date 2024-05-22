@@ -3,28 +3,27 @@ from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
 
-from core.enums.transaction_type import TransactionType
-from core.enums.transaction_status import TransactionStatus
+from core.enums.transaction_type import DealType
+from core.enums.transaction_status import DealStatus
+from core.models.associations import user_deal_association
 
+class DealOrm(Base):
+    __tablename__ = "deals"
+    id = Column(Integer, primary_key=True)
 
-class TransactionRowOrm(Base):
-    __tablename__ = "transaction_rows"
-    id = Column(Integer, ForeignKey("transactions.id"), primary_key=True)
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
+    address = Column(String(255), nullable=False)
+    buyer_name = Column(String(255))
 
-    name = Column(String, index=True)
     status = Column(
-        SqlEnum(TransactionStatus),
+        SqlEnum(DealStatus),
         index=True,
-        default=TransactionStatus.UNKNOWN,
+        default=DealStatus.UNKNOWN,
         nullable=False,
     )
     type = Column(
-        SqlEnum(TransactionType),
+        SqlEnum(DealType),
         index=True,
-        default=TransactionType.UNKNOWN,
+        default=DealType.UNKNOWN,
         nullable=False,
     )
 
@@ -32,10 +31,8 @@ class TransactionRowOrm(Base):
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
 
-    user = relationship("UserOrm", back_populates="transaction_rows")
-    transaction = relationship(
-        "TransactionOrm", back_populates="summary_row", uselist=False
-    )
+    users = relationship("UserOrm", secondary=user_deal_association, back_populates="transaction_rows")
+    deal_details = relationship("DealDetailsOrm", back_populates="deal", uselist=False, cascade="all, delete-orphan")
 
     def to_dict(self) -> dict:
         return {

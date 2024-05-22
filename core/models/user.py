@@ -1,19 +1,19 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON
+from sqlalchemy import Column, Integer, JSON
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
-from sqlalchemy.sql import func
 from sqlalchemy.ext.mutable import MutableList
+
+from core.models.associations import (
+    user_person_association,
+    user_property_association,
+    user_deal_association,
+    user_team_association  # Import the association table
+)
 
 
 class UserOrm(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    password = Column(String(255))
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    phone = Column(String(20))
-    first_name = Column(String(255), nullable=False)
-    middle_name = Column(String(255))
-    last_name = Column(String(255), nullable=False)
 
     custom_person_types = Column(MutableList.as_mutable(JSON), default=list)
     custom_property_types = Column(MutableList.as_mutable(JSON), default=list)
@@ -21,28 +21,17 @@ class UserOrm(Base):
     custom_transaction_statuses = Column(MutableList.as_mutable(JSON), default=list)
     custom_participant_roles = Column(MutableList.as_mutable(JSON), default=list)
 
-    created = Column(DateTime, default=func.now())
-
     people = relationship(
-        "PersonOrm", back_populates="user", cascade="all, delete, delete-orphan"
-    )
-    people_rows = relationship(
-        "PersonRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
+        "PersonOrm", secondary=user_person_association, back_populates="users"
     )
     properties = relationship(
-        "PropertyOrm", back_populates="user", cascade="all, delete, delete-orphan"
+        "PropertyOrm", secondary=user_property_association, back_populates="users"
     )
-    property_rows = relationship(
-        "PropertyRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    deals = relationship(
+        "DealOrm", secondary=user_deal_association, back_populates="users"
     )
-    transactions = relationship(
-        "TransactionOrm", back_populates="user", cascade="all, delete, delete-orphan"
-    )
-    transaction_rows = relationship(
-        "TransactionRowOrm", back_populates="user", cascade="all, delete, delete-orphan"
-    )
-    participants = relationship(
-        "ParticipantOrm", back_populates="user", cascade="all, delete, delete-orphan"
+    teams = relationship(
+        "TeamOrm", secondary=user_team_association, back_populates="users"
     )
 
     def to_dict(self) -> dict:
@@ -58,4 +47,8 @@ class UserOrm(Base):
             "custom_transaction_types": self.custom_transaction_types,
             "custom_transaction_statuses": self.custom_transaction_statuses,
             "custom_participant_roles": self.custom_participant_roles,
+            "teams": [
+                {"id": team.id, "role": association.role}
+                for team, association in zip(self.teams, self.team_associations)
+            ],
         }

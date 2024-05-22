@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TransactionType(Enum):
+class DealType(Enum):
     BUY = "buy"
     SELL = "sell"
     DUAL = "dual"

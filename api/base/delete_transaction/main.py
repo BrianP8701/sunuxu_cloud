@@ -18,8 +18,8 @@ async def delete_transaction(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        await db.batch_delete(TransactionOrm, {"id": data})
+        await db.batch_delete(DealDetailsOrm, {"id": data})
     else:
-        await db.delete(TransactionOrm, {"id": data})
+        await db.delete(DealDetailsOrm, {"id": data})
 
     return func.HttpResponse(status_code=200, mimetype="application/json")

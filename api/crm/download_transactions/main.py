@@ -22,7 +22,7 @@ async def download_transactions(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     transactions = await db.batch_query(
-        TransactionOrm, conditions={"id": transaction_ids}, columns=columns
+        DealDetailsOrm, conditions={"id": transaction_ids}, columns=columns
     )
 
     # Check the structure of 'transactions' and convert accordingly

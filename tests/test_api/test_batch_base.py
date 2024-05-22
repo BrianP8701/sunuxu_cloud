@@ -54,7 +54,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.person_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.person_ids:
-            is_deleted = await self.db.exists(PersonOrm, {"id": id})
+            is_deleted = await self.db.exists(PersonDetailsOrm, {"id": id})
             self.assertFalse(is_deleted)
 
     def test_1_add_properties(self):
@@ -91,7 +91,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.property_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.property_ids:
-            is_deleted = await self.db.exists(PropertyOrm, {"id": id})
+            is_deleted = await self.db.exists(PropertyDetailsOrm, {"id": id})
             self.assertFalse(is_deleted)
 
     def test_1_add_transactions(self):
@@ -122,7 +122,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.transaction_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.transaction_ids:
-            is_deleted = await self.db.exists(TransactionOrm, {"id": id})
+            is_deleted = await self.db.exists(DealDetailsOrm, {"id": id})
             self.assertFalse(is_deleted)
 
 

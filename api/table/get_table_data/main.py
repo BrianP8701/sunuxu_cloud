@@ -98,7 +98,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PropertyOrm,
+                PropertyDetailsOrm,
                 page_index,
                 page_size,
                 sort_by,
@@ -130,7 +130,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PersonOrm,
+                PersonDetailsOrm,
                 page_index,
                 page_size,
                 sort_by,
@@ -171,7 +171,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             ]
 
             data, total_items, total_pages = await paginate_rows(
-                TransactionOrm,
+                DealDetailsOrm,
                 page_index,
                 page_size,
                 sort_by,

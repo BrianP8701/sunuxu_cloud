@@ -51,7 +51,7 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
             "id",
         ]
 
-        data = await db.similarity_search(PersonOrm, columns=columns, **conditions)
+        data = await db.similarity_search(PersonDetailsOrm, columns=columns, **conditions)
 
         formatted_data = [
             {

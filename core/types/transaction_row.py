@@ -2,22 +2,22 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 from core.database import Database
-from core.models import TransactionRowOrm
-from core.enums import TransactionStatus, TransactionType
+from core.models import DealOrm
+from core.enums import DealStatus, DealType
 
 
 class TransactionRow(BaseModel):
-    id: Optional[int] = None
+    id: int
     user_id: int
     name: str = None
-    status: TransactionStatus = Field(default=TransactionStatus.UNKNOWN)
-    type: TransactionType = Field(default=TransactionType.UNKNOWN)
+    status: DealStatus = Field(default=DealStatus.UNKNOWN)
+    type: DealType = Field(default=DealType.UNKNOWN)
 
     @classmethod
     def get(cls, transaction_id: int) -> "TransactionRow":
         db = Database()
         transaction = db.get(
-            TransactionRowOrm,
+            DealOrm,
             transaction_id,
             columns=["id", "user_id", "name", "status", "type"],
         )
@@ -27,7 +27,7 @@ class TransactionRow(BaseModel):
     def batch_get(cls, transaction_ids: List[int]) -> List["TransactionRow"]:
         db = Database()
         transactions = db.batch_query(
-            TransactionRowOrm,
+            DealOrm,
             transaction_ids,
             columns=["id", "user_id", "name", "status", "type"],
         )

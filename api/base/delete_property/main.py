@@ -18,8 +18,8 @@ async def delete_property(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        await db.batch_delete(PropertyOrm, {"id": data})
+        await db.batch_delete(PropertyDetailsOrm, {"id": data})
     else:
-        await db.delete(PropertyOrm, {"id": data})
+        await db.delete(PropertyDetailsOrm, {"id": data})
 
     return func.HttpResponse(status_code=200, mimetype="application/json")

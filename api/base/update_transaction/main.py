@@ -17,7 +17,7 @@ async def update_transaction(req: func.HttpRequest) -> func.HttpResponse:
 
     data = req.get_json()
 
-    transaction = TransactionOrm(
+    transaction = DealDetailsOrm(
         id=data.get("id"),
         user_id=data.get("user_id"),
         property_id=data.get("property_id"),

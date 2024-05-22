@@ -17,7 +17,7 @@ async def update_person(req: func.HttpRequest) -> func.HttpResponse:
 
     data = req.get_json()
 
-    person = PersonOrm(
+    person = PersonDetailsOrm(
         id=data.get("id"),
         user_id=data.get("user_id"),
         first_name=data.get("first_name"),

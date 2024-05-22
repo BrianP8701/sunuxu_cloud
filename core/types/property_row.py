@@ -2,12 +2,12 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 from core.database import Database
-from core.models import PropertyRowOrm
+from core.models import PropertyOrm
 from core.enums.property_type import PropertyType
 
 
 class PropertyRow(BaseModel):
-    id: Optional[int] = None
+    id: int
     user_id: int
     address: str = Field(..., max_length=255)
     mls_number: Optional[str] = Field(None, max_length=255)
@@ -20,7 +20,7 @@ class PropertyRow(BaseModel):
     def get(cls, property_id: int) -> "PropertyRow":
         db = Database()
         property = db.get(
-            PropertyRowOrm,
+            PropertyOrm,
             property_id,
             columns=[
                 "id",
@@ -39,7 +39,7 @@ class PropertyRow(BaseModel):
     def batch_get(cls, property_ids: List[int]) -> List["PropertyRow"]:
         db = Database()
         properties = db.batch_query(
-            PropertyRowOrm,
+            PropertyOrm,
             property_ids,
             columns=[
                 "id",

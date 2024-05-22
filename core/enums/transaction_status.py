@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TransactionStatus(Enum):
+class DealStatus(Enum):
     PENDING = "pending"
     CLOSED = "closed"
     EXPIRED = "expired"
