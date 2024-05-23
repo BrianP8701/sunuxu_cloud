@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 
-from core.models.associations import property_owner_association_table, person_portfolio_association_table
+from core.models.associations import property_owner_association, person_portfolio_association
 
 
 class PersonDetailsOrm(Base):
@@ -12,18 +12,11 @@ class PersonDetailsOrm(Base):
 
     notes = Column(String)
     language = Column(String(255), default="english")
-    address = Column(String(255))  # Person's current address of residence
-    google_place_id = Column(String(255))
-    street_number = Column(String(255))
-    street_name = Column(String(255))
-    street_suffix = Column(String(255))
-    unit = Column(String(255))
-    city = Column(String(255))
-    state = Column(String(255))
-    zip = Column(String(255))
-    country = Column(String(255))
-
-    custom_fields = Column(JSON)
+    messages = relationship(
+        "MessageOrm", 
+        backref="user", 
+        order_by="MessageOrm.timestamp"
+    )
 
     person = relationship(
         "PersonOrm", 
@@ -36,13 +29,11 @@ class PersonDetailsOrm(Base):
     )
     properties = relationship(
         "PropertyOrm",
-        secondary=property_owner_association_table,
+        secondary=property_owner_association,
         back_populates="owners",
     )
     residence = relationship("PropertyOrm", uselist=False)
-    portfolio = relationship("PropertyOrm", secondary=person_portfolio_association_table)
-
-    secondary_user = relationship("SecondaryUserOrm", back_populates="person", uselist=False)
+    portfolio = relationship("PropertyOrm", secondary=person_portfolio_association)
 
 
     def to_dict(self) -> dict:

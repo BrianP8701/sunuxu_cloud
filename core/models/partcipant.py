@@ -12,7 +12,6 @@ class ParticipantOrm(Base):
         Integer, ForeignKey("deals.id", ondelete="CASCADE"), nullable=False
     )
 
-
     role = Column(
         Enum(
             "buyer",

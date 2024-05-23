@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON
+from sqlalchemy import Column, Integer, String, DateTime, JSON, LargeBinary, Boolean
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
@@ -15,10 +15,31 @@ class UserDetailsOrm(Base):
     middle_name = Column(String(255))
     last_name = Column(String(255), nullable=False)
 
+    redux_version = Column(Integer)
+    changelog_viewed = Column(Boolean)
+
+    messages = relationship(
+        "MessageOrm", 
+        backref="user", 
+        order_by="MessageOrm.timestamp"
+    )
+    developer_conversation_viewed = Column(Boolean)
+
+    signature = Column(LargeBinary, nullable=True)
+
+    forwarding_number = Column(String(20))
+    twilio_phone_number = Column(String(20))
+    twilio_sid = Column(String(255))
+
     mls_username = Column(String(255))
     mls_password = Column(String(255))
     skyslope_username = Column(String(255))
     skyslope_password = Column(String(255))
+
+    shared_email = Column(String(255), nullable=True)
+    google_access_token = Column(String(255), nullable=True)
+    google_refresh_token = Column(String(255), nullable=True)
+    google_token_expiry = Column(DateTime, nullable=True)
 
     custom_person_types = Column(MutableList.as_mutable(JSON), default=list)
     custom_property_types = Column(MutableList.as_mutable(JSON), default=list)

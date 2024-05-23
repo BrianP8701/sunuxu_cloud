@@ -4,7 +4,8 @@ from sqlalchemy import (
     String,
     DateTime,
     Boolean,
-    Enum as SqlEnum
+    Enum as SqlEnum,
+    LargeBinary,
 )
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
@@ -29,6 +30,8 @@ class PersonOrm(Base):
     created = Column(DateTime, default=func.now(), index=True)
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)
+
+    signature = Column(LargeBinary, nullable=True)
 
     users = relationship("UserOrm", secondary=user_person_association, back_populates="people")
     person_details = relationship(

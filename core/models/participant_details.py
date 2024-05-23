@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
-from sqlalchemy import Enum
+
+from core.models.associations import document_participant_association, file_participant_association
 
 
 class ParticipantDetailsOrm(Base):
@@ -26,6 +27,16 @@ class ParticipantDetailsOrm(Base):
         back_populates="participants"
     )
     person = relationship("PersonOrm")
+    documents = relationship(
+        "DocumentOrm", 
+        secondary=document_participant_association, 
+        back_populates="participants"
+    )
+    files = relationship(
+        "FileOrm", 
+        secondary=file_participant_association, 
+        back_populates="participants"
+    )
 
     def to_dict(self) -> dict:
         return {

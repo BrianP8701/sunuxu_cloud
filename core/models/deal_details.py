@@ -16,17 +16,19 @@ class DealDetailsOrm(Base):
     transaction_platform_data = Column(JSON)
     
     checklist = Column(JSON) # Dictionary of document names to document template ids, which can be None if we don't have them in our system
-    documents = Column(JSON) # Dictionary of document names to URLs of the pdf files attached to the deal
 
     notes = Column(String)
     description = Column(String)
 
-    custom_fields = Column(JSON)
-
     user = relationship("UserOrm", back_populates="deals")
     property = relationship("PropertyOrm", uselist=False)
-    participants = relationship("ParticipantOrm")
+    participants = relationship(
+        "ParticipantOrm", 
+        back_populates="deal", 
+        cascade="all, delete-orphan"
+    )    
     deal = relationship("DealOrm", back_populates="deal_details", uselist=False)
+    documents = relationship("DocumentOrm", back_populates="deal")
 
     def to_dict(self) -> dict:
         return {

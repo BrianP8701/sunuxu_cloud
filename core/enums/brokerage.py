@@ -11,4 +11,3 @@ class Brokerage(Enum):
     BERKSHIRE_HATHAWAY = "berkshire_hathaway"
     SOTHEBYS = "sothebys"
     CUSTOM = "custom"
-    UNKNOWN = "unknown"

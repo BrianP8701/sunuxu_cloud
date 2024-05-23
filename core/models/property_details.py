@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, JSON, Enum as SqlEnum
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
-from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
-from core.models.associations import property_owner_association_table, property_occupant_association_table
+from core.models.associations import property_owner_association, property_occupant_association
 from core.enums.mls import MLS
 
 class PropertyDetailsOrm(Base):
@@ -39,16 +38,14 @@ class PropertyDetailsOrm(Base):
 
     pictures = Column(String)  # List of picture URLs/ids
 
-    custom_fields = Column(JSON)
-
     notes = Column(String)
     description = Column(String)
 
     user = relationship("UserOrm", back_populates="properties")
     property = relationship("PropertyOrm", back_populates="property_details", uselist=False)
     deals = relationship("DealOrm", back_populates="property_details")
-    owners = relationship("PersonOrm", secondary=property_owner_association_table)
-    occupants = relationship("PersonOrm", secondary=property_occupant_association_table)
+    owners = relationship("PersonOrm", secondary=property_owner_association)
+    occupants = relationship("PersonOrm", secondary=property_occupant_association)
 
     def to_dict(self) -> dict:
         return {
