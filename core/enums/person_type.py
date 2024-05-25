@@ -3,6 +3,7 @@ from enum import Enum
 
 class PersonType(Enum):
     LEAD = "lead"
+    COLD_LEAD = "cold_lead"
     PROSPECT = "prospect"
     CLIENT = "client"
     PAST_CLIENT = "past_client"

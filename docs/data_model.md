@@ -18,6 +18,14 @@ people/participant
 users(agents, brokers)
 transactions, listing
 
+In the table I want to be able to sort people by:
+created, updated, viewed, communicated, temperature
+
+include exclude:
+active, inactive (participating in deal or not), lead, prospect, previous client, client, agent, broker, attorney, lender, assigned agents
+so status and types
+seen, unseen (messages)
+temperature
 
 Skyslope:
     Transactions:

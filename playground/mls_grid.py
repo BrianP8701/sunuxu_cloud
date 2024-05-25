@@ -8,12 +8,11 @@ headers = {
 
 # Ensure proper URL encoding
 city = "Horton"
-# address_keyword = "1000 1st avenue"
 
 # Correctly format and encode the URL parameters
 search_url = (
-    "https://api.mlsgrid.com/v2/Property"
-    "?$filter=moonxu eq 'actris' and MlgCanView eq true and (City eq '{city}')"
+    "https://api-demo.mlsgrid.com/v2/Lookup"
+    "?$filter=OriginatingSystemName eq 'sunflower' and MlgCanView eq true and (LookupName eq '{city}')"
     "&$select=UnparsedAddress,ListPrice,BathroomsTotal,BedroomsTotal,LivingArea,ListingKey"
     "&$expand=Media,Rooms,UnitTypes"
 ).format(city=city)

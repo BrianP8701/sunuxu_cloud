@@ -12,6 +12,8 @@ class PersonDetailsOrm(Base):
 
     notes = Column(String)
     language = Column(String(255), default="english")
+    source = Column(String(255))
+    
     messages = relationship(
         "MessageOrm", 
         backref="user", 

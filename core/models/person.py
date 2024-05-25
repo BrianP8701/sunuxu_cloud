@@ -27,6 +27,9 @@ class PersonOrm(Base):
     custom_type = Column(String, index=True)
     active = Column(Boolean, default=False, index=True, nullable=False)
 
+    last_activity = Column(DateTime, index=True)
+    temperature = Column(Integer, index=True)
+
     created = Column(DateTime, default=func.now(), index=True)
     updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
     viewed = Column(DateTime, index=True)

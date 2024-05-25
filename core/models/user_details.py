@@ -1,9 +1,11 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON, LargeBinary, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, JSON, LargeBinary, Boolean, Enum as SqlEnum
 from sqlalchemy.orm import relationship
 from core.database.abstract_sql import Base
 from sqlalchemy.sql import func
 from sqlalchemy.ext.mutable import MutableList
 
+from core.enums.mls import MLS
+from core.enums.transaction_platform import TransactionPlatform
 
 class UserDetailsOrm(Base):
     __tablename__ = "user_details"
@@ -36,10 +38,26 @@ class UserDetailsOrm(Base):
     skyslope_username = Column(String(255))
     skyslope_password = Column(String(255))
 
+    idx_website_domain = Column(String(255))
+    default_mls = Column(SqlEnum(MLS))
+    default_transaction_platform = Column(SqlEnum(TransactionPlatform))
+    default_message_new_leads = Column(Boolean)
+
+
     shared_email = Column(String(255), nullable=True)
     google_access_token = Column(String(255), nullable=True)
     google_refresh_token = Column(String(255), nullable=True)
     google_token_expiry = Column(DateTime, nullable=True)
+
+    instagram_access_token = Column(String(255), nullable=True)
+    instagram_token_expiry = Column(DateTime, nullable=True)
+    linkedin_access_token = Column(String(255), nullable=True)
+    linkedin_token_expiry = Column(DateTime, nullable=True)
+    facebook_access_token = Column(String(255), nullable=True)
+    facebook_token_expiry = Column(DateTime, nullable=True)
+    x_access_token = Column(String(255), nullable=True)
+    x_token_expiry = Column(DateTime, nullable=True)
+
 
     custom_person_types = Column(MutableList.as_mutable(JSON), default=list)
     custom_property_types = Column(MutableList.as_mutable(JSON), default=list)
