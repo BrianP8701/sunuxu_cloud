@@ -3,9 +3,7 @@ import bcrypt
 import base64
 from datetime import datetime, timedelta
 import jwt
-from functools import wraps
 import os
-import json
 
 
 def hash_password(password: str) -> str:

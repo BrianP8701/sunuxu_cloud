@@ -1,25 +1,28 @@
-from sqlalchemy import Column, Integer, String, Enum as SqlEnum
-from sqlalchemy.orm import relationship
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import Enum as SqlEnum
 
-from core.database.abstract_sql import Base
-from core.models.associations import user_team_association, team_admin_association
 from core.enums.state import State
 from core.enums.brokerage import Brokerage
+from core.models.associations import UserTeamAssociation, TeamAdminAssociation
 
-class TeamOrm(Base):
+if TYPE_CHECKING:
+    from core.models.user import User
+
+class TeamOrm(SQLModel, table=True):
     __tablename__ = "teams"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(max_length=255, nullable=False)
 
-    office = Column(String(255))
-    state = Column(SqlEnum(State))
-    brokerage = Column(SqlEnum(Brokerage))
+    office: Optional[str] = Field(default=None, max_length=255)
+    state: Optional[State] = Field(sa_column=SqlEnum(State))
+    brokerage: Optional[Brokerage] = Field(sa_column=SqlEnum(Brokerage))
 
-    users = relationship(
-        "UserOrm", secondary=user_team_association, back_populates="teams"
+    users: List["User"] = Relationship(
+        back_populates="teams", link_model=UserTeamAssociation
     )
-    admins = relationship(
-        "UserOrm", secondary=team_admin_association
+    admins: List["User"] = Relationship(
+        link_model=TeamAdminAssociation
     )
 
     def to_dict(self) -> dict:

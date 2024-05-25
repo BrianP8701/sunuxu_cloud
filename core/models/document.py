@@ -1,22 +1,22 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON
-from sqlalchemy.orm import relationship
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional, List, Dict, TYPE_CHECKING
+from core.models.associations import DocumentParticipantAssociation
 
-from core.database.abstract_sql import Base
-from core.models.associations import document_participant_association
+if TYPE_CHECKING:
+    from core.models.document_template import DocumentTemplate
+    from core.models.participant_details import ParticipantDetails
 
-class DocumentOrm(Base):
-    __tablename__ = "documents"
-    id = Column(Integer, primary_key=True)
-    document_template_id = Column(Integer, ForeignKey('document_templates.id'), unique=True)
-    deal_id = Column(Integer, ForeignKey('deal_details.id'))  # Foreign key to DealDetailsOrm
+class Document(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    document_template_id: Optional[int] = Field(default=None, foreign_key="document_templates.id", unique=True)
+    deal_id: Optional[int] = Field(default=None, foreign_key="deal_details.id")  # Foreign key to DealDetailsOrm
 
-    url = Column(String)
-    field_values = Column(JSON)
+    url: Optional[str] = Field(default=None)
+    field_values: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "JSON"})
 
-    document_template = relationship("DocumentTemplateOrm", back_populates="document")
+    document_template: Optional["DocumentTemplate"] = Relationship(back_populates="document")
 
-    participants = relationship(
-        "ParticipantDetailsOrm", 
-        secondary=document_participant_association, 
-        back_populates="documents"
+    participants: List["ParticipantDetails"] = Relationship(
+        back_populates="documents",
+        link_model=DocumentParticipantAssociation
     )

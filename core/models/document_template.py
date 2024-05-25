@@ -1,13 +1,12 @@
-from sqlalchemy import Column, Integer, String, JSON
-from core.database.abstract_sql import Base
+from sqlmodel import Field, SQLModel
+from typing import Optional, Dict, List
 
 
-class DocumentTemplateOrm(Base):
-    __tablename__ = "document_templates"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
+class DocumentTemplate(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
 
-    tags = Column(JSON)
-    url = Column(String)
-    form_fields = Column(JSON)
-    participants_needed = Column(JSON)
+    tags: Optional[Dict] = None
+    url: Optional[str] = None
+    form_fields: Optional[Dict] = None
+    participants_needed: Optional[List] = None

@@ -1,52 +1,52 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, JSON, Enum as SqlEnum
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
-from sqlalchemy import Enum
+from sqlmodel import Field, SQLModel, Relationship, JSON, DateTime
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import Enum as SqlEnum
 
-from core.models.associations import property_owner_association, property_occupant_association
 from core.enums.mls import MLS
+from core.models.associations import PropertyOwnerAssociation, PropertyOccupantAssociation
 
-class PropertyDetailsOrm(Base):
-    __tablename__ = "property_details"
-    id = Column(Integer, ForeignKey("properties.id"), primary_key=True)
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
+if TYPE_CHECKING:
+    from core.models.user import User
+    from core.models.property import Property
+    from core.models.deal import Deal
+    from core.models.person import Person
 
-    google_place_id = Column(String(255))
-    mls = Column(SqlEnum(MLS))
-    mls_data = Column(JSON)
+class PropertyDetails(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, foreign_key="properties.id", primary_key=True)
+    user_id: int = Field(foreign_key="users.id", nullable=False, sa_column_kwargs={"ondelete": "CASCADE"})
 
-    bedrooms = Column(Integer)
-    bathrooms = Column(Float)
-    floors = Column(Integer)
-    rooms = Column(Integer)
-    kitchens = Column(Integer)
-    families = Column(Integer)
-    lot_sqft = Column(Integer)
-    building_sqft = Column(Integer)
-    year_built = Column(Integer)
-    list_start_date = Column(DateTime)
-    list_end_date = Column(DateTime)
-    expiration_date = Column(DateTime)
-    attached_type = Column(
-        Enum("attached", "semi_attached", "detached", name="property_attached_types")
-    )
-    section = Column(String)
-    school_district = Column(String)
-    property_tax = Column(Float)
+    google_place_id: Optional[str] = Field(default=None, max_length=255)
+    mls: MLS
+    mls_data: Optional[dict] = Field(default=None, sa_column=JSON)
 
-    pictures = Column(String)  # List of picture URLs/ids
+    bedrooms: Optional[int] = None
+    bathrooms: Optional[float] = None
+    floors: Optional[int] = None
+    rooms: Optional[int] = None
+    kitchens: Optional[int] = None
+    families: Optional[int] = None
+    lot_sqft: Optional[int] = None
+    building_sqft: Optional[int] = None
+    year_built: Optional[int] = None
+    list_start_date: Optional[DateTime] = None
+    list_end_date: Optional[DateTime] = None
+    expiration_date: Optional[DateTime] = None
+    attached_type: Optional[str] = Field(sa_column=SqlEnum("attached", "semi_attached", "detached", name="property_attached_types"))
+    section: Optional[str] = None
+    school_district: Optional[str] = None
+    property_tax: Optional[float] = None
 
-    notes = Column(String)
-    description = Column(String)
+    pictures: Optional[str] = None  # List of picture URLs/ids
 
-    user = relationship("UserOrm", back_populates="properties")
-    property = relationship("PropertyOrm", back_populates="property_details", uselist=False)
-    deals = relationship("DealOrm", back_populates="property_details")
-    owners = relationship("PersonOrm", secondary=property_owner_association)
-    occupants = relationship("PersonOrm", secondary=property_occupant_association)
+    notes: Optional[str] = None
+    description: Optional[str] = None
 
+    user: Optional["User"] = Relationship(back_populates="properties")
+    property: Optional["Property"] = Relationship(back_populates="property_details", sa_relationship_kwargs={"uselist": False})
+    deals: List["Deal"] = Relationship(back_populates="property_details")
+    owners: List["Person"] = Relationship(link_model=PropertyOwnerAssociation)
+    occupants: List["Person"] = Relationship(link_model=PropertyOccupantAssociation)
+    
     def to_dict(self) -> dict:
         return {
             "id": self.id,

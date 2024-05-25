@@ -1,19 +1,17 @@
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import relationship
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional, List, TYPE_CHECKING
+from core.models.associations import FileParticipantAssociation
 
-from core.database.abstract_sql import Base
-from core.models.associations import file_participant_association
+if TYPE_CHECKING:
+    from core.models.participant_details import ParticipantDetails
 
-class FileOrm(Base):
-    __tablename__ = "files"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
+class File(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
 
-    url = Column(String)
-    reusable = Column(Boolean, default=False)
+    url: Optional[str] = None
+    reusable: bool = Field(default=False)
 
-    participants = relationship(
-        "ParticipantDetailsOrm", 
-        secondary=file_participant_association, 
-        back_populates="files"
+    participants: List["ParticipantDetails"] = Relationship(
+        back_populates="files", link_model=FileParticipantAssociation
     )

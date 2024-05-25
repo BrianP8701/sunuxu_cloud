@@ -1,73 +1,46 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, Enum as SqlEnum
-
-from core.database.abstract_sql import Base
+from sqlmodel import SQLModel, Field
+from typing import Optional
 from core.enums.team_role import TeamRole
 from core.enums.participant_document_status import ParticipantDocumentStatus
 
-team_admin_association = Table(
-    'team_admin_association',
-    Base.metadata,
-    Column('team_id', Integer, ForeignKey('teams.id'), primary_key=True),
-    Column('admin_id', Integer, ForeignKey('users.id'), primary_key=True)
-)
+class TeamAdminAssociation(SQLModel, table=True):
+    team_id: Optional[int] = Field(default=None, foreign_key="teams.id", primary_key=True)
+    admin_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
 
-user_team_association = Table(
-    'user_team_association',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
-    Column('team_id', Integer, ForeignKey('teams.id'), primary_key=True),
-    Column('role', SqlEnum(TeamRole), nullable=False)
-)
+class UserTeamAssociation(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
+    team_id: Optional[int] = Field(default=None, foreign_key="teams.id", primary_key=True)
+    role: TeamRole = Field(nullable=False)
 
-property_owner_association = Table(
-    "association",
-    Base.metadata,
-    Column("person_id", Integer, ForeignKey("people.id")),
-    Column("property_id", Integer, ForeignKey("properties.id")),
-)
+class PropertyOwnerAssociation(SQLModel, table=True):
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id")
+    property_id: Optional[int] = Field(default=None, foreign_key="properties.id")
 
-user_person_association = Table(
-    'user_person_association',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
-    Column('person_id', Integer, ForeignKey('people.id'), primary_key=True)
-)
+class UserPersonAssociation(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id", primary_key=True)
 
-user_property_association = Table(
-    'user_property_association',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
-    Column('property_id', Integer, ForeignKey('properties.id'), primary_key=True)
-)
+class UserPropertyAssociation(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
+    property_id: Optional[int] = Field(default=None, foreign_key="properties.id", primary_key=True)
 
-user_deal_association = Table(
-    'user_transaction_association',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
-    Column('transaction_id', Integer, ForeignKey('transactions.id'), primary_key=True)
-)
+class UserDealAssociation(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
+    transaction_id: Optional[int] = Field(default=None, foreign_key="transactions.id", primary_key=True)
 
-property_occupant_association = Table(
-    'property_occupant_association', Base.metadata,
-    Column('property_id', Integer, ForeignKey('properties.id')),
-    Column('person_id', Integer, ForeignKey('people.id'))
-)
+class PropertyOccupantAssociation(SQLModel, table=True):
+    property_id: Optional[int] = Field(default=None, foreign_key="properties.id")
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id")
 
-person_portfolio_association = Table(
-    'person_portfolio_association', Base.metadata,
-    Column('person_id', Integer, ForeignKey('people.id')),
-    Column('property_id', Integer, ForeignKey('properties.id'))
-)
+class PersonPortfolioAssociation(SQLModel, table=True):
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id")
+    property_id: Optional[int] = Field(default=None, foreign_key="properties.id")
 
-document_participant_association = Table(
-    'document_participant_association', Base.metadata,
-    Column('document_id', Integer, ForeignKey('documents.id', ondelete="CASCADE"), primary_key=True),
-    Column('participant_details_id', Integer, ForeignKey('participant_details.id', ondelete="CASCADE"), primary_key=True),
-    Column('status', SqlEnum(ParticipantDocumentStatus), nullable=False, default=ParticipantDocumentStatus.PENDING)
-)
+class DocumentParticipantAssociation(SQLModel, table=True):
+    document_id: Optional[int] = Field(default=None, foreign_key="documents.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
+    participant_details_id: Optional[int] = Field(default=None, foreign_key="participant_details.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
+    status: ParticipantDocumentStatus = Field(default=ParticipantDocumentStatus.PENDING, nullable=False)
 
-file_participant_association = Table(
-    'file_participant_association', Base.metadata,
-    Column('file_id', Integer, ForeignKey('files.id', ondelete="CASCADE"), primary_key=True),
-    Column('participant_details_id', Integer, ForeignKey('participant_details.id', ondelete="CASCADE"), primary_key=True)
-)
+class FileParticipantAssociation(SQLModel, table=True):
+    file_id: Optional[int] = Field(default=None, foreign_key="files.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
+    participant_details_id: Optional[int] = Field(default=None, foreign_key="participant_details.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})

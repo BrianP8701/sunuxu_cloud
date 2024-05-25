@@ -1,41 +1,37 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
+from sqlmodel import Field, SQLModel, Relationship, DateTime
+from typing import Optional, List, Dict, TYPE_CHECKING
+from core.models.associations import DocumentParticipantAssociation, FileParticipantAssociation
 from sqlalchemy.sql import func
 
-from core.models.associations import document_participant_association, file_participant_association
+if TYPE_CHECKING:
+    from core.models.user import User
+    from core.models.participant import Participant
+    from core.models.person import Person
+    from core.models.document import Document
+    from core.models.file import File
 
+class ParticipantDetails(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, foreign_key="participants.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", sa_column_kwargs={"ondelete": "CASCADE"})
+    person_id: int = Field(foreign_key="people_rows.id", nullable=False, sa_column_kwargs={"ondelete": "CASCADE"})
 
-class ParticipantDetailsOrm(Base):
-    __tablename__ = "participant_details"
-    id = Column(Integer, ForeignKey("participants.id", ondelete="CASCADE"), primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    person_id = Column(
-        Integer, ForeignKey("people_rows.id", ondelete="CASCADE"), nullable=False
+    notes: Optional[str] = None
+    custom_fields: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "JSON"})
+
+    created: Optional[DateTime] = Field(default=func.now(), index=True)
+    updated: Optional[DateTime] = Field(default=func.now(), sa_column_kwargs={"onupdate": func.now()}, index=True)
+    viewed: Optional[DateTime] = Field(default=None, index=True)
+
+    user: Optional["User"] = Relationship(back_populates="participants")
+    participant: Optional["Participant"] = Relationship(back_populates="participants")
+    person: Optional["Person"] = Relationship()
+    documents: List["Document"] = Relationship(
+        back_populates="participants",
+        link_model=DocumentParticipantAssociation
     )
-
-    notes = Column(String)
-    custom_fields = Column(JSON)
-
-    created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
-    viewed = Column(DateTime, index=True)
-
-    user = relationship("UserOrm", back_populates="participants")
-    participant = relationship(
-        "ParticipantOrm", 
-        back_populates="participants"
-    )
-    person = relationship("PersonOrm")
-    documents = relationship(
-        "DocumentOrm", 
-        secondary=document_participant_association, 
-        back_populates="participants"
-    )
-    files = relationship(
-        "FileOrm", 
-        secondary=file_participant_association, 
-        back_populates="participants"
+    files: List["File"] = Relationship(
+        back_populates="participants",
+        link_model=FileParticipantAssociation
     )
 
     def to_dict(self) -> dict:

@@ -1,49 +1,45 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    Boolean,
-    Enum as SqlEnum,
-    LargeBinary,
-)
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
+from sqlmodel import Field, SQLModel, Relationship, DateTime
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.sql import func
 
 from core.enums.person_type import PersonType
-from core.models.associations import user_person_association
+from core.models.associations import UserPersonAssociation
 
-class PersonOrm(Base):
+if TYPE_CHECKING:
+    from core.models.user import User
+    from core.models.person_details import PersonDetails
+    from core.models.user import User
+
+class Person(SQLModel, table=True):
     __tablename__ = "people"
-    id = Column(Integer, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     
-    first_name = Column(String(255), nullable=False)
-    middle_name = Column(String(255))
-    last_name = Column(String(255), nullable=False)    
-    email = Column(String, index=True)
-    phone = Column(String, index=True)
-    type = Column(SqlEnum(PersonType), index=True, nullable=False, default="?")
-    custom_type = Column(String, index=True)
-    active = Column(Boolean, default=False, index=True, nullable=False)
+    first_name: str = Field(max_length=255, nullable=False, index=True)
+    middle_name: Optional[str] = Field(default=None, max_length=255)
+    last_name: str = Field(max_length=255, nullable=False, index=True)    
+    email: Optional[str] = Field(default=None, index=True)
+    phone: Optional[str] = Field(default=None, index=True)
+    type: PersonType = Field(sa_column=SqlEnum(PersonType), index=True, nullable=False, default="?")
+    custom_type: Optional[str] = Field(default=None, index=True)
+    active: bool = Field(default=False, index=True, nullable=False)
+    unread_message: bool = Field(default=False, index=True, nullable=False)
 
-    last_activity = Column(DateTime, index=True)
-    temperature = Column(Integer, index=True)
+    last_activity: Optional[DateTime] = Field(default=None, index=True)
+    last_messaged: Optional[DateTime] = Field(default=None, index=True)
+    temperature: Optional[int] = Field(default=None, index=True)
 
-    created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
-    viewed = Column(DateTime, index=True)
+    created: Optional[DateTime] = Field(default=func.now(), index=True)
+    updated: Optional[DateTime] = Field(default=func.now(), sa_column_kwargs={"onupdate": func.now()}, index=True)
+    viewed: Optional[DateTime] = Field(default=None, index=True)
 
-    signature = Column(LargeBinary, nullable=True)
+    signature: Optional[bytes] = Field(default=None)
 
-    users = relationship("UserOrm", secondary=user_person_association, back_populates="people")
-    person_details = relationship(
-        "PersonDetailsOrm", 
+    users: List["User"] = Relationship(back_populates="people", link_model=UserPersonAssociation)
+    person_details: Optional["PersonDetails"] = Relationship(
         back_populates="person", 
-        uselist=False, 
-        cascade="all, delete-orphan"
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
     )
-
 
     def to_dict(self) -> dict:
         return {

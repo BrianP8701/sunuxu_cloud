@@ -1,42 +1,38 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
-
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional, List, Dict, TYPE_CHECKING
 from core.models.associations import property_owner_association, person_portfolio_association
 
+if TYPE_CHECKING:
+    from core.models.message import MessageOrm
+    from core.models.participant import ParticipantOrm
+    from core.models.person import PersonOrm
+    from core.models.property import PropertyOrm
 
-class PersonDetailsOrm(Base):
-    __tablename__ = "people_details"
-    id = Column(Integer, primary_key=True)
-    person_id = Column(Integer, ForeignKey("people.id", ondelete="CASCADE"), primary_key=True)
+class PersonDetails(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
 
-    notes = Column(String)
-    language = Column(String(255), default="english")
-    source = Column(String(255))
+    notes: Optional[str] = None
+    language: str = Field(default="english", max_length=255)
+    source: Optional[str] = Field(default=None, max_length=255)
+    viewed_properties: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "JSON"})
     
-    messages = relationship(
-        "MessageOrm", 
-        backref="user", 
-        order_by="MessageOrm.timestamp"
+    messages: List["MessageOrm"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"order_by": "MessageOrm.timestamp"}
     )
 
-    person = relationship(
-        "PersonOrm", 
-        back_populates="person_details"
+    person: Optional["PersonOrm"] = Relationship(back_populates="person_details")
+    participants: List["ParticipantOrm"] = Relationship(
+        back_populates="person",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
-    participants = relationship(
-        "ParticipantOrm", 
-        back_populates="person", 
-        cascade="all, delete-orphan"
-    )
-    properties = relationship(
-        "PropertyOrm",
-        secondary=property_owner_association,
+    properties: List["PropertyOrm"] = Relationship(
         back_populates="owners",
+        link_model=property_owner_association
     )
-    residence = relationship("PropertyOrm", uselist=False)
-    portfolio = relationship("PropertyOrm", secondary=person_portfolio_association)
-
+    residence: Optional["PropertyOrm"] = Relationship(sa_relationship_kwargs={"uselist": False})
+    portfolio: List["PropertyOrm"] = Relationship(link_model=person_portfolio_association)
 
     def to_dict(self) -> dict:
         return {

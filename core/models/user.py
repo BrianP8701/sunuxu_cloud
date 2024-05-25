@@ -1,37 +1,42 @@
-from sqlalchemy import Column, Integer, JSON
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
+from sqlmodel import Field, SQLModel, Relationship, JSON
+from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy.ext.mutable import MutableList
 
 from core.models.associations import (
-    user_person_association,
-    user_property_association,
-    user_deal_association,
-    user_team_association  # Import the association table
+    UserPersonAssociation,
+    UserPropertyAssociation,
+    UserDealAssociation,
+    UserTeamAssociation
 )
 
+if TYPE_CHECKING:
+    from core.models.person import Person
+    from core.models.property import Property
+    from core.models.deal import Deal
+    from core.models.team import Team
 
-class UserOrm(Base):
+
+class User(SQLModel, table=True):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
-    custom_person_types = Column(MutableList.as_mutable(JSON), default=list)
-    custom_property_types = Column(MutableList.as_mutable(JSON), default=list)
-    custom_transaction_types = Column(MutableList.as_mutable(JSON), default=list)
-    custom_transaction_statuses = Column(MutableList.as_mutable(JSON), default=list)
-    custom_participant_roles = Column(MutableList.as_mutable(JSON), default=list)
+    custom_person_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
+    custom_property_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
+    custom_transaction_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
+    custom_transaction_statuses: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
+    custom_participant_roles: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
 
-    people = relationship(
-        "PersonOrm", secondary=user_person_association, back_populates="users"
+    people: List["Person"] = Relationship(
+        back_populates="users", link_model=UserPersonAssociation
     )
-    properties = relationship(
-        "PropertyOrm", secondary=user_property_association, back_populates="users"
+    properties: List["Property"] = Relationship(
+        back_populates="users", link_model=UserPropertyAssociation
     )
-    deals = relationship(
-        "DealOrm", secondary=user_deal_association, back_populates="users"
+    deals: List["Deal"] = Relationship(
+        back_populates="users", link_model=UserDealAssociation
     )
-    teams = relationship(
-        "TeamOrm", secondary=user_team_association, back_populates="users"
+    teams: List["Team"] = Relationship(
+        back_populates="users", link_model=UserTeamAssociation
     )
 
     def to_dict(self) -> dict:

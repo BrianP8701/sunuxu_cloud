@@ -1,48 +1,39 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    Boolean,
-    Enum as SqlEnum,
-)
-from sqlalchemy.orm import relationship
-from core.database.abstract_sql import Base
+from sqlmodel import Field, SQLModel, Relationship, DateTime
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.sql import func
 
 from core.enums.property_type import PropertyType
-from core.models.associations import user_property_association
+from core.models.associations import UserPropertyAssociation
 
+if TYPE_CHECKING:
+    from core.models.user import User
+    from core.models.property_details import PropertyDetails
 
-class PropertyOrm(Base):
+class Property(SQLModel, table=True):
     __tablename__ = "properties"
-    id = Column(Integer, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
-    street_number = Column(String(255), nullable=False)
-    street_name = Column(String(255), nullable=False)
-    street_suffix = Column(String(255), nullable=False)
-    city = Column(String(255), nullable=False)
-    unit = Column(String(255))
-    state = Column(String(255), nullable=False)
-    zip_code = Column(String(255), nullable=False)
-    country = Column(String(255), nullable=False)    
-    mls_number = Column(String(255), index=True)
-    type = Column(
-        SqlEnum(PropertyType), index=True, nullable=False, default=PropertyType.UNKNOWN
-    )
-    custom_type = Column(String(255), index=True)
-    active = Column(Boolean, default=False, index=True, nullable=False)
-    price = Column(Integer)
+    street_number: str = Field(max_length=255, nullable=False)
+    street_name: str = Field(max_length=255, nullable=False)
+    street_suffix: str = Field(max_length=255, nullable=False)
+    city: str = Field(max_length=255, nullable=False)
+    unit: Optional[str] = Field(default=None, max_length=255)
+    state: str = Field(max_length=255, nullable=False)
+    zip_code: str = Field(max_length=255, nullable=False)
+    country: str = Field(max_length=255, nullable=False)
+    mls_number: Optional[str] = Field(default=None, max_length=255, index=True)
+    type: PropertyType = Field(sa_column=SqlEnum(PropertyType), index=True, nullable=False, default=PropertyType.UNKNOWN)
+    custom_type: Optional[str] = Field(default=None, max_length=255, index=True)
+    active: bool = Field(default=False, index=True, nullable=False)
+    price: Optional[int] = Field(default=None)
 
-    created = Column(DateTime, default=func.now(), index=True)
-    updated = Column(DateTime, default=func.now(), onupdate=func.now(), index=True)
-    viewed = Column(DateTime, index=True)
+    created: Optional[DateTime] = Field(default=func.now(), index=True)
+    updated: Optional[DateTime] = Field(default=func.now(), sa_column_kwargs={"onupdate": func.now()}, index=True)
+    viewed: Optional[DateTime] = Field(default=None, index=True)
 
-    users = relationship("UserOrm", secondary=user_property_association, back_populates="property_rows")
-    property_details = relationship(
-        "PropertyDetailsOrm", back_populates="property", uselist=False, cascade="all, delete-orphan"
-    )
-
+    users: List["User"] = Relationship(back_populates="property_rows", link_model=UserPropertyAssociation)
+    property_details: Optional["PropertyDetails"] = Relationship(back_populates="property", sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"})
 
     def to_dict(self) -> dict:
         return {
