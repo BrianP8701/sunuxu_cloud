@@ -1,6 +1,8 @@
 from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List, Dict, TYPE_CHECKING
-from core.models.associations import property_owner_association, person_portfolio_association
+from sqlalchemy import JSON, Column
+from typing import Optional, List, Dict, TYPE_CHECKING, Any
+
+from core.models.associations import PropertyOwnerAssociation, PersonPortfolioAssociation
 
 if TYPE_CHECKING:
     from core.models.message import MessageOrm
@@ -8,15 +10,16 @@ if TYPE_CHECKING:
     from core.models.person import PersonOrm
     from core.models.property import PropertyOrm
 
-class PersonDetails(SQLModel, table=True):
+class PersonDetailsOrm(SQLModel, table=True):
+    __tablename__ = "person_details"
     id: Optional[int] = Field(default=None, primary_key=True)
-    person_id: Optional[int] = Field(default=None, foreign_key="people.id", primary_key=True, sa_column_kwargs={"ondelete": "CASCADE"})
+    person_id: Optional[int] = Field(default=None, foreign_key="people.id")
 
     notes: Optional[str] = None
     language: str = Field(default="english", max_length=255)
     source: Optional[str] = Field(default=None, max_length=255)
-    viewed_properties: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "JSON"})
-    
+    viewed_properties: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+
     messages: List["MessageOrm"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"order_by": "MessageOrm.timestamp"}
@@ -24,15 +27,13 @@ class PersonDetails(SQLModel, table=True):
 
     person: Optional["PersonOrm"] = Relationship(back_populates="person_details")
     participants: List["ParticipantOrm"] = Relationship(
-        back_populates="person",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
     properties: List["PropertyOrm"] = Relationship(
-        back_populates="owners",
-        link_model=property_owner_association
+        link_model=PropertyOwnerAssociation
     )
     residence: Optional["PropertyOrm"] = Relationship(sa_relationship_kwargs={"uselist": False})
-    portfolio: List["PropertyOrm"] = Relationship(link_model=person_portfolio_association)
+    portfolio: List["PropertyOrm"] = Relationship(link_model=PersonPortfolioAssociation)
 
     def to_dict(self) -> dict:
         return {

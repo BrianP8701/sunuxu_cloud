@@ -82,10 +82,10 @@ class AzurePostgreSQLDatabase:
         async with self.engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
 
-    @retry_on_disconnection()
-    async def delete_tables(self) -> None:
+    async def delete_tables(self):
         async with self.engine.begin() as conn:
-            await conn.run_sync(SQLModel.metadata.drop_all)
+            for table in reversed(SQLModel.metadata.sorted_tables):
+                await conn.run_sync(lambda conn: conn.execute(text(f"DROP TABLE IF EXISTS {table.name} CASCADE")))
 
     @retry_on_disconnection()
     async def clear_tables(self) -> None:

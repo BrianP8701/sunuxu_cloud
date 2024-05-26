@@ -1,22 +1,24 @@
 from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List, Dict, TYPE_CHECKING
+from typing import Optional, List, Dict, TYPE_CHECKING, Any
 from core.models.associations import DocumentParticipantAssociation
+from sqlalchemy import Column, JSON
 
 if TYPE_CHECKING:
-    from core.models.document_template import DocumentTemplate
-    from core.models.participant_details import ParticipantDetails
+    from core.models.document_template import DocumentTemplateOrm
+    from core.models.participant_details import ParticipantDetailsOrm
 
-class Document(SQLModel, table=True):
+class DocumentOrm(SQLModel, table=True):
+    __tablename__ = "documents"
     id: Optional[int] = Field(default=None, primary_key=True)
     document_template_id: Optional[int] = Field(default=None, foreign_key="document_templates.id", unique=True)
     deal_id: Optional[int] = Field(default=None, foreign_key="deal_details.id")  # Foreign key to DealDetailsOrm
 
     url: Optional[str] = Field(default=None)
-    field_values: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "JSON"})
+    field_values: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
 
-    document_template: Optional["DocumentTemplate"] = Relationship(back_populates="document")
+    document_template: Optional["DocumentTemplateOrm"] = Relationship(back_populates="document")
 
-    participants: List["ParticipantDetails"] = Relationship(
+    participants: List["ParticipantDetailsOrm"] = Relationship(
         back_populates="documents",
         link_model=DocumentParticipantAssociation
     )

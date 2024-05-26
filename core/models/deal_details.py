@@ -1,36 +1,37 @@
 from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List, Dict, TYPE_CHECKING
-from sqlalchemy import Enum as SqlEnum
+from typing import Optional, List, Dict, TYPE_CHECKING, Any
+from sqlalchemy import Enum as SqlEnum, Column, JSON
 
 from core.enums.transaction_platform import TransactionPlatform
 
 if TYPE_CHECKING:
-    from core.models.user import User
-    from core.models.property import Property
-    from core.models.participant import Participant
-    from core.models.deal import Deal
-    from core.models.document import Document
+    from core.models.user import UserOrm
+    from core.models.property import PropertyOrm
+    from core.models.participant import ParticipantOrm
+    from core.models.deal import DealOrm
+    from core.models.document import DocumentOrm
 
-class DealDetails(SQLModel, table=True):
+class DealDetailsOrm(SQLModel, table=True):
+    __tablename__ = "deal_details"
     id: Optional[int] = Field(default=None, primary_key=True, foreign_key="deals.id")
     user_id: int = Field(foreign_key="users.id")
     property_id: Optional[int] = Field(default=None, foreign_key="properties.id")
 
     transaction_platform: Optional[TransactionPlatform] = Field(sa_column=SqlEnum(TransactionPlatform), default=None, )
-    transaction_platform_data: Optional[Dict] = Field(default=None, sa_column_kwargs={"type_": "json"})
+    transaction_platform_data: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
 
-    checklist: Optional[Dict[str, Optional[int]]] = Field(default=None, sa_column_kwargs={"type_": "json"})  # Dictionary of document names to document template ids, which can be None if we don't have them in our system
+    checklist: Optional[Dict[str, Optional[int]]] = Field(default=None, sa_column=Column(JSON))  # Dictionary of document names to document template ids, which can be None if we don't have them in our system
 
     notes: Optional[str] = None
     description: Optional[str] = None
 
-    user: Optional["User"] = Relationship(back_populates="deals")
-    property: Optional["Property"] = Relationship(sa_relationship_kwargs={"uselist": False})
-    participants: List["Participant"] = Relationship(
+    user: Optional["UserOrm"] = Relationship(back_populates="deals")
+    property: Optional["PropertyOrm"] = Relationship(sa_relationship_kwargs={"uselist": False})
+    participants: List["ParticipantOrm"] = Relationship(
         back_populates="deal", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
-    deal: Optional["Deal"] = Relationship(back_populates="deal_details", sa_relationship_kwargs={"uselist": False})
-    documents: List["Document"] = Relationship(back_populates="deal")
+    deal: Optional["DealOrm"] = Relationship(back_populates="deal_details", sa_relationship_kwargs={"uselist": False})
+    documents: List["DocumentOrm"] = Relationship(back_populates="deal")
 
     def to_dict(self) -> dict:
         return {

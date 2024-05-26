@@ -1,6 +1,6 @@
-from sqlmodel import Field, SQLModel, Relationship, JSON
+from sqlmodel import Field, SQLModel, Relationship
 from typing import List, Optional, TYPE_CHECKING
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy import JSON  # Import JSON directly from SQLAlchemy
 
 from core.models.associations import (
     UserPersonAssociation,
@@ -10,29 +10,22 @@ from core.models.associations import (
 )
 
 if TYPE_CHECKING:
-    from core.models.person import Person
-    from core.models.property import Property
-    from core.models.deal import Deal
+    from core.models.person import PersonOrm
+    from core.models.property import PropertyOrm
+    from core.models.deal import DealOrm
     from core.models.team import Team
 
-
-class User(SQLModel, table=True):
+class UserOrm(SQLModel, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    custom_person_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
-    custom_property_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
-    custom_transaction_types: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
-    custom_transaction_statuses: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
-    custom_participant_roles: List[str] = Field(default_factory=list, sa_column=MutableList.as_mutable(JSON))
-
-    people: List["Person"] = Relationship(
+    people: List["PersonOrm"] = Relationship(
         back_populates="users", link_model=UserPersonAssociation
     )
-    properties: List["Property"] = Relationship(
+    properties: List["PropertyOrm"] = Relationship(
         back_populates="users", link_model=UserPropertyAssociation
     )
-    deals: List["Deal"] = Relationship(
+    deals: List["DealOrm"] = Relationship(
         back_populates="users", link_model=UserDealAssociation
     )
     teams: List["Team"] = Relationship(

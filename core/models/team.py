@@ -7,7 +7,7 @@ from core.enums.brokerage import Brokerage
 from core.models.associations import UserTeamAssociation, TeamAdminAssociation
 
 if TYPE_CHECKING:
-    from core.models.user import User
+    from core.models.user import UserOrm
 
 class TeamOrm(SQLModel, table=True):
     __tablename__ = "teams"
@@ -18,10 +18,10 @@ class TeamOrm(SQLModel, table=True):
     state: Optional[State] = Field(sa_column=SqlEnum(State))
     brokerage: Optional[Brokerage] = Field(sa_column=SqlEnum(Brokerage))
 
-    users: List["User"] = Relationship(
+    users: List["UserOrm"] = Relationship(
         back_populates="teams", link_model=UserTeamAssociation
     )
-    admins: List["User"] = Relationship(
+    admins: List["UserOrm"] = Relationship(
         link_model=TeamAdminAssociation
     )
 

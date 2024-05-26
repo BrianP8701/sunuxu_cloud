@@ -1,28 +1,31 @@
 from sqlmodel import Field, SQLModel, Relationship
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
+from sqlalchemy import Column, DateTime, func, Enum as SqlEnum
+
 from core.enums.transaction_type import DealType
 from core.enums.transaction_status import DealStatus
-from core.models.associations import user_deal_association
+from core.models.associations import UserDealAssociation
 
 if TYPE_CHECKING:
-    from core.models.user import User
-    from core.models.deal_details import DealDetails
+    from core.models.user import UserOrm
+    from core.models.deal_details import DealDetailsOrm
 
-class Deal(SQLModel, table=True):
+class DealOrm(SQLModel, table=True):
+    __tablename__ = "deals"
     id: Optional[int] = Field(default=None, primary_key=True)
     address: str = Field(max_length=255, nullable=False)
     buyer_name: Optional[str] = Field(default=None, max_length=255)
 
-    status: DealStatus = Field(sa_column=Field(sa_column_kwargs={"type_": "enum"}), default=DealStatus.UNKNOWN, nullable=False, index=True)
-    type: DealType = Field(sa_column=Field(sa_column_kwargs={"type_": "enum"}), default=DealType.UNKNOWN, nullable=False, index=True)
+    status: DealStatus = Field(sa_column=Column(SqlEnum(DealStatus), default=DealStatus.UNKNOWN, nullable=False, index=True))
+    type: DealType = Field(sa_column=Column(SqlEnum(DealType), default=DealType.UNKNOWN, nullable=False, index=True))
 
-    created: datetime = Field(default_factory=datetime.utcnow, index=True)
-    updated: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow}, index=True)
-    viewed: Optional[datetime] = Field(default=None, index=True)
+    created: datetime = Field(index=True)    
+    updated: Optional[datetime] = Field(sa_column=Column(DateTime, index=True, default=None, onupdate=func.now()))
+    viewed: Optional[datetime] = Field(index=True)
 
-    users: List["User"] = Relationship(back_populates="transaction_rows", link_model=user_deal_association)
-    deal_details: Optional["DealDetails"] = Relationship(back_populates="deal", sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"})
+    users: List["UserOrm"] = Relationship(back_populates="transaction_rows", link_model=UserDealAssociation)
+    deal_details: Optional["DealDetailsOrm"] = Relationship(back_populates="deal", sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"})
 
     def to_dict(self) -> dict:
         return {

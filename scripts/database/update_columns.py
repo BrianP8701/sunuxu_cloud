@@ -1,6 +1,7 @@
 import asyncio
 
-from core.database import Databasefrom core.models import *
+from core.database import Database
+from core.models import *
 
 
 async def update_columns():

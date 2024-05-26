@@ -1,23 +1,22 @@
-from sqlmodel import Field, SQLModel, Relationship, JSON, DateTime
+from sqlmodel import Field, SQLModel, Relationship, JSON
 from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import Enum as SqlEnum
-
-from core.enums.mls import MLS
+from sqlalchemy import Enum as SqlEnum, Column, Integer, ForeignKey
+from datetime import datetime
 from core.models.associations import PropertyOwnerAssociation, PropertyOccupantAssociation
 
 if TYPE_CHECKING:
-    from core.models.user import User
-    from core.models.property import Property
-    from core.models.deal import Deal
-    from core.models.person import Person
+    from core.models.user import UserOrm
+    from core.models.property import PropertyOrm
+    from core.models.deal import DealOrm
+    from core.models.person import PersonOrm
 
-class PropertyDetails(SQLModel, table=True):
+class PropertyDetailsOrm(SQLModel, table=True):
+    __tablename__ = "property_details"
     id: Optional[int] = Field(default=None, foreign_key="properties.id", primary_key=True)
-    user_id: int = Field(foreign_key="users.id", nullable=False, sa_column_kwargs={"ondelete": "CASCADE"})
+    user_id: int = Field(sa_column=Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False))
 
     google_place_id: Optional[str] = Field(default=None, max_length=255)
-    mls: MLS
-    mls_data: Optional[dict] = Field(default=None, sa_column=JSON)
+    mls: Optional[str] = Field(default=None)
 
     bedrooms: Optional[int] = None
     bathrooms: Optional[float] = None
@@ -28,9 +27,9 @@ class PropertyDetails(SQLModel, table=True):
     lot_sqft: Optional[int] = None
     building_sqft: Optional[int] = None
     year_built: Optional[int] = None
-    list_start_date: Optional[DateTime] = None
-    list_end_date: Optional[DateTime] = None
-    expiration_date: Optional[DateTime] = None
+    list_start_date: Optional[datetime] = None
+    list_end_date: Optional[datetime] = None
+    expiration_date: Optional[datetime] = None
     attached_type: Optional[str] = Field(sa_column=SqlEnum("attached", "semi_attached", "detached", name="property_attached_types"))
     section: Optional[str] = None
     school_district: Optional[str] = None
@@ -41,11 +40,11 @@ class PropertyDetails(SQLModel, table=True):
     notes: Optional[str] = None
     description: Optional[str] = None
 
-    user: Optional["User"] = Relationship(back_populates="properties")
-    property: Optional["Property"] = Relationship(back_populates="property_details", sa_relationship_kwargs={"uselist": False})
-    deals: List["Deal"] = Relationship(back_populates="property_details")
-    owners: List["Person"] = Relationship(link_model=PropertyOwnerAssociation)
-    occupants: List["Person"] = Relationship(link_model=PropertyOccupantAssociation)
+    user: Optional["UserOrm"] = Relationship(back_populates="properties")
+    property: Optional["PropertyOrm"] = Relationship(back_populates="property_details", sa_relationship_kwargs={"uselist": False})
+    deals: List["DealOrm"] = Relationship(back_populates="property_details")
+    owners: List["PersonOrm"] = Relationship(link_model=PropertyOwnerAssociation)
+    occupants: List["PersonOrm"] = Relationship(link_model=PropertyOccupantAssociation)
     
     def to_dict(self) -> dict:
         return {
