@@ -4,7 +4,7 @@ import json
 
 from core.database import Database
 from core.models import UserOrm
-from core.security import check_password, generate_tokens
+from core.utils.security import check_password, generate_tokens
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
 blueprint = func.Blueprint()

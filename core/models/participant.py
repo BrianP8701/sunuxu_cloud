@@ -27,18 +27,3 @@ class ParticipantOrm(SQLModel, table=True):
         back_populates="participant", 
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
     )
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "person_id": self.person_id,
-            "role": self.role,
-            "custom_role": self.custom_role,
-            "created": self.created,
-            "updated": self.updated,
-            "viewed": self.viewed,
-            "name": self.person_row.name,
-            "email": self.person_row.email,
-            "phone": self.person_row.phone,
-        }

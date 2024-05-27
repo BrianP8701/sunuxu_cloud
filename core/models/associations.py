@@ -12,10 +12,6 @@ class UserTeamAssociation(SQLModel, table=True):
     team_id: Optional[int] = Field(default=None, foreign_key="teams.id", primary_key=True)
     role: TeamRole = Field(nullable=False)
 
-class PropertyOwnerAssociation(SQLModel, table=True):
-    person_id: Optional[int] = Field(default=None, foreign_key="people.id", primary_key=True)
-    property_id: Optional[int] = Field(default=None, foreign_key="properties.id", primary_key=True)
-
 class UserPersonAssociation(SQLModel, table=True):
     user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
     person_id: Optional[int] = Field(default=None, foreign_key="people.id", primary_key=True)

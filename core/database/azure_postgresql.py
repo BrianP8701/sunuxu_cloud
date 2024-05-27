@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import asyncio
 from functools import wraps
-from typing import List, Type, Any
+from typing import List, Type, Any, Optional
 
 from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
 from sqlmodel import SQLModel, select
@@ -77,6 +77,9 @@ class AzurePostgreSQLDatabase:
             await cls._instance.engine.dispose()
             cls._instance = None
 
+    def get_session(self) -> AsyncSession:
+        return self.sessionmaker()
+
     @retry_on_disconnection()
     async def create_tables(self) -> None:
         async with self.engine.begin() as conn:
@@ -88,30 +91,30 @@ class AzurePostgreSQLDatabase:
                 await conn.run_sync(lambda conn: conn.execute(text(f"DROP TABLE IF EXISTS {table.name} CASCADE")))
 
     @retry_on_disconnection()
-    async def clear_tables(self) -> None:
-        async with self.sessionmaker() as session:
+    async def clear_tables(self, session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             meta = SQLModel.metadata
             for table in reversed(meta.sorted_tables):
                 await session.execute(table.delete())
             await session.commit()
 
     @retry_on_disconnection()
-    async def insert(self, model: SQLModel) -> SQLModel:
-        async with self.sessionmaker() as session:
+    async def insert(self, model: SQLModel, session: Optional[AsyncSession] = None) -> SQLModel:
+        async with (session or self.sessionmaker()) as session:
             session.add(model)
             await session.commit()
             await session.refresh(model)
             return model
 
     @retry_on_disconnection()
-    async def update(self, model: SQLModel) -> None:
-        async with self.sessionmaker() as session:
+    async def update(self, model: SQLModel, session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             await session.merge(model)
             await session.commit()
 
     @retry_on_disconnection()
-    async def delete(self, model_class: Type[SQLModel], conditions: dict) -> None:
-        async with self.sessionmaker() as session:
+    async def delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             for key, value in conditions.items():
                 query = query.filter(getattr(model_class, key) == value)
@@ -126,8 +129,12 @@ class AzurePostgreSQLDatabase:
         model_class: Type[SQLModel],
         conditions: dict = None,
         columns: List[str] = None,
+        limit: int = None,
+        offset: int = None,
+        order_by: Any = None,
+        session: Optional[AsyncSession] = None,
     ) -> List[SQLModel]:
-        async with self.sessionmaker() as session:
+        async with (session or self.sessionmaker()) as session:
             if columns:
                 query = select([getattr(model_class, column) for column in columns])
             else:
@@ -137,14 +144,22 @@ class AzurePostgreSQLDatabase:
                 for key, value in conditions.items():
                     query = query.filter(getattr(model_class, key) == value)
 
+            if order_by is not None:
+                query = query.order_by(order_by)
+
+            if limit is not None:
+                query = query.limit(limit)
+            if offset is not None:
+                query = query.offset(offset)
+
             result = await session.execute(query)
             return result.scalars().all()
 
     @retry_on_disconnection()
     async def get(
-        self, model_class: Type[SQLModel], id: int, columns: List[str] = None
+        self, model_class: Type[SQLModel], id: int, columns: List[str] = None, session: Optional[AsyncSession] = None
     ) -> SQLModel:
-        async with self.sessionmaker() as session:
+        async with (session or self.sessionmaker()) as session:
             if columns:
                 query = select([getattr(model_class, column) for column in columns])
             else:
@@ -154,8 +169,8 @@ class AzurePostgreSQLDatabase:
             return result.scalars().first()
 
     @retry_on_disconnection()
-    async def exists(self, model_class: Type[SQLModel], conditions: dict = None) -> bool:
-        async with self.sessionmaker() as session:
+    async def exists(self, model_class: Type[SQLModel], conditions: dict = None, session: Optional[AsyncSession] = None) -> bool:
+        async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             if conditions:
                 for key, value in conditions.items():
@@ -164,8 +179,8 @@ class AzurePostgreSQLDatabase:
             return result.scalars().first() is not None
 
     @retry_on_disconnection()
-    async def execute_raw_sql(self, sql: str) -> Any:
-        async with self.sessionmaker() as session:
+    async def execute_raw_sql(self, sql: str, session: Optional[AsyncSession] = None) -> Any:
+        async with (session or self.sessionmaker()) as session:
             result = await session.execute(text(sql))
             if result.returns_rows:
                 return result.fetchall()
@@ -174,8 +189,8 @@ class AzurePostgreSQLDatabase:
                 return None
 
     @retry_on_disconnection()
-    async def perform_transaction(self, operations: callable) -> None:
-        async with self.sessionmaker() as session:
+    async def perform_transaction(self, operations: callable, session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             try:
                 await operations(session)
                 await session.commit()
@@ -184,14 +199,14 @@ class AzurePostgreSQLDatabase:
                 raise e
 
     @retry_on_disconnection()
-    async def batch_insert(self, models: List[SQLModel]) -> None:
-        async with self.sessionmaker() as session:
+    async def batch_insert(self, models: List[SQLModel], session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             session.add_all(models)
             await session.commit()
 
     @retry_on_disconnection()
-    async def batch_delete(self, model_class: Type[SQLModel], conditions: dict) -> None:
-        async with self.sessionmaker() as session:
+    async def batch_delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[AsyncSession] = None) -> None:
+        async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             for attr, value in conditions.items():
                 if isinstance(value, list):
@@ -209,8 +224,9 @@ class AzurePostgreSQLDatabase:
         model_class: Type[SQLModel],
         conditions: dict = None,
         columns: List[str] = None,
+        session: Optional[AsyncSession] = None,
     ) -> List[SQLModel]:
-        async with self.sessionmaker() as session:
+        async with (session or self.sessionmaker()) as session:
             if columns:
                 column_objects = [getattr(model_class, column) for column in columns]
                 query = select(*column_objects)
@@ -229,9 +245,9 @@ class AzurePostgreSQLDatabase:
 
     @retry_on_disconnection()
     async def batch_get(
-        self, model_class: Type[SQLModel], ids: List[int], columns: List[str] = None
+        self, model_class: Type[SQLModel], ids: List[int], columns: List[str] = None, session: Optional[AsyncSession] = None
     ) -> List[SQLModel]:
-        async with self.sessionmaker() as session:
+        async with (session or self.sessionmaker()) as session:
             if columns:
                 column_objects = [getattr(model_class, column) for column in columns]
                 query = select(*column_objects)

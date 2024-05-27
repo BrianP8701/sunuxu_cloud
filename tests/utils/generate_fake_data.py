@@ -4,7 +4,7 @@ import random
 from core.models import *
 import asyncio
 
-from core.security import hash_password
+from core.utils.security import hash_password
 from core.database import Database
 
 db = Database()

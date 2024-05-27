@@ -1,66 +1,48 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-from core.database import Database
-from core.models import PropertyOrm
+from core.models.property import PropertyOrm
 from core.enums.property_type import PropertyType
+from core.models.property import Property
+from core.utils.strings import assemble_address
 
 
 class PropertyRow(BaseModel):
-    id: int
-    user_id: int
-    address: str = Field(..., max_length=255)
-    mls_number: Optional[str] = Field(None, max_length=255)
-    type: PropertyType = Field(default=PropertyType.UNKNOWN)
-    custom_type: Optional[str] = None
-    active: bool = Field(default=False)
-    price: Optional[int] = None
+    id: Optional[int]
+    address: str
+    mls_number: Optional[str]
+    type: PropertyType
+    custom_type: Optional[str]
+    active: bool
+    price: Optional[int]
+
+    orm: Optional[Property]
 
     @classmethod
-    def get(cls, property_id: int) -> "PropertyRow":
-        db = Database()
-        property = db.get(
-            PropertyOrm,
-            property_id,
-            columns=[
-                "id",
-                "user_id",
-                "address",
-                "mls_number",
-                "type",
-                "custom_type",
-                "active",
-                "price",
-            ],
+    def from_orm(cls, property: PropertyOrm):
+        return cls(
+            id=property,
+            address=assemble_address(
+                property.street_number, property.street_name, 
+                property.street_suffix, property.city, property.unit, 
+                property.state, property.zip_code
+            ),
+            mls_number=property.mls_number,
+            type=property.type,
+            custom_type=property.custom_type,
+            active=property.active,
+            price=property.price,
+            orm=property
         )
-        return cls(**property.to_dict())
 
-    @classmethod
-    def batch_get(cls, property_ids: List[int]) -> List["PropertyRow"]:
-        db = Database()
-        properties = db.batch_query(
-            PropertyOrm,
-            property_ids,
-            columns=[
-                "id",
-                "user_id",
-                "address",
-                "mls_number",
-                "type",
-                "custom_type",
-                "active",
-                "price",
-            ],
-        )
-        return [cls(**property.to_dict()) for property in properties]
-
-    def to_dict(self) -> dict:
+    def to_dict(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
             "address": self.address,
             "mls_number": self.mls_number,
-            "type": self.type,
+            "type": self.type.value,
+            "custom_type": self.custom_type,
             "active": self.active,
-            "price": self.price,
+            "price": self.price
         }

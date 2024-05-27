@@ -2,7 +2,7 @@
 import pytest
 from core.database import Databasefrom core.models import *
 from core.utils.search import search
-from core.security import hash_password
+from core.utils.security import hash_password
 import faker
 
 fake = faker.Faker()

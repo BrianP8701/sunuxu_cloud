@@ -35,28 +35,3 @@ class PropertyOrm(SQLModel, table=True):
 
     users: List["UserOrm"] = Relationship(back_populates="property_rows", link_model=UserPropertyAssociation)
     property_details: Optional["PropertyDetailsOrm"] = Relationship(back_populates="property", sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"})
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "address": self.address,
-            "active": self.active,
-            "type": self.type,
-            "price": self.price,
-            "created": self.created.isoformat() if self.created else None,
-            "updated": self.updated.isoformat() if self.updated else None,
-            "viewed": self.viewed.isoformat() if self.viewed else None,
-        }
-
-    def to_table_row(self) -> dict:
-        full_address = f"{self.street_number} {self.street_name} {self.street_suffix if self.street_suffix else ''} {self.unit if self.unit else ''}, {self.city}, {self.state} {self.zip_code}".replace(
-            "  ", " "
-        )
-        return {
-            "id": self.id,
-            "address": full_address,
-            "price": self.price,
-            "status": self.status,
-            "type": self.type,
-        }

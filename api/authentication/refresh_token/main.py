@@ -2,7 +2,7 @@
 import azure.functions as func
 import json
 
-from core.security import refresh_access_token
+from core.utils.security import refresh_access_token
 from api.api_utils import api_error_handler, return_server_error
 
 blueprint = func.Blueprint()

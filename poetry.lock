@@ -1980,6 +1980,16 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "uuid"
+version = "1.30"
+description = "UUID object and generation functions (Python 2.3 or higher)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "uuid-1.30.tar.gz", hash = "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"},
+]
+
+[[package]]
 name = "xlsxwriter"
 version = "3.2.0"
 description = "A Python module for creating Excel XLSX files."
@@ -2096,4 +2106,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "457b6854e9c9887dd7197da395a010ceed8f74576ba8dea33f4e03d477aa76f2"
+content-hash = "a60c3ec04b874db54c53dd5a1cf26bcc052383c01808f13630c7b9a6325e7a27"

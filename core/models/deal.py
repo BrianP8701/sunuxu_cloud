@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class DealOrm(SQLModel, table=True):
     __tablename__ = "deals"
     id: Optional[int] = Field(default=None, primary_key=True)
-    address: str = Field(max_length=255, nullable=False)
+    address: Optional[str] = Field(max_length=255, nullable=False)
     buyer_name: Optional[str] = Field(default=None, max_length=255)
 
     status: DealStatus = Field(sa_column=Column(SqlEnum(DealStatus), default=DealStatus.UNKNOWN, nullable=False, index=True))
@@ -26,22 +26,3 @@ class DealOrm(SQLModel, table=True):
 
     users: List["UserOrm"] = Relationship(back_populates="transaction_rows", link_model=UserDealAssociation)
     deal_details: Optional["DealDetailsOrm"] = Relationship(back_populates="deal", sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"})
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type,
-            "status": self.status,
-            "notes": self.notes,
-            "description": self.description,
-            "created": self.created.isoformat() if self.created else None,
-            "updated": self.updated.isoformat() if self.updated else None,
-            "viewed": self.viewed.isoformat() if self.viewed else None,
-        }
-
-    def to_table_row(self) -> dict:
-        return {
-            "id": self.id,
-            "type": self.type,
-        }

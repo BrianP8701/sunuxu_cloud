@@ -28,6 +28,7 @@ google-auth-oauthlib = "^1.2.0"
 google-auth-httplib2 = "^0.2.0"
 google-api-python-client = "^2.130.0"
 sqlmodel = "^0.0.18"
+uuid = "^1.30"
 
 
 [tool.poetry.group.dev.dependencies]

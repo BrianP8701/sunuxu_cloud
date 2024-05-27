@@ -4,7 +4,7 @@ import json
 
 from core.database import Database
 from core.models import UserOrm
-from core.security import validate_token
+from core.utils.security import validate_token
 from api.api_utils import api_error_handler, return_server_error
 
 blueprint = func.Blueprint()
