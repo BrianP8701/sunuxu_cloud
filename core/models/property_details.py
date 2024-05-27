@@ -35,7 +35,7 @@ class PropertyDetailsOrm(SQLModel, table=True):
     school_district: Optional[str] = None
     property_tax: Optional[float] = None
 
-    pictures: Optional[str] = None  # List of picture URLs/ids
+    pictures: Optional[List[str]] = None  # List of picture URLs/ids
 
     notes: Optional[str] = None
     description: Optional[str] = None
@@ -45,43 +45,3 @@ class PropertyDetailsOrm(SQLModel, table=True):
     deals: List["DealOrm"] = Relationship(back_populates="property_details")
     owners: List["PersonOrm"] = Relationship(link_model=PropertyOwnerAssociation)
     occupants: List["PersonOrm"] = Relationship(link_model=PropertyOccupantAssociation)
-    
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "street_number": self.street_number,
-            "street_name": self.street_name,
-            "street_suffix": self.street_suffix,
-            "city": self.city,
-            "unit": self.unit,
-            "state": self.state,
-            "zip_code": self.zip_code,
-            "country": self.country,
-            "mls_number": self.mls_number,
-            "bedrooms": self.bedrooms,
-            "bathrooms": self.bathrooms,
-            "floors": self.floors,
-            "rooms": self.rooms,
-            "kitchens": self.kitchens,
-            "families": self.families,
-            "lot_sqft": self.lot_sqft,
-            "building_sqft": self.building_sqft,
-            "year_built": self.year_built,
-            "list_start_date": self.list_start_date.isoformat()
-            if self.list_start_date
-            else None,
-            "list_end_date": self.list_end_date.isoformat()
-            if self.list_end_date
-            else None,
-            "expiration_date": self.expiration_date.isoformat()
-            if self.expiration_date
-            else None,
-            "attached_type": self.attached_type,
-            "section": self.section,
-            "school_district": self.school_district,
-            "pictures": self.pictures,
-            "notes": self.notes,
-            "property_tax": self.property_tax,
-            "description": self.description,
-        }

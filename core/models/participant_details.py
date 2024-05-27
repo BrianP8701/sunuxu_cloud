@@ -21,7 +21,6 @@ class ParticipantDetailsOrm(SQLModel, table=True):
 
     user: Optional["UserOrm"] = Relationship(back_populates="participants")
     participant: Optional["ParticipantOrm"] = Relationship(back_populates="participants")
-    person: Optional["PersonOrm"] = Relationship()
     documents: List["DocumentOrm"] = Relationship(
         back_populates="participants",
         link_model=DocumentParticipantAssociation

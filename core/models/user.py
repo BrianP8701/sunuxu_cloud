@@ -18,6 +18,14 @@ if TYPE_CHECKING:
 class UserOrm(SQLModel, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
+    password: Optional[str] = Field(default=None, max_length=255)
+
+    avatar: Optional[str] = Field(default=None, max_length=255)
+    email: str = Field(max_length=255, unique=True, index=True, nullable=False)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    first_name: str = Field(max_length=255, nullable=False)
+    middle_name: Optional[str] = Field(default=None, max_length=255)
+    last_name: str = Field(max_length=255, nullable=False)
 
     people: List["PersonOrm"] = Relationship(
         back_populates="users", link_model=UserPersonAssociation
@@ -31,22 +39,3 @@ class UserOrm(SQLModel, table=True):
     teams: List["Team"] = Relationship(
         back_populates="users", link_model=UserTeamAssociation
     )
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "email": self.email,
-            "phone": self.phone,
-            "first_name": self.first_name,
-            "middle_name": self.middle_name,
-            "last_name": self.last_name,
-            "custom_person_types": self.custom_person_types,
-            "custom_property_types": self.custom_property_types,
-            "custom_transaction_types": self.custom_transaction_types,
-            "custom_transaction_statuses": self.custom_transaction_statuses,
-            "custom_participant_roles": self.custom_participant_roles,
-            "teams": [
-                {"id": team.id, "role": association.role}
-                for team, association in zip(self.teams, self.team_associations)
-            ],
-        }

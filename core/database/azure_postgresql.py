@@ -113,6 +113,28 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
+    async def update_fields(self, model_class: Type[SQLModel], id: int, update_data: dict, session: Optional[AsyncSession] = None) -> None:
+        """
+        Update specific fields of a database entry identified by id.
+        :param model_class: The SQLModel class of the database model.
+        :param id: The primary key ID of the record to update.
+        :param update_data: A dictionary of the fields to update.
+        :param session: Optional; an existing database session.
+        """
+        async with (session or self.sessionmaker()) as session:
+            # Create a query to select the record to update
+            query = select(model_class).where(model_class.id == id)
+            result = await session.execute(query)
+            instance = result.scalars().first()
+            if instance:
+                # Update the fields with data from update_data dictionary
+                for key, value in update_data.items():
+                    setattr(instance, key, value)
+                await session.commit()
+            else:
+                raise ValueError(f"No record found with ID {id}")
+
+    @retry_on_disconnection()
     async def delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[AsyncSession] = None) -> None:
         async with (session or self.sessionmaker()) as session:
             query = select(model_class)

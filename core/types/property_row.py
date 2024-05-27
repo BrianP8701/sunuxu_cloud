@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
 from core.models.property import PropertyOrm
 from core.enums.property_type import PropertyType

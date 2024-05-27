@@ -13,7 +13,7 @@ class DocumentOrm(SQLModel, table=True):
     document_template_id: Optional[int] = Field(default=None, foreign_key="document_templates.id", unique=True)
     deal_id: Optional[int] = Field(default=None, foreign_key="deal_details.id")  # Foreign key to DealDetailsOrm
 
-    url: Optional[str] = Field(default=None)
+    url: str = Field()
     field_values: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
 
     document_template: Optional["DocumentTemplateOrm"] = Relationship(back_populates="document")

@@ -12,6 +12,7 @@ from core.types.participant_row import ParticipantRow
 from core.types.deal_row import DealRow
 from core.types.participant_row import ParticipantRow
 from core.types.property_row import PropertyRow
+from core.models.property import PropertyOrm
 
 class Person(BaseModel):
     id: int
@@ -74,11 +75,11 @@ class Person(BaseModel):
             created=person.created,
             updated=person.updated,
             viewed=person.viewed,
-            signature=person.signature,
-            notes=person.notes,
-            language=person.language,
-            source=person.source,
-            viewed_properties=person.viewed_properties,
+            signature=person_details.signature,
+            notes=person_details.notes,
+            language=person_details.language,
+            source=person_details.source,
+            viewed_properties=person_details.viewed_properties,
             messages=first_page_messages,
             deals=deals,
             residence=residence,
@@ -119,6 +120,67 @@ class Person(BaseModel):
     async def insert(self):
         db = Database()
 
+        person = self._assemble_person_orm()
+        person_details = self._assemble_person_details_orm()
+
+        async with db.get_session() as session:
+            person = await db.insert(person, session)
+            person_details = await db.insert(person_details, session)
+
+        self.id = person.id
+        self.person_orm = person
+        self.person_details_orm = person_details
+
+    @classmethod
+    async def batch_insert(cls, people: List['Person']):
+        db = Database()
+        people_orm = [person._assemble_person_orm() for person in people]
+        people_details_orm = [person._assemble_person_details_orm() for person in people]
+
+        async with db.get_session() as session:
+            await db.batch_insert(people_orm, session)
+            await db.batch_insert(people_details_orm, session)
+
+    async def set_residence(self, property_id: int):
+        db = Database()
+        person_details = self.person_details_orm
+        property = await db.get(PropertyOrm, property_id)
+
+        person_details.residence = property
+
+        async with db.get_session() as session:
+            await db.update(person_details, session)
+
+    async def clear_residence(self):
+        db = Database()
+        person_details = self.person_details_orm
+
+        person_details.residence = None
+
+        async with db.get_session() as session:
+            await db.update(person_details, session)
+
+    async def add_to_portfolio(self, property_id: int):
+        db = Database()
+        person_details = self.person_details_orm
+        property = await db.get(PropertyOrm, property_id)
+
+        person_details.portfolio.append(property)
+
+        async with db.get_session() as session:
+            await db.update(person_details, session)
+
+    async def remove_from_portfolio(self, property_id: int):
+        db = Database()
+        person_details = self.person_details_orm
+        property = await db.get(PropertyOrm, property_id)
+
+        person_details.portfolio.remove(property)
+
+        async with db.get_session() as session:
+            await db.update(person_details, session)
+
+    def _assemble_person_orm(self):
         person_data = {
             'first_name': self.first_name,
             'middle_name': self.middle_name,
@@ -137,7 +199,37 @@ class Person(BaseModel):
             'viewed': self.viewed,
             'tags': self.tags
         }
+        return PersonOrm(**person_data)
+
+    async def update(self, **kwargs):
+        db = Database()
+        person = self.person_orm
+        person_details = self.person_details_orm
+
+        person_changed = False
+        person_details_changed = False
+        for key, value in kwargs.items():
+            if hasattr(person, key):
+                setattr(person, key, value)
+                person_changed = True
+            if hasattr(person_details, key):
+                setattr(person_details, key, value)
+                person_details_changed = True
         
+        async with db.get_session() as session:
+            if person_changed:
+                await db.update(person, session)
+            if person_details_changed:
+                await db.update(person_details, session)
+
+    @classmethod
+    async def delete(cls, id: int):
+        db = Database()
+        person = await db.get(PersonOrm, id)
+
+        await db.delete(person)
+
+    def _assemble_person_details_orm(self):
         person_details_data = {
             'notes': self.notes,
             'language': self.language,
@@ -145,38 +237,4 @@ class Person(BaseModel):
             'signature': self.signature,
             'viewed_properties': self.viewed_properties
         }
-
-        person = PersonOrm(**person_data)
-        person_details = PersonDetailsOrm(**person_details_data)
-
-        person = await db.insert(person)
-        person_details = await db.insert(person_details)
-        
-        self.id = person.id
-        self.person_orm = person
-        self.person_details_orm = person_details
-        
-
-    async def update(self, **kwargs):
-        db = Database()
-        person = self.person_orm
-        person_details = self.person_details_orm
-
-        for key, value in kwargs.items():
-            if hasattr(person, key):
-                setattr(person, key, value)
-            if hasattr(person_details, key):
-                setattr(person_details, key, value)
-        
-        async with db.get_session() as session:
-            await db.update(person, session)
-            await db.update(person_details, session)
-            
-
-    @classmethod
-    def delete(cls, id: int):
-        pass
-
-    @classmethod
-    def batch_insert(cls, data_list: List[dict]):
-        pass
+        return PersonDetailsOrm(**person_details_data)

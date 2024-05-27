@@ -8,7 +8,7 @@ from core.database import Database
 
 class Message(BaseModel):
     id: Optional[uuid.UUID] = None
-    relationship_id: Optional[int] = None # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    relationship_id: int = None # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
 
     type: MessageType
     content: str
@@ -58,6 +58,7 @@ class Message(BaseModel):
 
     @classmethod
     async def get(cls, relationship_id: int, page_size: int, offset: int) -> List['Message']:
+        """ Handles pagination """
         db = Database()
         conditions = {"relationship_id": relationship_id}
         messages_orm = await db.query(MessageOrm, conditions=conditions, limit=page_size, offset=offset, order_by=MessageOrm.id.desc())

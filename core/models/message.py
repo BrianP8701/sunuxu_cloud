@@ -8,7 +8,7 @@ from core.enums.message_type import MessageType
 class MessageOrm(SQLModel, table=True):
     __tablename__ = "messages"
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid1, primary_key=True) # Time UUID
-    relationship_id: Optional[int] = Field(default=None) # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    relationship_id: int # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
 
     type: MessageType
     content: str

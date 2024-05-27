@@ -23,7 +23,7 @@ class PersonDetailsOrm(SQLModel, table=True):
 
     messages: List["MessageOrm"] = Relationship(
         back_populates="user",
-        sa_relationship_kwargs={"order_by": "MessageOrm.timestamp"}
+        sa_relationship_kwargs={"order_by": "MessageOrm.id", "cascade": "all, delete-orphan"}
     )
 
     person: Optional["PersonOrm"] = Relationship(back_populates="person_details")
