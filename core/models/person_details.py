@@ -22,7 +22,6 @@ class PersonDetailsOrm(SQLModel, table=True):
     signature: Optional[bytes] = Field(default=None)
 
     messages: List["MessageOrm"] = Relationship(
-        back_populates="user",
         sa_relationship_kwargs={"order_by": "MessageOrm.id", "cascade": "all, delete-orphan"}
     )
 

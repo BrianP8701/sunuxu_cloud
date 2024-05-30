@@ -6,22 +6,20 @@ from sqlalchemy import Column, JSON
 if TYPE_CHECKING:
     from core.models.user import UserOrm
     from core.models.participant import ParticipantOrm
-    from core.models.person import PersonOrm
-    from core.models.document import DocumentOrm
+    from core.models.deal_document import DealDocumentOrm
     from core.models.file import FileOrm
 
 class ParticipantDetailsOrm(SQLModel, table=True):
     __tablename__ = "participant_details"
     id: Optional[int] = Field(default=None, foreign_key="participants.id", primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    person_id: int = Field(foreign_key="people.id", nullable=False)
 
     notes: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
 
     user: Optional["UserOrm"] = Relationship(back_populates="participants")
     participant: Optional["ParticipantOrm"] = Relationship(back_populates="participants")
-    documents: List["DocumentOrm"] = Relationship(
+    documents: List["DealDocumentOrm"] = Relationship(
         back_populates="participants",
         link_model=DocumentParticipantAssociation
     )

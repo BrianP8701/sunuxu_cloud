@@ -33,7 +33,7 @@ class PersonPortfolioAssociation(SQLModel, table=True):
     property_id: Optional[int] = Field(default=None, foreign_key="properties.id", primary_key=True)
 
 class DocumentParticipantAssociation(SQLModel, table=True):
-    document_id: Optional[int] = Field(default=None, foreign_key="documents.id", primary_key=True)
+    document_id: Optional[int] = Field(default=None, foreign_key="deal_documents.id", primary_key=True)
     participant_details_id: Optional[int] = Field(default=None, foreign_key="participant_details.id", primary_key=True)
     status: ParticipantDocumentStatus = Field(default=ParticipantDocumentStatus.PENDING, nullable=False)
 

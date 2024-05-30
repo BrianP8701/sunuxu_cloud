@@ -7,8 +7,8 @@ if TYPE_CHECKING:
     from core.models.document_template import DocumentTemplateOrm
     from core.models.participant_details import ParticipantDetailsOrm
 
-class DocumentOrm(SQLModel, table=True):
-    __tablename__ = "documents"
+class DealDocumentOrm(SQLModel, table=True):
+    __tablename__ = "deal_documents"
     id: Optional[int] = Field(default=None, primary_key=True)
     document_template_id: Optional[int] = Field(default=None, foreign_key="document_templates.id", unique=True)
     deal_id: Optional[int] = Field(default=None, foreign_key="deal_details.id")  # Foreign key to DealDetailsOrm

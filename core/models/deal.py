@@ -3,8 +3,8 @@ from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, DateTime, func, Enum as SqlEnum
 
-from core.enums.transaction_type import DealType
-from core.enums.transaction_status import DealStatus
+from core.enums.deal_type import DealType
+from core.enums.deal_status import DealStatus
 from core.models.associations import UserDealAssociation
 from core.models.property import PropertyOrm
 from core.models.participant import ParticipantOrm

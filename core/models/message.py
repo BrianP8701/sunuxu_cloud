@@ -1,14 +1,17 @@
 import uuid
 from sqlmodel import Field, SQLModel, JSON
 from typing import List, Optional
-from datetime import datetime
-from sqlalchemy import Column
+from sqlalchemy import Column, Enum as SqlEnum
+
 from core.enums.message_type import MessageType
+from core.enums.message_source_type import MessageSourceType
 
 class MessageOrm(SQLModel, table=True):
     __tablename__ = "messages"
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid1, primary_key=True) # Time UUID
-    relationship_id: int # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
+
+    source_id: int = Field(index=True, nullable=False) # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    source_type: MessageSourceType = Field(sa_column=SqlEnum(MessageSourceType), index=True, nullable=False)
 
     type: MessageType
     content: str

@@ -7,15 +7,12 @@ from core.models.deal_details import DealDetailsOrm
 from core.database import Database
 from core.types.property_row import PropertyRow
 from core.enums import DealType, DealStatus
-from core.models.user import UserOrm
 from core.types.user_row import UserRow
 from core.types.property_row import PropertyRow
 from core.types.participant_row import ParticipantRow
 
 class Deal(BaseModel):
     id: int
-    address: str
-    buyer_name: Optional[str]
     status: DealStatus
     type: DealType
     created: datetime

@@ -5,10 +5,12 @@ import uuid
 from core.enums.message_type import MessageType
 from core.models.message import MessageOrm
 from core.database import Database
+from core.enums.message_source_type import MessageSourceType
 
 class Message(BaseModel):
     id: Optional[uuid.UUID] = None
-    relationship_id: int = None # This can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    source_id: int # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    source_type: MessageSourceType
 
     type: MessageType
     content: str
@@ -57,10 +59,14 @@ class Message(BaseModel):
         self.id = self.orm.id
 
     @classmethod
-    async def get(cls, relationship_id: int, page_size: int, offset: int) -> List['Message']:
-        """ Handles pagination """
+    async def get(cls, source_id: int, source_type: MessageSourceType, page_size: int, offset: int) -> List['Message']:
+        """ 
+        Handles pagination. 
+        source_id: The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
+        source_type: The type of the source of the message, this can be DEV for convos with developer, PERSON for convos with person, TEAM for team conversations, CHANGELOG for changelog messages
+        """
         db = Database()
-        conditions = {"relationship_id": relationship_id}
+        conditions = {"source_id": source_id, "source_type": source_type}
         messages_orm = await db.query(MessageOrm, conditions=conditions, limit=page_size, offset=offset, order_by=MessageOrm.id.desc())
 
         if not messages_orm:
@@ -92,7 +98,8 @@ class Message(BaseModel):
     def from_orm(cls, orm: MessageOrm) -> 'Message':
         return cls(
             id=orm.id,
-            relationship_id=orm.relationship_id,
+            source_id=orm.source_id,
+            source_type=orm.source_type,
             type=orm.type,
             content=orm.content,
             attachments=orm.attachments,
@@ -112,7 +119,8 @@ class Message(BaseModel):
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
-            "relationship_id": self.relationship_id,
+            "source_id": self.source_id,
+            "source_type": self.source_type,
             "type": self.type,
             "content": self.content,
             "attachments": self.attachments,

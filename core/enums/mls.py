@@ -1,6 +1,6 @@
 from enum import Enum
 
-class MLS(Enum):
+class Mls(Enum):
     BALDWIN_COUNTY_ASSOCIATION_OF_REALTORS = "Baldwin County Association of REALTORS"
     COVINGTON_ASSOCIATION_OF_REALTORS = "Covington Association of REALTORS"
     CULLMAN_ASSOCIATION_OF_REALTORS = "Cullman Association of REALTORS"

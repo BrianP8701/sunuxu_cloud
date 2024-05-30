@@ -4,7 +4,7 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.sql import func
 from sqlalchemy import Enum as SqlEnum
 
-from core.enums.transaction_platform import TransactionPlatform
+from core.enums.deal_platform import DealPlatform
 from core.enums.service_connection_status import ServiceConnectionStatus
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ class UserDetailsOrm(SQLModel, table=True):
     changelog_viewed: Optional[bool] = Field(default=None)
 
     messages: List["MessageOrm"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"order_by": "MessageOrm.id"}
+        sa_relationship_kwargs={"order_by": "MessageOrm.id"}
     )
     developer_conversation_viewed: Optional[bool] = Field(default=None)
 
@@ -42,7 +42,7 @@ class UserDetailsOrm(SQLModel, table=True):
     mls_api_connection_status: ServiceConnectionStatus = Field(sa_column=SqlEnum(ServiceConnectionStatus), default=ServiceConnectionStatus.not_connected)
 
     default_mls: Optional[str] = Field(default=None, max_length=255)
-    default_transaction_platform: Optional[TransactionPlatform] = Field(sa_column=SqlEnum(TransactionPlatform))
+    default_deal_platform: Optional[DealPlatform] = Field(sa_column=SqlEnum(DealPlatform))
     default_message_new_leads: Optional[bool] = Field(default=None)
 
     email_connection_status: ServiceConnectionStatus = Field(sa_column=SqlEnum(ServiceConnectionStatus), default=ServiceConnectionStatus.not_connected)

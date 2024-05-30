@@ -6,7 +6,4 @@ class DealStatus(Enum):
     CLOSED = "closed"
     EXPIRED = "expired"
     WITHDRAWN = "withdrawn"
-    OFF_MARKET = "off_market"
-    CUSTOM = "custom"
     UNKNOWN = "unknown"
-    
