@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 import asyncio
 from functools import wraps
-from typing import List, Type, Any, Optional
+from typing import List, Type, Any, Optional, Dict
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
 from sqlmodel import SQLModel, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -85,10 +86,21 @@ class AzurePostgreSQLDatabase:
         async with self.engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
 
+    @retry_on_disconnection()
+    async def list_tables(self) -> List[str]:
+        async with self.engine.begin() as conn:
+            result = await conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema='public'"))
+            tables = result.fetchall()
+            return [table[0] for table in tables]
+
+    @retry_on_disconnection()
     async def delete_tables(self):
         async with self.engine.begin() as conn:
-            for table in reversed(SQLModel.metadata.sorted_tables):
-                await conn.run_sync(lambda conn: conn.execute(text(f"DROP TABLE IF EXISTS {table.name} CASCADE")))
+            tables = await self.list_tables()
+            for table in tables:
+                print(f"Dropping table {table}")
+                await conn.run_sync(lambda conn: conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE")))
+                print(f"Dropped table {table}")
 
     @retry_on_disconnection()
     async def clear_tables(self, session: Optional[AsyncSession] = None) -> None:
@@ -99,7 +111,7 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
-    async def insert(self, model: SQLModel, session: Optional[AsyncSession] = None) -> SQLModel:
+    async def create(self, model: SQLModel, session: Optional[AsyncSession] = None) -> SQLModel:
         async with (session or self.sessionmaker()) as session:
             session.add(model)
             await session.commit()
@@ -113,7 +125,7 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
-    async def update_fields(self, model_class: Type[SQLModel], id: int, update_data: dict, session: Optional[AsyncSession] = None) -> None:
+    async def update_fields(self, model_class: Type[SQLModel], id: int, updates: Dict[str, Any], session: Optional[AsyncSession] = None) -> None:
         """
         Update specific fields of a database entry identified by id.
         :param model_class: The SQLModel class of the database model.
@@ -128,7 +140,7 @@ class AzurePostgreSQLDatabase:
             instance = result.scalars().first()
             if instance:
                 # Update the fields with data from update_data dictionary
-                for key, value in update_data.items():
+                for key, value in updates.items():
                     setattr(instance, key, value)
                 await session.commit()
             else:
@@ -146,6 +158,24 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
+    async def delete_by_id(self, model_class: Type[SQLModel], id: int, session: Optional[AsyncSession] = None) -> None:
+        """
+        Delete a record by its ID.
+        :param model_class: The SQLModel class of the database model.
+        :param id: The primary key ID of the record to delete.
+        :param session: Optional; an existing database session.
+        """
+        async with (session or self.sessionmaker()) as session:
+            query = select(model_class).where(model_class.id == id)
+            result = await session.execute(query)
+            instance = result.scalars().first()
+            if instance:
+                await session.delete(instance)
+                await session.commit()
+            else:
+                raise ValueError(f"No record found with ID {id}")
+
+    @retry_on_disconnection()
     async def query(
         self,
         model_class: Type[SQLModel],
@@ -154,6 +184,7 @@ class AzurePostgreSQLDatabase:
         limit: int = None,
         offset: int = None,
         order_by: Any = None,
+        eager_load: List[str] = None,
         session: Optional[AsyncSession] = None,
     ) -> List[SQLModel]:
         async with (session or self.sessionmaker()) as session:
@@ -164,7 +195,14 @@ class AzurePostgreSQLDatabase:
 
             if conditions:
                 for key, value in conditions.items():
-                    query = query.filter(getattr(model_class, key) == value)
+                    if isinstance(value, list):
+                        query = query.filter(getattr(model_class, key).in_(value))
+                    else:
+                        query = query.filter(getattr(model_class, key) == value)
+
+            if eager_load:
+                for relation in eager_load:
+                    query = query.options(joinedload(relation))
 
             if order_by is not None:
                 query = query.order_by(order_by)
@@ -178,8 +216,13 @@ class AzurePostgreSQLDatabase:
             return result.scalars().all()
 
     @retry_on_disconnection()
-    async def get(
-        self, model_class: Type[SQLModel], id: int, columns: List[str] = None, session: Optional[AsyncSession] = None
+    async def read(
+        self, 
+        model_class: Type[SQLModel], 
+        id: int, 
+        columns: List[str] = None, 
+        eager_load: List[str] = None, 
+        session: Optional[AsyncSession] = None
     ) -> SQLModel:
         async with (session or self.sessionmaker()) as session:
             if columns:
@@ -187,6 +230,11 @@ class AzurePostgreSQLDatabase:
             else:
                 query = select(model_class)
             query = query.filter(model_class.id == id)
+
+            if eager_load:
+                for relation in eager_load:
+                    query = query.options(joinedload(relation))
+
             result = await session.execute(query)
             return result.scalars().first()
 
@@ -201,9 +249,9 @@ class AzurePostgreSQLDatabase:
             return result.scalars().first() is not None
 
     @retry_on_disconnection()
-    async def execute_raw_sql(self, sql: str, session: Optional[AsyncSession] = None) -> Any:
+    async def execute_raw_sql(self, sql: str, params: Optional[dict] = None, session: Optional[AsyncSession] = None) -> Any:
         async with (session or self.sessionmaker()) as session:
-            result = await session.execute(text(sql))
+            result = await session.execute(text(sql), params)
             if result.returns_rows:
                 return result.fetchall()
             else:
@@ -221,7 +269,7 @@ class AzurePostgreSQLDatabase:
                 raise e
 
     @retry_on_disconnection()
-    async def batch_insert(self, models: List[SQLModel], session: Optional[AsyncSession] = None) -> None:
+    async def batch_create(self, models: List[SQLModel], session: Optional[AsyncSession] = None) -> None:
         async with (session or self.sessionmaker()) as session:
             session.add_all(models)
             await session.commit()
@@ -241,33 +289,13 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
-    async def batch_query(
-        self,
-        model_class: Type[SQLModel],
-        conditions: dict = None,
-        columns: List[str] = None,
-        session: Optional[AsyncSession] = None,
-    ) -> List[SQLModel]:
-        async with (session or self.sessionmaker()) as session:
-            if columns:
-                column_objects = [getattr(model_class, column) for column in columns]
-                query = select(*column_objects)
-            else:
-                query = select(model_class)
-
-            if conditions:
-                for key, value in conditions.items():
-                    if isinstance(value, list):
-                        query = query.filter(getattr(model_class, key).in_(value))
-                    else:
-                        query = query.filter(getattr(model_class, key) == value)
-
-            result = await session.execute(query)
-            return result.fetchall()
-
-    @retry_on_disconnection()
-    async def batch_get(
-        self, model_class: Type[SQLModel], ids: List[int], columns: List[str] = None, session: Optional[AsyncSession] = None
+    async def batch_read(
+        self, 
+        model_class: Type[SQLModel], 
+        ids: List[int], 
+        columns: List[str] = None, 
+        eager_load: List[str] = None, 
+        session: Optional[AsyncSession] = None
     ) -> List[SQLModel]:
         async with (session or self.sessionmaker()) as session:
             if columns:
@@ -276,5 +304,63 @@ class AzurePostgreSQLDatabase:
             else:
                 query = select(model_class)
             query = query.filter(model_class.id.in_(ids))
+
+            if eager_load:
+                for relation in eager_load:
+                    query = query.options(joinedload(relation))
+
             result = await session.execute(query)
             return result.scalars().all()
+
+    @retry_on_disconnection()
+    async def query_with_user_and_conditions(
+        self,
+        model_class: Type[SQLModel],
+        user_id: int,
+        sort_by: str,
+        ascending: bool,
+        page_size: int,
+        offset: int,
+        include: Dict[str, Any],
+        session: Optional[AsyncSession] = None,
+    ) -> List[SQLModel]:
+        """
+        Query the database for records of a given model class, filtered by user ID and additional conditions.
+
+        :param model_class: The SQLModel class of the database model.
+        :param user_id: The user ID to filter the records by.
+        :param sort_by: The column name to sort the results by.
+        :param ascending: Boolean indicating whether the sorting should be in ascending order.
+        :param page_size: The number of records to return per page. If -1, pagination is not applied.
+        :param offset: The offset to start the pagination from.
+        :param include: A dictionary of additional conditions to filter the records by.
+        :param session: Optional; an existing database session.
+        :return: A list of SQLModel instances that match the query conditions.
+        """
+        async with (session or self.sessionmaker()) as session:
+            query = select(model_class)
+
+            # Ensure the given user_id is in the user_ids column
+            query = query.filter(model_class.user_ids.contains([user_id]))
+
+            # Apply include conditions
+            for column, values in include.items():
+                column_attr = getattr(model_class, column)
+                if isinstance(values, list):
+                    query = query.filter(column_attr.in_(values))
+                else:
+                    query = query.filter(column_attr == values)
+
+            # Apply sorting
+            if ascending:
+                query = query.order_by(getattr(model_class, sort_by))
+            else:
+                query = query.order_by(getattr(model_class, sort_by).desc())
+
+            # Apply pagination if page_size is not -1
+            if page_size != -1:
+                query = query.limit(page_size).offset(offset)
+
+            result = await session.execute(query)
+            return result.scalars().all()
+

@@ -4,8 +4,8 @@ import requests
 import pytest
 
 from core.database import Database
-from core.models import UserOrm
-from tests.utils.generate_url import get_function_url
+from core.models import UserRowOrm
+from tests.utils.get_url import get_function_url
 
 db = Database()
 
@@ -83,6 +83,6 @@ def test_delete_user():
 @pytest.fixture(scope="module", autouse=True)
 async def clear_database():
     yield
-    if await db.exists(UserOrm, {"email": "test@example.com"}):
-        await db.delete(UserOrm, {"email": "test@example.com"})
+    if await db.exists(UserRowOrm, {"email": "test@example.com"}):
+        await db.delete(UserRowOrm, {"email": "test@example.com"})
     db.dispose_instance()

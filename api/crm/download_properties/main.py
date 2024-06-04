@@ -2,7 +2,6 @@
 import azure.functions as func
 import pandas as pd
 from io import BytesIO
-from typing import List
 
 from core.database import Database
 from core.models import *
@@ -22,7 +21,7 @@ async def download_properties(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     properties = await db.batch_query(
-        PropertyDetailsOrm, conditions={"id": property_ids}, columns=columns
+        PropertyOrm, conditions={"id": property_ids}, columns=columns
     )
 
     # Check the structure of 'properties' and convert accordingly

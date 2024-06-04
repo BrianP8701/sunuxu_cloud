@@ -17,7 +17,7 @@ async def add_transaction(req: func.HttpRequest) -> func.HttpResponse:
     db = Database()
 
     data = req.get_json()
-    transaction = DealDetailsOrm(
+    transaction = DealOrm(
         user_id=data.get("user_id"),
         property_id=data.get("property_id"),
         type=data.get("type"),
@@ -26,7 +26,7 @@ async def add_transaction(req: func.HttpRequest) -> func.HttpResponse:
         description=data.get("description"),
     )
 
-    inserted_transaction = await db.insert(transaction)
+    inserted_transaction = await db.create(transaction)
 
     return func.HttpResponse(
         body=json.dumps({"data": inserted_transaction.to_dict()}),

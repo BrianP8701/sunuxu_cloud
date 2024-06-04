@@ -18,9 +18,9 @@ async def get_person(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        results = await db.batch_query(PersonDetailsOrm, {"id": data})
+        results = await db.batch_query(PersonOrm, {"id": data})
     else:
-        results = await db.query(PersonDetailsOrm, {"id": data})
+        results = await db.query(PersonOrm, {"id": data})
 
     if not results:
         return func.HttpResponse(

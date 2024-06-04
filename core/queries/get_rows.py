@@ -1,5 +1,4 @@
 
-from core.database import Database
 from typing import List, Dict, Any
 
 def get_rows(user_id: int, table: str, page_size: int, page_index: int, sort_by: str, sort_direction: str, include_types: Dict[str, bool], include_statuses: Dict[str, bool]) -> List[dict]:
@@ -17,15 +16,14 @@ def get_rows(user_id: int, table: str, page_size: int, page_index: int, sort_by:
     """
     
     
-    sort_ascending = None
     if sort_direction.lower() == "ascending":
-        sort_ascending = True
+        pass
     elif sort_direction.lower() == "descending":
-        sort_ascending = False
+        pass
     else:
         raise ValueError(f"Invalid sort direction provided: {sort_direction}")
 
-    conditions = get_conditions(table, include_types, include_statuses, user_id)
+    get_conditions(table, include_types, include_statuses, user_id)
 
 
 def get_conditions(table: str, include_types: Dict[str, bool], include_statuses: Dict[str, bool], user_id: int) -> Dict[str, Any]:

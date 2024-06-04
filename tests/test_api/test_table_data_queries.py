@@ -1,7 +1,7 @@
 import requests
 import unittest
 
-from tests.utils.generate_url import get_function_url
+from tests.utils.get_url import get_function_url
 
 
 class TestTableDataRoutes(unittest.TestCase):

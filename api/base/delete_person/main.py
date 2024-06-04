@@ -17,8 +17,8 @@ async def delete_person(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        await db.batch_delete(PersonDetailsOrm, {"id": data})
+        await db.batch_delete(PersonOrm, {"id": data})
     else:
-        await db.delete(PersonDetailsOrm, {"id": data})
+        await db.delete(PersonOrm, {"id": data})
 
     return func.HttpResponse(status_code=200, mimetype="application/json")

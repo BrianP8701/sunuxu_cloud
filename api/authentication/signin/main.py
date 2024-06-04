@@ -3,7 +3,7 @@ import azure.functions as func
 import json
 
 from core.database import Database
-from core.models import UserOrm
+from core.models import UserRowOrm
 from core.utils.security import check_password, generate_tokens
 from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
@@ -17,12 +17,12 @@ async def signin(req: func.HttpRequest) -> func.HttpResponse:
 
     req_body = parse_request_body(req)
 
-    if not await db.exists(UserOrm, {"email": req_body["email"]}):
+    if not await db.exists(UserRowOrm, {"email": req_body["email"]}):
         return return_server_error(
             "An account with this email does not exist.", status_code=400
         )
 
-    user = await db.query(UserOrm, {"email": req_body["email"]})
+    user = await db.query(UserRowOrm, {"email": req_body["email"]})
     user = user[0]
 
     if not check_password(user.password, req_body["password"]):

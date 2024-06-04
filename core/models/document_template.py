@@ -10,4 +10,4 @@ class DocumentTemplateOrm(SQLModel, table=True):
     tags: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
     url: Optional[str] = None
     form_fields: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    participants_needed: Optional[List[str]] = Field(default=None, sa_column=Column(JSON))
+    roles_needed: Optional[List[str]] = Field(default=None, sa_column=Column(JSON))

@@ -2,7 +2,7 @@ import functools
 import logging
 import traceback
 import azure.functions as func
-from core.types.api_error import APIError
+from core.objects.api_error import APIError
 
 
 def api_error_handler(route_handler):

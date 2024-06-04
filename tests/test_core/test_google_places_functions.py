@@ -2,7 +2,7 @@ import unittest
 import requests
 import uuid
 
-from tests.utils.generate_url import get_function_url
+from tests.utils.get_url import get_function_url
 
 
 class TestGooglePLacesFunctions(unittest.TestCase):

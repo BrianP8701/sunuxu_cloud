@@ -1,32 +1,50 @@
-from .user import UserOrm
-from .user_details import UserDetailsOrm
-from .person_details import PersonDetailsOrm
-from .person import PersonOrm
-from .property_details import PropertyDetailsOrm
-from .property import PropertyOrm
-from .deal_details import DealDetailsOrm
-from .deal import DealOrm
-from .participant_details import ParticipantDetailsOrm
-from .participant import ParticipantOrm
-from .team import TeamOrm
+from .associations import (
+    UserPersonAssociation,
+    UserPropertyAssociation,
+    UserDealAssociation,
+    UserTeamAssociation,
+    DocumentPersonAssociation,
+    PropertyOccupantAssociation,
+    PropertyOwnerAssociation,
+    PersonPortfolioAssociation,
+    DealDetailsPersonAssociation
+)
+from .entities.user import UserOrm
+from .entities.team import TeamOrm
+from .entities.person import PersonOrm
+from .rows.person import PersonRowOrm
+from .entities.property import PropertyOrm
+from .rows.property import PropertyRowOrm
+from .entities.deal import DealOrm
+from .rows.deal import DealRowOrm
+from .rows.team import TeamRowOrm
 from .deal_document import DealDocumentOrm
 from .document_template import DocumentTemplateOrm
-from .file import FileOrm
 from .message import MessageOrm
+from .rows.user import UserRowOrm
+
 
 class Models:
-    UserOrm = UserOrm
-    UserDetailsOrm = UserDetailsOrm
-    PersonDetailsOrm = PersonDetailsOrm
-    PersonOrm = PersonOrm
-    PropertyDetailsOrm = PropertyDetailsOrm
-    PropertyOrm = PropertyOrm
-    DealDetailsOrm = DealDetailsOrm
-    DealOrm = DealOrm
-    ParticipantDetailsOrm = ParticipantDetailsOrm
-    ParticipantOrm = ParticipantOrm
-    TeamOrm = TeamOrm
+    UserOrm = UserRowOrm
+    TeamDetailsOrm = TeamOrm
+    UserDetailsOrm = UserOrm
+    PersonDetailsOrm = PersonOrm
+    PersonOrm = PersonRowOrm
+    PropertyDetailsOrm = PropertyOrm
+    PropertyOrm = PropertyRowOrm
+    DealDetailsOrm = DealOrm
+    DealOrm = DealRowOrm
+    TeamOrm = TeamRowOrm
     DealDocumentOrm = DealDocumentOrm
     DocumentTemplateOrm = DocumentTemplateOrm
-    FileOrm = FileOrm
     MessageOrm = MessageOrm
+    UserPersonAssociation = UserPersonAssociation
+    UserPropertyAssociation = UserPropertyAssociation
+    UserDealAssociation = UserDealAssociation
+    UserTeamAssociation = UserTeamAssociation
+    DocumentPersonAssociation = DocumentPersonAssociation
+    PropertyOccupantAssociation = PropertyOccupantAssociation
+    PropertyOwnerAssociation = PropertyOwnerAssociation
+    PersonPortfolioAssociation = PersonPortfolioAssociation
+    DealDetailsPersonAssociation = DealDetailsPersonAssociation
+

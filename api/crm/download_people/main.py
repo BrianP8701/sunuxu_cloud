@@ -2,7 +2,6 @@
 import azure.functions as func
 import pandas as pd
 from io import BytesIO
-from typing import List
 
 from core.database import Database
 from core.models import *
@@ -22,7 +21,7 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     people = await db.batch_query(
-        PersonDetailsOrm, conditions={"id": people_ids}, columns=columns
+        PersonOrm, conditions={"id": people_ids}, columns=columns
     )
 
     print(people)

@@ -3,7 +3,7 @@ import requests
 from pandas import read_excel
 from io import BytesIO
 
-from tests.utils.generate_url import get_function_url
+from tests.utils.get_url import get_function_url
 
 
 class TestDownloads(unittest.TestCase):

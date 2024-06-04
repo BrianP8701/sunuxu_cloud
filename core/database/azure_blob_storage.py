@@ -53,7 +53,6 @@ class AzureBlobStorage(AbstractBlobStorage):
         blob_client = container_client.get_blob_client(blob_name)
         if not blob_client.exists():
             raise Exception("Blob does not exist.")
-        access_conditions = None
         if etag:
             current_etag = self.get_etag(blob_name)
             if current_etag != etag:

@@ -2,7 +2,6 @@
 import azure.functions as func
 import pandas as pd
 from io import BytesIO
-from typing import List
 
 from core.database import Database
 from core.models import *
@@ -22,7 +21,7 @@ async def download_transactions(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     transactions = await db.batch_query(
-        DealDetailsOrm, conditions={"id": transaction_ids}, columns=columns
+        DealOrm, conditions={"id": transaction_ids}, columns=columns
     )
 
     # Check the structure of 'transactions' and convert accordingly

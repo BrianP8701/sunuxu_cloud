@@ -11,7 +11,7 @@ class MessageOrm(SQLModel, table=True):
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid1, primary_key=True) # Time UUID
 
     source_id: int = Field(index=True, nullable=False) # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
-    source_type: MessageSourceType = Field(sa_column=SqlEnum(MessageSourceType), index=True, nullable=False)
+    source_type: MessageSourceType = Field(sa_column=SqlEnum(MessageSourceType, index=True, nullable=False))
 
     type: MessageType
     content: str

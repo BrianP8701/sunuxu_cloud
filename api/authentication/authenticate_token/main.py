@@ -3,7 +3,7 @@ import azure.functions as func
 import json
 
 from core.database import Database
-from core.models import UserOrm
+from core.models import UserRowOrm
 from core.utils.security import validate_token
 from api.api_utils import api_error_handler, return_server_error
 
@@ -23,7 +23,7 @@ async def authenticate_token(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         id = validate_token(access_token)
-        user = await db.query(UserOrm, {"id": id})
+        user = await db.query(UserRowOrm, {"id": id})
         user = user[0]
 
         return func.HttpResponse(

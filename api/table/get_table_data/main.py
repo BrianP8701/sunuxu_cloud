@@ -30,7 +30,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
     :param include_statuses: The statuses to include in the query
     """
     try:
-        db = Database()
+        Database()
 
         req_body = parse_request_body(req)
 
@@ -98,7 +98,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PropertyDetailsOrm,
+                PropertyOrm,
                 page_index,
                 page_size,
                 sort_by,
@@ -130,7 +130,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PersonDetailsOrm,
+                PersonOrm,
                 page_index,
                 page_size,
                 sort_by,
@@ -171,7 +171,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             ]
 
             data, total_items, total_pages = await paginate_rows(
-                DealDetailsOrm,
+                DealOrm,
                 page_index,
                 page_size,
                 sort_by,

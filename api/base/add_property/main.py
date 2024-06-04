@@ -17,7 +17,7 @@ async def add_property(req: func.HttpRequest) -> func.HttpResponse:
     db = Database()
 
     data = req.get_json()
-    property = PropertyDetailsOrm(
+    property = PropertyOrm(
         user_id=data.get("user_id"),
         street_number=data.get("street_number"),
         street_name=data.get("street_name"),
@@ -51,7 +51,7 @@ async def add_property(req: func.HttpRequest) -> func.HttpResponse:
         property_tax=data.get("property_tax"),
     )
 
-    inserted_property = await db.insert(property)
+    inserted_property = await db.create(property)
 
     return func.HttpResponse(
         body=json.dumps({"data": inserted_property.to_dict()}),

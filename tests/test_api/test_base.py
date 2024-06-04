@@ -3,7 +3,7 @@ import unittest
 import requests
 from dotenv import load_dotenv
 
-from tests.utils.generate_url import get_function_url
+from tests.utils.get_url import get_function_url
 from core.database import Database
 from core.models import *
 
@@ -61,7 +61,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         response = requests.put(url, json=data)
         self.assertEqual(response.status_code, 200)
 
-        updated_person = await self.db.query(PersonDetailsOrm, {"id": id})
+        updated_person = await self.db.query(PersonOrm, {"id": id})
         updated_person = updated_person[0]
         self.assertEqual(updated_person.first_name, "Updated")
         self.assertEqual(updated_person.last_name, "Person")
@@ -73,7 +73,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         id = TestBaseRoutes.person_id
         response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
-        is_deleted = await self.db.exists(PersonDetailsOrm, {"id": id})
+        is_deleted = await self.db.exists(PersonOrm, {"id": id})
         self.assertFalse(is_deleted)
 
     def test_1_add_property(self):
@@ -123,7 +123,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         response = requests.put(url, json=data)
 
         self.assertEqual(response.status_code, 200)
-        updated_property = await self.db.query(PropertyDetailsOrm, {"id": id})
+        updated_property = await self.db.query(PropertyOrm, {"id": id})
         updated_property = updated_property[0]
         self.assertEqual(updated_property.street_name, "Updated")
         self.assertEqual(updated_property.city, "Updated City")
@@ -136,7 +136,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         id = TestBaseRoutes.property_id
         response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
-        is_deleted = await self.db.exists(PropertyDetailsOrm, {"id": id})
+        is_deleted = await self.db.exists(PropertyOrm, {"id": id})
         self.assertFalse(is_deleted)
 
     def test_1_add_transaction(self):
@@ -173,7 +173,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         }
         response = requests.put(url, json=data)
         self.assertEqual(response.status_code, 200)
-        updated_transaction = await self.db.query(DealDetailsOrm, {"id": id})
+        updated_transaction = await self.db.query(DealOrm, {"id": id})
         updated_transaction = updated_transaction[0]
         self.assertEqual(updated_transaction.status, "closed")
         self.assertEqual(updated_transaction.type, "rent")
@@ -187,7 +187,7 @@ class TestBaseRoutes(unittest.IsolatedAsyncioTestCase):
         id = TestBaseRoutes.transaction_id
         response = requests.post(url, json={"id": id})
         self.assertEqual(response.status_code, 200)
-        is_deleted = await self.db.exists(DealDetailsOrm, {"id": id})
+        is_deleted = await self.db.exists(DealOrm, {"id": id})
         self.assertFalse(is_deleted)
 
 

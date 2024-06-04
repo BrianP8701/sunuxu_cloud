@@ -2,7 +2,6 @@
 from faker import Faker
 import random
 from core.models import *
-import asyncio
 
 from core.utils.security import hash_password
 from core.database import Database
@@ -17,7 +16,7 @@ def generate_user(user_id, email):
     else:
         middle_name = None
 
-    return UserOrm(
+    return UserRowOrm(
         id=user_id,
         email=email,
         password=hash_password("p"),
@@ -33,7 +32,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonDetailsOrm(
+    return PersonOrm(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -44,7 +43,7 @@ def generate_person(user_id):
 
 
 def generate_person_row(user_id, person_id):
-    return PersonOrm(
+    return PersonRowOrm(
         user_id=user_id,
         id=person_id,
         name=fake.name(),
@@ -68,7 +67,7 @@ def generate_person_row(user_id, person_id):
 
 
 def generate_property(user_id: int):
-    return PropertyDetailsOrm(
+    return PropertyOrm(
         user_id=user_id,
         street_number=fake.building_number(),
         street_name=fake.street_name(),
@@ -102,7 +101,7 @@ def generate_property(user_id: int):
 
 
 def generate_property_row(user_id, property_id):
-    return PropertyOrm(
+    return PropertyRowOrm(
         user_id=user_id,
         id=property_id,
         address=fake.address(),
@@ -128,7 +127,7 @@ def generate_property_row(user_id, property_id):
 
 
 def generate_transaction(user_id):
-    return DealDetailsOrm(
+    return DealOrm(
         user_id=user_id,
         description=fake.text(),
         notes=fake.text(),
@@ -136,7 +135,7 @@ def generate_transaction(user_id):
 
 
 def generate_transaction_row(user_id, transaction_id):
-    return DealOrm(
+    return DealRowOrm(
         user_id=user_id,
         id=transaction_id,
         name=random.choice([fake.address(), fake.company(), fake.name()]),
@@ -176,7 +175,7 @@ async def generate_fake_data():
     email = "brian@example.com"
     user = generate_user(user_id, email)
 
-    await db.insert(user)
+    await db.create(user)
 
     all_people = [generate_person(user_id) for _ in range(200)]
     all_properties = [generate_property(user_id) for _ in range(200)]
@@ -184,9 +183,9 @@ async def generate_fake_data():
     all_participants = []
 
     print(f"inseting {len(all_people)} people")
-    await db.batch_insert(all_people)
+    await db.batch_create(all_people)
     all_people_rows = [generate_person_row(user_id, person.id) for person in all_people]
-    await db.batch_insert(all_people_rows)
+    await db.batch_create(all_people_rows)
 
     for property in all_properties:
         number_of_owners = random.randint(0, 5)
@@ -194,11 +193,11 @@ async def generate_fake_data():
         property.owners = random.sample(all_people, number_of_owners)
 
     print(f"inseting {len(all_properties)} properties")
-    await db.batch_insert(all_properties)
+    await db.batch_create(all_properties)
     all_property_rows = [
         generate_property_row(user_id, property.id) for property in all_properties
     ]
-    await db.batch_insert(all_property_rows)
+    await db.batch_create(all_property_rows)
 
     property_ids = [property.id for property in all_properties]
 
@@ -208,12 +207,12 @@ async def generate_fake_data():
         transaction.property_id = property_id
 
     print(f"inseting {len(all_transactions)} transactions")
-    await db.batch_insert(all_transactions)
+    await db.batch_create(all_transactions)
     all_transaction_rows = [
         generate_transaction_row(user_id, transaction.id)
         for transaction in all_transactions
     ]
-    await db.batch_insert(all_transaction_rows)
+    await db.batch_create(all_transaction_rows)
 
     for transaction in all_transactions:
         number_of_participants = random.randint(0, 5)
@@ -225,7 +224,7 @@ async def generate_fake_data():
         )
 
     print(f"inseting {len(all_participants)} participants")
-    await db.batch_insert(all_participants)
+    await db.batch_create(all_participants)
 
     print("Done")
     await db.dispose_instance()

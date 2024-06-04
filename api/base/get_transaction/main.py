@@ -18,9 +18,9 @@ async def get_transaction(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        results = await db.batch_query(DealDetailsOrm, {"id": data})
+        results = await db.batch_query(DealOrm, {"id": data})
     else:
-        results = await db.query(DealDetailsOrm, {"id": data})
+        results = await db.query(DealOrm, {"id": data})
 
     return func.HttpResponse(
         body=json.dumps({"data": [result.to_dict() for result in results]}),

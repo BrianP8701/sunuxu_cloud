@@ -22,7 +22,7 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
     last_name = data.get("last_name")
     full_name = f"{first_name} {middle_name} {last_name}".replace("  ", " ").strip()
 
-    person = PersonDetailsOrm(
+    person = PersonOrm(
         user_id=data.get("user_id"),
         first_name=first_name,
         middle_name=middle_name,
@@ -30,8 +30,8 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
         notes=data.get("notes"),
         language=data.get("language"),
     )
-    inserted_person = await db.insert(person)
-    person_row = PersonOrm(
+    inserted_person = await db.create(person)
+    person_row = PersonRowOrm(
         id=inserted_person.id,
         name=full_name,
         email=data.get("email"),
@@ -39,7 +39,7 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
         type=data.get("type"),
         active=False,
     )
-    await db.insert(person_row)
+    await db.create(person_row)
 
     return func.HttpResponse(
         body=json.dumps({"data": inserted_person.to_dict()}),

@@ -1,29 +1,29 @@
-# conftest.py
-import pytest
+# # conftest.py
+# import pytest
 
-from core.database import Database
-from tests.utils.generate_fake_data import generate_fake_data
+# from core.database import Database
+# from tests.utils.generate_fake_data import generate_fake_data
 
-# # Configure logging to write to a local file called logs.txt with 2 new lines in between each log
-# logging.basicConfig(
-#     filename='logs.txt',
-#     filemode='a',
-#     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s\n\n',
-#     level=logging.INFO
-# )
+# # # Configure logging to write to a local file called logs.txt with 2 new lines in between each log
+# # logging.basicConfig(
+# #     filename='logs.txt',
+# #     filemode='a',
+# #     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s\n\n',
+# #     level=logging.INFO
+# # )
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def global_setup():
-    """
-    Clear and update database tables and generate fake data before running tests
-    """
-    db = Database()
-    await db.delete_tables()
-    await db.create_tables()
-    await generate_fake_data()
-    yield
-    await db.clear_tables()
+# @pytest.fixture(scope="session", autouse=True)
+# async def global_setup():
+#     """
+#     Clear and update database tables and generate fake data before running tests
+#     """
+#     db = Database()
+#     await db.delete_tables()
+#     await db.create_tables()
+#     await generate_fake_data()
+#     yield
+#     await db.clear_tables()
 
 
 # @pytest.fixture(scope="module", autouse=True)

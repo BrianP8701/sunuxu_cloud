@@ -12,7 +12,7 @@ fake = Faker()
 
 
 def generate_property(user_id: int):
-    return PropertyDetailsOrm(
+    return PropertyOrm(
         user_id=user_id,
         address=fake.address(),
         street_number=fake.building_number(),
@@ -69,7 +69,7 @@ def generate_user(user_id, email):
     else:
         middle_name = None
 
-    return UserOrm(
+    return UserRowOrm(
         id=user_id,
         email=email,
         password=hash_password("p"),
@@ -81,7 +81,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonDetailsOrm(
+    return PersonOrm(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -108,7 +108,7 @@ def generate_person(user_id):
 
 
 def generate_transaction(user_id):
-    return DealDetailsOrm(
+    return DealOrm(
         user_id=user_id,
         type=random.choice(["sale", "rent", "lease", "buy", "other"]),
         status=random.choice(
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         email = "brian@example.com"
         user = generate_user(user_id, email)
 
-        await db.insert(user)
+        await db.create(user)
 
         all_people = [generate_person(user_id) for _ in range(200)]
         all_properties = [generate_property(user_id) for _ in range(200)]
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         all_participants = []
 
         print(f"inseting {len(all_people)} people")
-        await db.batch_insert(all_people)
+        await db.batch_create(all_people)
 
         for property in all_properties:
             number_of_owners = random.randint(0, 5)
@@ -164,7 +164,7 @@ if __name__ == "__main__":
             property.owners = random.sample(all_people, number_of_owners)
 
         print(f"inseting {len(all_properties)} properties")
-        await db.batch_insert(all_properties)
+        await db.batch_create(all_properties)
 
         property_ids = [property.id for property in all_properties]
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
             transaction.property_id = property_id
 
         print(f"inseting {len(all_transactions)} transactions")
-        await db.batch_insert(all_transactions)
+        await db.batch_create(all_transactions)
 
         for transaction in all_transactions:
             number_of_participants = random.randint(0, 5)
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             )
 
         print(f"inseting {len(all_participants)} participants")
-        await db.batch_insert(all_participants)
+        await db.batch_create(all_participants)
 
         print("Done")
         await db.dispose_instance()
