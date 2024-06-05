@@ -18,7 +18,9 @@ class TeamModel(SQLModel, table=True):
     )
 
     users: List["UserModel"] = Relationship(
-        back_populates="teams", link_model=UserTeamAssociation
+        back_populates="teams",
+        link_model=UserTeamAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     row: "TeamRowModel" = Relationship(
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}

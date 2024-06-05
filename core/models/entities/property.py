@@ -68,13 +68,19 @@ class PropertyModel(SQLModel, table=True):
     deals: List["DealModel"] = Relationship(back_populates="property")
 
     # Many to many, one property can have many owners and occupants
-    owners: List["PersonModel"] = Relationship(link_model=PropertyOwnerAssociation)
+    owners: List["PersonModel"] = Relationship(
+        link_model=PropertyOwnerAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
     occupants: List["PersonModel"] = Relationship(
-        link_model=PropertyOccupantAssociation
+        link_model=PropertyOccupantAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
     users: List["UserModel"] = Relationship(
-        back_populates="properties", link_model=UserPropertyAssociation
+        back_populates="properties",
+        link_model=UserPropertyAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     row: "PropertyRowModel" = Relationship(
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}

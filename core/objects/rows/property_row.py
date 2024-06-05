@@ -31,10 +31,10 @@ class PropertyRow(BaseRow):
         rows = db.query_with_user_and_conditions(
             PropertyRowModel, user_id, sort_by, ascending, page_size, offset, include
         )
-        return [cls.from_orm(row) for row in rows]
+        return [cls.from_model(row) for row in rows]
 
     @classmethod
-    def from_orm(cls, orm: PropertyRowModel):
+    def from_model(cls, orm: PropertyRowModel):
         return cls(
             id=orm.id, address=orm.address, type=orm.type, active=orm.active, orm=orm
         )

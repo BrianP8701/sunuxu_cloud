@@ -32,10 +32,10 @@ class DealRow(BaseRow):
         rows = db.query_with_user_and_conditions(
             DealRowModel, user_id, sort_by, ascending, page_size, offset, include
         )
-        return [cls.from_orm(row) for row in rows]
+        return [cls.from_model(row) for row in rows]
 
     @classmethod
-    def from_orm(cls, orm: DealRowModel):
+    def from_model(cls, orm: DealRowModel):
         return cls(
             id=orm.id,
             is_listing=orm.is_listing,

@@ -1,4 +1,4 @@
-from core.objects.base_entities.user import BaseUser
+from core.objects.base_entities.base_user import BaseUser
 
 
 class User(BaseUser):

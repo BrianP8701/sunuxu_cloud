@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from core.database import Database
 from core.enums.deal_platform import DealPlatform
@@ -78,6 +78,35 @@ class BaseUser(BaseEntity):
     user_details_orm: Optional[UserModel] = None
 
     @classmethod
+    async def create(cls, user_id: int, data: Dict[str, Any]) -> "BaseUser":
+        db = Database()
+
+        user_row = UserRowModel(
+            email=data["email"],
+            phone=data.get("phone"),
+            first_name=data["first_name"],
+            middle_name=data.get("middle_name"),
+            last_name=data["last_name"],
+        )
+
+        user_details = UserModel(password=data["password"], row=user_row)
+
+        async with db.get_session() as session:
+            await db.batch_create([user_row, user_details], session)
+
+        return cls(
+            id=user_row.id,
+            email=user_row.email,
+            phone=user_row.phone,
+            first_name=user_row.first_name,
+            middle_name=user_row.middle_name,
+            last_name=user_row.last_name,
+            password=user_details.password,
+            user_orm=user_row,
+            user_details_orm=user_details,
+        )
+
+    @classmethod
     async def read(cls, id: int) -> "BaseUser":
         db = Database()
         user = await db.read(UserRowModel, id, eager_load=["user_details"])
@@ -142,19 +171,6 @@ class BaseUser(BaseEntity):
             user_details_orm=user.details,
         )
 
-    async def create(self) -> "BaseUser":
-        if self.id:
-            raise ValueError("User already exists")
-        db = Database()
-
-        user_orm, user_details_orm = self._assemble_orm()
-
-        async with db.get_session() as session:
-            await db.batch_create([user_orm, user_details_orm], session)
-        self.id = user_orm.id
-        self.user_orm = user_orm
-        self.user_details_orm = user_details_orm
-
     @classmethod
     async def update(cls, id: int, updates: Dict[str, Any]):
         db = Database()
@@ -171,12 +187,6 @@ class BaseUser(BaseEntity):
         async with db.get_session() as session:
             await db.update_fields(UserRowModel, id, user_updates, session)
             await db.update_fields(UserModel, id, user_details_updates, session)
-
-    @classmethod
-    async def batch_read(cls, user_ids: List[int]) -> List["BaseUser"]:
-        db = Database()
-        users = await db.batch_query(UserRowModel, {"id": user_ids})
-        return [cls(**user.to_dict()) for user in users]
 
     @classmethod
     async def delete(cls, id: int):
@@ -313,20 +323,4 @@ class BaseUser(BaseEntity):
             "kvcore_access_token": self.kvcore_access_token,
             "kvcore_token_expiry": self.kvcore_token_expiry,
             "created": self.created,
-            "custom_person_types": self.custom_person_types,
-            "custom_property_types": self.custom_property_types,
-            "custom_transaction_types": self.custom_transaction_types,
-            "custom_transaction_statuses": self.custom_transaction_statuses,
-            "custom_participant_roles": self.custom_participant_roles,
         }
-
-    def _assemble_orm(self):
-        user = UserRowModel(
-            email=self.email,
-            phone=self.phone,
-            first_name=self.first_name,
-            middle_name=self.middle_name,
-            last_name=self.last_name,
-        )
-        user_details = UserModel(password=self.password, row=user)
-        return user, user_details

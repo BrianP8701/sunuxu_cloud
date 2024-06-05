@@ -25,7 +25,9 @@ class PersonRowModel(SQLModel, table=True):
             index=True,
         )
     )
-    active: bool = Field(default=False, index=True, nullable=False)
+    active: bool = Field(
+        default=False, index=True, nullable=False
+    )  # If the person is participating in any active deals
     last_activity: Optional[datetime] = Field(default=None, index=True)
 
     # With IDX site we can have these

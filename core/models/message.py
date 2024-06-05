@@ -15,6 +15,7 @@ class MessageModel(SQLModel, table=True):
         default_factory=uuid.uuid1, primary_key=True
     )  # Time UUID
 
+    user_id: int = Field(index=True, nullable=False)
     source_id: int = Field(
         index=True, nullable=False
     )  # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
@@ -38,7 +39,7 @@ class MessageModel(SQLModel, table=True):
     email_subject: Optional[str] = Field(default=None)
 
     # Email thread fields
-    thread_size: int = Field(default=1)
+    thread_size: Optional[int] = Field(default=None)
     thread_message_ids: Optional[List[str]] = Field(
         default=None, sa_column=Column(JSON)
     )

@@ -1,6 +1,6 @@
 import pytest
 
-from core.objects.base_entities.user import User
+from core.objects.base_entities.base_user import User
 
 
 @pytest.mark.asyncio

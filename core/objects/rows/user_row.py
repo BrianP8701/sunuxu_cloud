@@ -21,10 +21,10 @@ class UserRow(BaseRow):
         db = Database()
 
         user_row = await db.get(UserRowModel, user_id)
-        return cls.from_orm(user_row)
+        return cls.from_model(user_row)
 
     @classmethod
-    def from_orm(cls, orm: UserRowModel) -> "UserRow":
+    def from_model(cls, orm: UserRowModel) -> "UserRow":
         return cls(
             id=orm.id,
             email=orm.email,

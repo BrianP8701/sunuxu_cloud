@@ -27,10 +27,10 @@ class DealDocumentRow(BaseRow):
         """
         params = {"deal_id": deal_id}
         result = await db.execute_raw_sql(sql, params)
-        return [cls.from_orm(DealDocumentModel(**row)) for row in result]
+        return [cls.from_model(DealDocumentModel(**row)) for row in result]
 
     @classmethod
-    def from_orm(cls, orm: DealDocumentModel):
+    def from_model(cls, orm: DealDocumentModel):
         participants = {
             assoc.participant.name: assoc.status for assoc in orm.participants
         }

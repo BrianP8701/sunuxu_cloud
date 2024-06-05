@@ -16,7 +16,7 @@ class BaseRow(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def from_orm(cls, orm):
+    def from_model(cls, orm):
         pass
 
     @abstractmethod

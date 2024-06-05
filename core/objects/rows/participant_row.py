@@ -6,7 +6,6 @@ from core.database import Database
 from core.enums.participant_role import ParticipantRole
 from core.models.entities.deal import DealModel
 from core.models.rows.person import PersonRowModel
-from core.models.rows.property import PropertyRowModel
 from core.objects.rows.base_row import BaseRow
 
 
@@ -32,10 +31,10 @@ class ParticipantRow(BaseRow):
         """
         params = {"deal_id": deal_id}
         result = await db.execute_raw_sql(sql, params)
-        return [cls.from_orm(PersonRowModel(**row)) for row in result]
+        return [cls.from_model(PersonRowModel(**row)) for row in result]
 
     @classmethod
-    def from_orm(cls, orm: DealModel):
+    def from_model(cls, orm: DealModel):
         return [
             cls(
                 id=association.person.id,

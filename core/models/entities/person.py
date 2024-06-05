@@ -3,15 +3,15 @@ from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, Relationship, SQLModel
 
-from core.models.associations import (DealDetailsPersonAssociation,
+from core.models.associations import (DealParticipantAssociation,
                                       PropertyOwnerAssociation,
                                       UserPersonAssociation)
 
 if TYPE_CHECKING:
     from core.models.entities.deal import DealModel
+    from core.models.entities.property import PropertyModel
     from core.models.entities.user import UserModel
     from core.models.rows.person import PersonRowModel
-    from core.models.rows.property import PropertyRowModel
 
 
 class PersonModel(SQLModel, table=True):
@@ -31,7 +31,7 @@ class PersonModel(SQLModel, table=True):
     # All the deals associated with the person
     deals: List["DealModel"] = Relationship(
         back_populates="people",
-        link_model=DealDetailsPersonAssociation,
+        link_model=DealParticipantAssociation,
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
@@ -39,7 +39,7 @@ class PersonModel(SQLModel, table=True):
     residence_id: Optional[int] = Field(
         default=None, sa_column=Column(Integer, ForeignKey("properties.id"))
     )
-    residence: Optional["PropertyRowModel"] = Relationship(
+    residence: Optional["PropertyModel"] = Relationship(
         sa_relationship_kwargs={
             "primaryjoin": "PersonOrm.residence_id == PropertyOrm.id",
             "uselist": False,
@@ -47,12 +47,15 @@ class PersonModel(SQLModel, table=True):
     )
 
     # All the properties this person owns (portfolio)
-    portfolio: List["PropertyRowModel"] = Relationship(
-        link_model=PropertyOwnerAssociation
+    portfolio: List["PropertyModel"] = Relationship(
+        link_model=PropertyOwnerAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
     users: List["UserModel"] = Relationship(
-        back_populates="people", link_model=UserPersonAssociation
+        back_populates="people",
+        link_model=UserPersonAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     row: "PersonRowModel" = Relationship(
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}

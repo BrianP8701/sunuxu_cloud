@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar
 
 from core.database import Database
 from core.enums import DealStatus, DealType
@@ -19,6 +19,8 @@ if TYPE_CHECKING:
                                           UserDealAssociation)
     from core.models.rows.person import PersonRowModel
     from core.models.rows.property import PropertyRowModel
+
+T = TypeVar("T", bound="BaseDeal")
 
 
 class BaseDeal(BaseEntity):
@@ -40,11 +42,11 @@ class BaseDeal(BaseEntity):
     updated: Optional[datetime]
     viewed: Optional[datetime]
 
-    deal_orm: Optional[DealRowModel]
-    deal_details_orm: Optional[DealModel]
+    deal_row_model: Optional[DealRowModel]
+    deal_model: Optional[DealModel]
 
     @classmethod
-    async def create(cls, user_id: int, data: Dict[str, Any]):
+    async def create(cls: Type[T], user_id: int, data: Dict[str, Any]) -> T:
         """
         Creates a new deal entry in the database.
 
@@ -55,8 +57,8 @@ class BaseDeal(BaseEntity):
             - 'category' (DealCategory): Indicates if the deal is a listing. Must be 'buy', 'sell', or 'dual'. (Required)
             - 'status' (DealStatus): The current status of the deal. (Required)
             - 'type' (DealType): The type of the deal (Buy, Sell, or Dual). (Required)
-            - 'participants' (Dict[int, str]): Person IDs to participant roles. Required if category is 'buy'. (Conditional)
-            - 'property_id' (int): ID of the property the deal is for. Required if category is 'sell' or 'dual'. (Conditional)
+            - 'participants' (Optional[Dict[int, str]]): Person IDs to participant roles. Required if category is 'buy'. (Conditional)
+            - 'property_id' (Optional[int]): ID of the property the deal is for. Required if category is 'sell' or 'dual'. (Conditional)
             - 'transaction_platform' (Optional[str]): The platform used for the transaction. (Optional)
             - 'notes' (Optional[str]): Additional notes regarding the deal. (Optional)
         """
@@ -132,93 +134,138 @@ class BaseDeal(BaseEntity):
             else:
                 await session.commit()
 
-        return cls.from_orm(deal_row, deal)
+        return await cls.read(deal.id)
 
     @classmethod
-    async def read(cls, id: int):
+    async def read(cls: Type[T], id: int) -> T:
         db = Database()
-        deal = await db.read(
-            DealModel,
-            id,
-            eager_load=[
-                "property.row",
-                "participants.row",
-                "documents",
-                "users.row",
-                "row"
-            ],
-        )
 
-        users = [UserRow.from_orm(user) for user in deal.users]
+        async with db.get_session() as session:
+            try:
+                deal = await db.read(
+                    DealModel,
+                    id,
+                    eager_load=[
+                        "property.row",
+                        "users.row",
+                        "participants.row",
+                        "participants.deal_participant_association",
+                        "documents",
+                        "row",
+                    ],
+                    session=session,
+                )
+                db.update_fields(DealRowModel, id, {"viewed": datetime.now()}, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        users = [UserRow.from_model(user.row) for user in deal.users]
         participants = [
-            ParticipantRow.from_orm(participant)
-            for participant in deal.deal_details.participants
+            ParticipantRow(
+                id=participant.id,
+                name=participant.name,
+                role=participant.deal_participant_association.role,
+            )
+            for participant in deal.participants
         ]
         documents = [
-            DealDocumentRow.from_orm(document)
-            for document in deal.deal_details.documents
+            DealDocumentRow.from_model(document) for document in deal.documents
         ]
+        property = PropertyRow.from_model(deal.property.row)
 
         return cls(
             id=deal.id,
-            address=deal.address,
-            buyer_name=deal.buyer_name,
-            status=deal.status,
-            type=deal.type,
-            created=deal.created,
-            updated=deal.updated,
-            viewed=deal.viewed,
-            transaction_platform=deal.deal_details.transaction_platform,
-            notes=deal.deal_details.notes,
+            category=deal.row.category,
+            status=deal.row.status,
+            type=deal.row.type,
+            created=deal.row.created,
+            updated=deal.row.updated,
+            viewed=deal.row.viewed,
+            transaction_platform=deal.transaction_platform,
+            notes=deal.notes,
             users=users,
-            property=PropertyRow.from_orm(deal.deal_details.property),
+            property=property,
             participants=participants,
             documents=documents,
-            deal_orm=deal,
-            deal_details_orm=deal.deal_details,
+            deal_row_model=deal.row,
+            deal_model=deal,
         )
 
-    async def update(self, **kwargs):
+    @classmethod
+    async def update(cls: Type[T], id: int, updates: Dict[str, Any]) -> T:
+        """
+        Updates row by replacing columns with values specified in updates.
+
+        :param updates:
+            A dictionary containing the deal details to update:
+            - 'category' (Optional[DealCategory]): Indicates if the deal is a listing. Must be 'buy', 'sell', or 'dual'. (Optional)
+            - 'status' (Optional[DealStatus]): The current status of the deal. (Optional)
+            - 'type' (Optional[DealType]): The type of the deal (Buy, Sell, or Dual). (Optional)
+            - 'transaction_platform' (Optional[str]): The platform used for the transaction. (Optional)
+            - 'notes' (Optional[str]): Additional notes regarding the deal. (Optional)
+        """
         db = Database()
 
-        deal_updates = {}
-        deal_detail_updates = {}
+        valid_updates = {
+            "category",
+            "status",
+            "type",
+            "transaction_platform",
+            "notes",
+        }
 
-        for key, value in kwargs.items():
+        deal_row_updates = {}
+        deal_updates = {}
+
+        for key, value in updates.items():
+            if key not in valid_updates:
+                raise ValueError(
+                    f"{key} is not a valid deal update. Must be one of {', '.join(valid_updates)}. To update participants, property, documents, or users, use the appropriate methods."
+                )
             if hasattr(DealRowModel, key):
-                deal_updates[key] = value
+                deal_row_updates[key] = value
             if hasattr(DealModel, key):
-                deal_detail_updates[key] = value
+                deal_updates[key] = value
 
         async with db.get_session() as session:
-            if deal_updates:
-                await db.update_fields(DealRowModel, self.id, deal_updates, session)
-            if deal_detail_updates:
-                await db.update_fields(DealModel, self.id, deal_detail_updates, session)
+            try:
+                if deal_row_updates:
+                    await db.update_fields(DealRowModel, id, deal_row_updates, session)
+                if deal_updates:
+                    await db.update_fields(DealModel, id, deal_updates, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        return await cls.read(id)
 
     @classmethod
-    async def delete(cls, id: int):
+    async def delete(cls: Type[T], id: int) -> None:
         db = Database()
-        deal = await db.read(DealRowModel, id)
+        await db.delete_by_id(DealModel, id)
 
-        await db.delete(deal)
-
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
-            "address": self.address,
-            "buyer_name": self.buyer_name,
+            "category": self.category.value,
             "status": self.status.value,
             "type": self.type.value,
+            "transaction_platform": self.transaction_platform,
+            "notes": self.notes,
+            "users": [user.to_dict() for user in self.users] if self.users else [],
+            "property": self.property.to_dict() if self.property else None,
+            "participants": [participant.to_dict() for participant in self.participants]
+            if self.participants
+            else [],
+            "documents": [document.to_dict() for document in self.documents]
+            if self.documents
+            else [],
             "created": self.created.isoformat() if self.created else None,
             "updated": self.updated.isoformat() if self.updated else None,
             "viewed": self.viewed.isoformat() if self.viewed else None,
-            "transaction_platform": self.transaction_platform,
-            "notes": self.notes,
-            "users": [user.to_dict() for user in self.users],
-            "property": self.property.to_dict(),
-            "participants": [
-                participant.to_dict() for participant in self.participants
-            ],
-            "documents": [document.to_dict() for document in self.documents],
         }

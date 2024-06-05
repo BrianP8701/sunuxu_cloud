@@ -1,11 +1,14 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Enum as SqlEnum
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from core.enums.participant_document_status import ParticipantDocumentStatus
 from core.enums.participant_role import ParticipantRole
 from core.enums.team_role import TeamRole
+
+if TYPE_CHECKING:
+    from core.models.entities.person import PersonModel
 
 
 # User-Entity associations

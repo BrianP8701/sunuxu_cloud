@@ -30,10 +30,10 @@ class PersonRow(BaseRow):
         rows = db.query_with_user_and_conditions(
             PersonRowModel, user_id, sort_by, ascending, page_size, offset, include
         )
-        return [cls.from_orm(row) for row in rows]
+        return [cls.from_model(row) for row in rows]
 
     @classmethod
-    def from_orm(cls, orm: PersonRowModel):
+    def from_model(cls, orm: PersonRowModel):
         return cls(
             id=orm.id,
             name=orm.name,

@@ -25,10 +25,10 @@ class TeamRow(BaseRow):
         """
         params = {"user_id": user_id}
         result = await db.execute_raw_sql(sql, params)
-        return [cls.from_orm(TeamRowModel(**row)) for row in result]
+        return [cls.from_model(TeamRowModel(**row)) for row in result]
 
     @classmethod
-    def from_orm(cls, orm):
+    def from_model(cls, orm):
         return cls(id=orm.id, name=orm.name, state=orm.state, brokerage=orm.brokerage)
 
     def to_dict(self):

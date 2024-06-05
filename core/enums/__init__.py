@@ -7,6 +7,7 @@ from .mls import Mls
 from .participant_document_status import ParticipantDocumentStatus
 from .participant_role import ParticipantRole
 from .person_type import PersonType
+from .property_attached_type import PropertyAttachedType
 from .property_type import PropertyType
 from .service_connection_status import ServiceConnectionStatus
 from .state import State
@@ -27,4 +28,4 @@ class Enums:
     ServiceConnectionStatus = ServiceConnectionStatus
     TeamRole = TeamRole
     MessageType = MessageType
-    ServiceConnectionStatus = ServiceConnectionStatus
+    PropertyAttachedType = PropertyAttachedType

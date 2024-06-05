@@ -213,7 +213,8 @@ class AzurePostgreSQLDatabase:
         columns: List[str] = None,
         limit: int = None,
         offset: int = None,
-        order_by: Any = None,
+        sort_by: str = None,
+        ascending: bool = True,
         eager_load: List[str] = None,
         session: Optional[AsyncSession] = None,
     ) -> List[Any]:
@@ -234,8 +235,11 @@ class AzurePostgreSQLDatabase:
                 for relation in eager_load:
                     query = query.options(joinedload(relation))
 
-            if order_by is not None:
-                query = query.order_by(order_by)
+            if sort_by:
+                order_by_column = getattr(model_class, sort_by)
+                if not ascending:
+                    order_by_column = order_by_column.desc()
+                query = query.order_by(order_by_column)
 
             if limit is not None:
                 query = query.limit(limit)
