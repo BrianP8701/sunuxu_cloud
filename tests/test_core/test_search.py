@@ -1,9 +1,11 @@
 # tests/test_core/test_search.py
+import faker
 import pytest
-from core.database import Databasefrom core.models import *
+
+from core.database import *
+from core.database import Databasefrom, core.models, import
 from core.utils.search import search
 from core.utils.security import hash_password
-import faker
 
 fake = faker.Faker()
 user_id = 2

@@ -1,10 +1,11 @@
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from core.enums.deal_type import DealType
-from core.enums.deal_status import DealStatus
-from core.models.rows.deal import DealRowOrm
 from core.database import Database
+from core.enums.deal_status import DealStatus
+from core.enums.deal_type import DealType
+from core.models.rows.deal import DealRowModel
 from core.objects.rows.base_row import BaseRow
+
 
 class DealRow(BaseRow):
     id: int
@@ -14,18 +15,35 @@ class DealRow(BaseRow):
     status: DealStatus
     type: DealType
 
-    orm: Optional[DealRowOrm]
+    orm: Optional[DealRowModel]
 
     @classmethod
-    def from_orm(cls, deal: DealRowOrm):
+    def query(
+        cls,
+        user_id: int,
+        sort_by: str,
+        ascending: bool,
+        page_size: int,
+        offset: int,
+        include: Dict[str, Any],
+    ):
+        """Filter and paginate deal rows"""
+        db = Database()
+        rows = db.query_with_user_and_conditions(
+            DealRowModel, user_id, sort_by, ascending, page_size, offset, include
+        )
+        return [cls.from_orm(row) for row in rows]
+
+    @classmethod
+    def from_orm(cls, orm: DealRowModel):
         return cls(
-            id=deal.id,
-            is_listing=deal.is_listing,
-            address=deal.address,
-            name=deal.name,
-            status=deal.status,
-            type=deal.type,
-            orm=deal
+            id=orm.id,
+            is_listing=orm.is_listing,
+            address=orm.address,
+            name=orm.name,
+            status=orm.status,
+            type=orm.type,
+            orm=orm,
         )
 
     def to_dict(self):
@@ -37,9 +55,3 @@ class DealRow(BaseRow):
             "status": self.status.value,
             "type": self.type.value,
         }
-
-    @classmethod
-    def query(cls, user_id: int, sort_by: str, ascending: bool, page_size: int, offset: int, include: Dict[str, Any]):
-        db = Database()
-        rows = db.query_with_user_and_conditions(DealRowOrm, user_id, sort_by, ascending, page_size, offset, include)
-        return [cls.from_orm(row) for row in rows]

@@ -1,7 +1,8 @@
 from core.database.azure_postgresql import AzurePostgreSQLDatabase
-from core.models.rows.team import TeamRowOrm
+from core.enums import Brokerage, State
+from core.models.rows.team import TeamRowModel
 from core.objects.rows.base_row import BaseRow
-from core.enums import State, Brokerage
+
 
 class TeamRow(BaseRow):
     id: int
@@ -10,35 +11,30 @@ class TeamRow(BaseRow):
     brokerage: Brokerage
 
     @classmethod
-    def from_orm(cls, team):
-        return cls(
-            id=team.id,
-            name=team.name,
-            state=team.state,
-            brokerage=team.brokerage
-        )
+    async def query(cls, user_id: int):
+        """
+        Fetch all team rows for a user.
+        """
+        db = AzurePostgreSQLDatabase()
+        sql = """
+        SELECT tr.*
+        FROM team_rows tr
+        JOIN teams t ON t.row_id = tr.id
+        JOIN user_team_association uta ON uta.team_id = t.id
+        WHERE uta.user_id = :user_id
+        """
+        params = {"user_id": user_id}
+        result = await db.execute_raw_sql(sql, params)
+        return [cls.from_orm(TeamRowModel(**row)) for row in result]
+
+    @classmethod
+    def from_orm(cls, orm):
+        return cls(id=orm.id, name=orm.name, state=orm.state, brokerage=orm.brokerage)
 
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "state": self.state,
-            "brokerage": self.brokerage
+            "brokerage": self.brokerage,
         }
-
-    @classmethod
-    async def query(cls, user_id: int):
-        """
-        Fetch all team rows for a user.
-        """
-        db = AzurePostgreSQLDatabase()
-        teams = await db.query_with_user_and_conditions(
-            model_class=TeamRowOrm,
-            user_id=user_id,
-            sort_by="id",
-            ascending=True,
-            page_size=-1,
-            offset=0,
-            include={}
-        )
-        return [cls.from_orm(team) for team in teams]

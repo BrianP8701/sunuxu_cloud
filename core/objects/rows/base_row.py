@@ -4,12 +4,19 @@ Rows represent the object you see in the UI, which has little information, is fr
 Details represent the full view of the object when you press on the row.
 """
 from abc import ABC, abstractmethod
+
 from pydantic import BaseModel
+
 
 class BaseRow(BaseModel, ABC):
     @classmethod
     @abstractmethod
-    def from_orm(cls, orm_object):
+    def query(cls, *args, **kwargs):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_orm(cls, orm):
         pass
 
     @abstractmethod

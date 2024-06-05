@@ -1,10 +1,12 @@
 # /api/crm/get_table_data/main.py
-from api.api_utils import parse_request_body, api_error_handler, return_server_error
-import azure.functions as func
 import json
 import logging
 import traceback
 
+import azure.functions as func
+
+from api.api_utils import (api_error_handler, parse_request_body,
+                           return_server_error)
 from core.database import Database
 from core.models import *
 from core.queries.paginate_rows import paginate_rows
@@ -98,7 +100,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PropertyOrm,
+                PropertyModel,
                 page_index,
                 page_size,
                 sort_by,
@@ -130,7 +132,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
                 "id",
             ]
             data, total_items, total_pages = await paginate_rows(
-                PersonOrm,
+                PersonModel,
                 page_index,
                 page_size,
                 sort_by,
@@ -171,7 +173,7 @@ async def get_table_data(req: func.HttpRequest) -> func.HttpResponse:
             ]
 
             data, total_items, total_pages = await paginate_rows(
-                DealOrm,
+                DealModel,
                 page_index,
                 page_size,
                 sort_by,

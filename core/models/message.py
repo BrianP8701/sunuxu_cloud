@@ -1,17 +1,26 @@
 import uuid
-from sqlmodel import Field, SQLModel, JSON
 from typing import List, Optional
-from sqlalchemy import Column, Enum as SqlEnum
 
-from core.enums.message_type import MessageType
+from sqlalchemy import Column
+from sqlalchemy import Enum as SqlEnum
+from sqlmodel import JSON, Field, SQLModel
+
 from core.enums.message_source_type import MessageSourceType
+from core.enums.message_type import MessageType
 
-class MessageOrm(SQLModel, table=True):
+
+class MessageModel(SQLModel, table=True):
     __tablename__ = "messages"
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid1, primary_key=True) # Time UUID
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid1, primary_key=True
+    )  # Time UUID
 
-    source_id: int = Field(index=True, nullable=False) # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
-    source_type: MessageSourceType = Field(sa_column=SqlEnum(MessageSourceType, index=True, nullable=False))
+    source_id: int = Field(
+        index=True, nullable=False
+    )  # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    source_type: MessageSourceType = Field(
+        sa_column=SqlEnum(MessageSourceType, index=True, nullable=False)
+    )
 
     type: MessageType
     content: str
@@ -30,7 +39,9 @@ class MessageOrm(SQLModel, table=True):
 
     # Email thread fields
     thread_size: int = Field(default=1)
-    thread_message_ids: Optional[List[str]] = Field(default=None, sa_column=Column(JSON))
+    thread_message_ids: Optional[List[str]] = Field(
+        default=None, sa_column=Column(JSON)
+    )
 
     # Call specific fields
     duration: Optional[int] = Field(default=None)

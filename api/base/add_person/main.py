@@ -1,10 +1,11 @@
 # api/base/add_person/main.py
-import azure.functions as func
 import json
 
+import azure.functions as func
+
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -22,7 +23,7 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
     last_name = data.get("last_name")
     full_name = f"{first_name} {middle_name} {last_name}".replace("  ", " ").strip()
 
-    person = PersonOrm(
+    person = PersonModel(
         user_id=data.get("user_id"),
         first_name=first_name,
         middle_name=middle_name,
@@ -31,7 +32,7 @@ async def add_person(req: func.HttpRequest) -> func.HttpResponse:
         language=data.get("language"),
     )
     inserted_person = await db.create(person)
-    person_row = PersonRowOrm(
+    person_row = PersonRowModel(
         id=inserted_person.id,
         name=full_name,
         email=data.get("email"),

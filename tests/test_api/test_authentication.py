@@ -1,10 +1,10 @@
 # tests/test_api_locally/test_routes.py
 # pytest -s tests/test_api/test_authentication.py
-import requests
 import pytest
+import requests
 
 from core.database import Database
-from core.models import UserRowOrm
+from core.models import UserRowModel
 from tests.utils.get_url import get_function_url
 
 db = Database()
@@ -83,6 +83,6 @@ def test_delete_user():
 @pytest.fixture(scope="module", autouse=True)
 async def clear_database():
     yield
-    if await db.exists(UserRowOrm, {"email": "test@example.com"}):
-        await db.delete(UserRowOrm, {"email": "test@example.com"})
+    if await db.exists(UserRowModel, {"email": "test@example.com"}):
+        await db.delete(UserRowModel, {"email": "test@example.com"})
     db.dispose_instance()

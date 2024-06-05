@@ -1,6 +1,7 @@
 import unittest
-import requests
 import uuid
+
+import requests
 
 from tests.utils.get_url import get_function_url
 

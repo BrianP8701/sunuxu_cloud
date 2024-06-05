@@ -1,10 +1,12 @@
 import os
+
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 
+
 class TwilioWrapper:
     _instance = None
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(TwilioWrapper, cls).__new__(cls)
@@ -18,10 +20,7 @@ class TwilioWrapper:
 
     async def send_message(self, from_number, to_number, body, media_urls=None):
         message = self.client.messages.create(
-            body=body,
-            from_=from_number,
-            to=to_number,
-            media_url=media_urls
+            body=body, from_=from_number, to=to_number, media_url=media_urls
         )
         return message.sid
 
@@ -34,11 +33,14 @@ class TwilioWrapper:
     @staticmethod
     def handle_incoming_messages(request):
         # Extract data from request
-        from_number = request.values.get('From')
-        to_number = request.values.get('To')
-        body = request.values.get('Body')
-        media_urls = [request.values.get(f'MediaUrl{i}') for i in range(0, int(request.values.get('NumMedia', 0)))]
-        
+        from_number = request.values.get("From")
+        to_number = request.values.get("To")
+        body = request.values.get("Body")
+        media_urls = [
+            request.values.get(f"MediaUrl{i}")
+            for i in range(0, int(request.values.get("NumMedia", 0)))
+        ]
+
         # Create a response object
         response = MessagingResponse()
         response.message("Thank you for your message!")
@@ -47,8 +49,9 @@ class TwilioWrapper:
             "from_number": from_number,
             "to_number": to_number,
             "body": body,
-            "media_urls": media_urls
+            "media_urls": media_urls,
         }, str(response)
+
 
 # Example usage
 if __name__ == "__main__":

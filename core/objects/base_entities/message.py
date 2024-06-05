@@ -1,16 +1,16 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 import uuid
+from typing import Any, Dict, List, Optional
 
-from core.enums.message_type import MessageType
-from core.models.message import MessageOrm
 from core.database import Database
 from core.enums.message_source_type import MessageSourceType
-from core.objects.objects.base_object import BaseObject
+from core.enums.message_type import MessageType
+from core.models.message import MessageModel
+from core.objects.base_entities.base_entity import BaseEntity
 
-class Message(BaseObject):
+
+class BaseMessage(BaseEntity):
     id: Optional[uuid.UUID] = None
-    source_id: int # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
+    source_id: int  # The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
     source_type: MessageSourceType
 
     type: MessageType
@@ -35,12 +35,12 @@ class Message(BaseObject):
     # Call specific fields
     duration: Optional[int] = None
 
-    orm: Optional[MessageOrm]
+    orm: Optional[MessageModel]
 
     def insert(self) -> None:
         db = Database()
-        
-        message = MessageOrm(
+
+        message = MessageModel(
             type=self.type,
             relationship_id=self.relationship_id,
             content=self.content,
@@ -54,49 +54,53 @@ class Message(BaseObject):
             email_subject=self.email_subject,
             thread_size=self.thread_size,
             thread_message_ids=self.thread_message_ids,
-            duration=self.duration
+            duration=self.duration,
         )
         self.orm = db.create(message)
         self.id = self.orm.id
 
     @classmethod
-    async def read(cls, source_id: int, source_type: MessageSourceType, page_size: int, offset: int) -> List['Message']:
-        """ 
-        Handles pagination. 
+    async def read(
+        cls, source_id: int, source_type: MessageSourceType, page_size: int, offset: int
+    ) -> List["BaseMessage"]:
+        """
+        Handles pagination.
         source_id: The id of the source of the message, this can be a user id for convos with developer, person id for convos with person, team id for team conversations
         source_type: The type of the source of the message, this can be DEV for convos with developer, PERSON for convos with person, TEAM for team conversations, CHANGELOG for changelog messages
         """
         db = Database()
         conditions = {"source_id": source_id, "source_type": source_type}
-        messages_orm = await db.query(MessageOrm, conditions=conditions, limit=page_size, offset=offset, order_by=MessageOrm.id.desc())
+        messages_orm = await db.query(
+            MessageModel,
+            conditions=conditions,
+            limit=page_size,
+            offset=offset,
+            order_by=MessageModel.id.desc(),
+        )
 
         if not messages_orm:
             return []
 
-        messages = [
-            cls.from_orm(message) for message in messages_orm
-        ]
+        messages = [cls.from_orm(message) for message in messages_orm]
 
         return messages
 
     @classmethod
-    async def get_email_thread(cls, id: int) -> List['Message']:
+    async def get_email_thread(cls, id: int) -> List["BaseMessage"]:
         db = Database()
-        head_message: MessageOrm = await db.read(MessageOrm, id)
+        head_message: MessageModel = await db.read(MessageModel, id)
         message_ids = head_message.thread_message_ids
-        
-        thread: List[MessageOrm] = await db.batch_read(MessageOrm, message_ids)
 
-        messages = [
-            cls.from_orm(head_message)
-        ] + [
+        thread: List[MessageModel] = await db.batch_read(MessageModel, message_ids)
+
+        messages = [cls.from_orm(head_message)] + [
             cls.from_orm(message) for message in thread
         ]
 
         return messages
 
     @classmethod
-    def from_orm(cls, orm: MessageOrm) -> 'Message':
+    def from_orm(cls, orm: MessageModel) -> "BaseMessage":
         return cls(
             id=orm.id,
             source_id=orm.source_id,
@@ -114,7 +118,7 @@ class Message(BaseObject):
             thread_size=orm.thread_size,
             thread_message_ids=orm.thread_message_ids,
             duration=orm.duration,
-            orm=orm
+            orm=orm,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -134,5 +138,5 @@ class Message(BaseObject):
             "email_subject": self.email_subject,
             "thread_size": self.thread_size,
             "thread_message_ids": self.thread_message_ids,
-            "duration": self.duration
+            "duration": self.duration,
         }

@@ -1,36 +1,59 @@
-from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import Column, Integer, ForeignKey
+from typing import TYPE_CHECKING, List, Optional
 
-from core.models.associations import UserPersonAssociation, PersonDealAssociation, PersonPortfolioAssociation
+from sqlalchemy import Column, ForeignKey, Integer
+from sqlmodel import Field, Relationship, SQLModel
+
+from core.models.associations import (DealDetailsPersonAssociation,
+                                      PropertyOwnerAssociation,
+                                      UserPersonAssociation)
 
 if TYPE_CHECKING:
-    from core.models.rows.deal import DealRowOrm
-    from core.models.rows.person import PersonRowOrm
-    from core.models.rows.property import PropertyRowOrm
-    from core.models.entities.user import UserOrm
+    from core.models.entities.deal import DealModel
+    from core.models.entities.user import UserModel
+    from core.models.rows.person import PersonRowModel
+    from core.models.rows.property import PropertyRowModel
 
 
-class PersonOrm(SQLModel, table=True):
-    __tablename__ = "persons"
-    id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("people.id", ondelete="CASCADE"), primary_key=True))
+class PersonModel(SQLModel, table=True):
+    __tablename__ = "people"
+    id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(Integer, ForeignKey("people.id"), primary_key=True),
+    )
 
     first_name: str = Field(max_length=255, nullable=False, index=True)
     middle_name: Optional[str] = Field(default=None, max_length=255)
-    last_name: str = Field(max_length=255, nullable=False, index=True)  
+    last_name: str = Field(max_length=255, nullable=False, index=True)
 
     notes: Optional[str] = None
     language: str = Field(default="english", max_length=255)
-    # source: Optional[str] = Field(default=None, max_length=255)
-    # viewed_properties: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    # signature: Optional[bytes] = Field(default=None)
 
-    users: List["UserOrm"] = Relationship(back_populates="people", link_model=UserPersonAssociation)
-    deals: List["DealRowOrm"] = Relationship(link_model=PersonDealAssociation)
+    # All the deals associated with the person
+    deals: List["DealModel"] = Relationship(
+        back_populates="people",
+        link_model=DealDetailsPersonAssociation,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
-    residence_id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("properties.id")))
-    residence: Optional["PropertyRowOrm"] = Relationship(sa_relationship_kwargs={
-        "primaryjoin": "PersonDetailsOrm.residence_id == PropertyOrm.id",
-        "uselist": False
-    })
-    portfolio: List["PropertyRowOrm"] = Relationship(link_model=PersonPortfolioAssociation)
+    # The property where the person lives. A person can only have one residence.
+    residence_id: Optional[int] = Field(
+        default=None, sa_column=Column(Integer, ForeignKey("properties.id"))
+    )
+    residence: Optional["PropertyRowModel"] = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "PersonOrm.residence_id == PropertyOrm.id",
+            "uselist": False,
+        }
+    )
+
+    # All the properties this person owns (portfolio)
+    portfolio: List["PropertyRowModel"] = Relationship(
+        link_model=PropertyOwnerAssociation
+    )
+
+    users: List["UserModel"] = Relationship(
+        back_populates="people", link_model=UserPersonAssociation
+    )
+    row: "PersonRowModel" = Relationship(
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
+    )

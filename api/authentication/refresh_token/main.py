@@ -1,9 +1,10 @@
 # api/authentication/refresh_token/main.py
-import azure.functions as func
 import json
 
-from core.utils.security import refresh_access_token
+import azure.functions as func
+
 from api.api_utils import api_error_handler, return_server_error
+from core.utils.security import refresh_access_token
 
 blueprint = func.Blueprint()
 

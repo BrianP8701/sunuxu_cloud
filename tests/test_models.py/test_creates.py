@@ -1,6 +1,7 @@
 import pytest
 
-from core.objects.objects.user import User
+from core.objects.base_entities.user import User
+
 
 @pytest.mark.asyncio
 async def test_insert_user():
@@ -9,8 +10,8 @@ async def test_insert_user():
         phone="1234567890",
         first_name="Test",
         last_name="Test",
-        password="password"
+        password="password",
     )
-    
+
     await user.create()
     assert user.id is not None

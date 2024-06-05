@@ -1,11 +1,12 @@
 # test/test_api_locally/test_batch_base.py
 import unittest
+
 import requests
 from dotenv import load_dotenv
 
-from tests.utils.get_url import get_function_url
 from core.database import Database
 from core.models import *
+from tests.utils.get_url import get_function_url
 
 load_dotenv()
 
@@ -54,7 +55,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.person_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.person_ids:
-            is_deleted = await self.db.exists(PersonOrm, {"id": id})
+            is_deleted = await self.db.exists(PersonModel, {"id": id})
             self.assertFalse(is_deleted)
 
     def test_1_add_properties(self):
@@ -91,7 +92,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.property_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.property_ids:
-            is_deleted = await self.db.exists(PropertyOrm, {"id": id})
+            is_deleted = await self.db.exists(PropertyModel, {"id": id})
             self.assertFalse(is_deleted)
 
     def test_1_add_transactions(self):
@@ -122,7 +123,7 @@ class TestBaseRoutesBatch(unittest.IsolatedAsyncioTestCase):
         response = requests.post(url, json={"id": TestBaseRoutesBatch.transaction_ids})
         self.assertEqual(response.status_code, 200)
         for id in TestBaseRoutesBatch.transaction_ids:
-            is_deleted = await self.db.exists(DealOrm, {"id": id})
+            is_deleted = await self.db.exists(DealModel, {"id": id})
             self.assertFalse(is_deleted)
 
 

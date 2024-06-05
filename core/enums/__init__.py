@@ -1,16 +1,17 @@
-from .person_type import PersonType
-from .property_type import PropertyType
+from .brokerage import Brokerage
+from .deal_platform import DealPlatform
 from .deal_status import DealStatus
 from .deal_type import DealType
-from .brokerage import Brokerage
-from .participant_role import ParticipantRole
-from .participant_document_status import ParticipantDocumentStatus
-from .deal_platform import DealPlatform
-from .mls import Mls
-from .state import State
-from .service_connection_status import ServiceConnectionStatus
-from .team_role import TeamRole
 from .message_type import MessageType
+from .mls import Mls
+from .participant_document_status import ParticipantDocumentStatus
+from .participant_role import ParticipantRole
+from .person_type import PersonType
+from .property_type import PropertyType
+from .service_connection_status import ServiceConnectionStatus
+from .state import State
+from .team_role import TeamRole
+
 
 class Enums:
     PersonType = PersonType

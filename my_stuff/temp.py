@@ -22,12 +22,13 @@
 import enum
 import re
 
+
 # Step 2: Convert to Dictionary and Create Enum
 def convert_to_dict_and_enum(input_file):
     state_mls_dict = {}
     current_state = None
 
-    with open(input_file, 'r') as file:
+    with open(input_file, "r") as file:
         for line in file:
             line = line.strip()
             if not line:
@@ -40,24 +41,32 @@ def convert_to_dict_and_enum(input_file):
 
     def clean_enum_name(name):
         # Remove parentheses and their contents
-        name = re.sub(r'\(.*?\)', '', name)
+        name = re.sub(r"\(.*?\)", "", name)
         # Replace / with _, & with AND, and delete '
-        name = name.replace('/', '_').replace('&', 'AND').replace("'", '')
+        name = name.replace("/", "_").replace("&", "AND").replace("'", "")
         # Replace spaces and other characters with underscores
-        name = re.sub(r'\W+', '_', name)
+        name = re.sub(r"\W+", "_", name)
         # Ensure no double underscores
-        name = re.sub(r'_+', '_', name)
+        name = re.sub(r"_+", "_", name)
         # Remove leading and trailing underscores
-        name = name.strip('_')
+        name = name.strip("_")
         return name.upper()
 
     # Create Enum
-    mls_enum = enum.Enum('MLS', {clean_enum_name(mls): mls for state in state_mls_dict for mls in state_mls_dict[state]})
+    mls_enum = enum.Enum(
+        "MLS",
+        {
+            clean_enum_name(mls): mls
+            for state in state_mls_dict
+            for mls in state_mls_dict[state]
+        },
+    )
 
     return state_mls_dict, mls_enum
 
+
 # Usage
-state_mls_dict, MLS = convert_to_dict_and_enum('processed_mls.txt')
+state_mls_dict, MLS = convert_to_dict_and_enum("processed_mls.txt")
 
 # Print the dictionary
 # print(state_mls_dict)
@@ -65,4 +74,4 @@ state_mls_dict, MLS = convert_to_dict_and_enum('processed_mls.txt')
 # Print the enum definition
 print("class MLS(enum.Enum):")
 for mls in MLS:
-    print(f"    {mls.name} = \"{mls.value}\"")
+    print(f'    {mls.name} = "{mls.value}"')

@@ -1,17 +1,18 @@
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from core.database import Database
-from core.models import UserRowOrm
-from core.models.entities.user import UserOrm
-from core.objects.objects.base_object import BaseObject
 from core.enums.deal_platform import DealPlatform
 from core.enums.service_connection_status import ServiceConnectionStatus
-from core.models.entities.person import PersonOrm
-from core.models.entities.property import PropertyOrm
-from core.models.entities.deal import DealOrm
-from core.models.entities.team import TeamOrm
+from core.models import UserRowModel
+from core.models.entities.deal import DealModel
+from core.models.entities.person import PersonModel
+from core.models.entities.property import PropertyModel
+from core.models.entities.team import TeamModel
+from core.models.entities.user import UserModel
+from core.objects.base_entities.base_entity import BaseEntity
 
-class User(BaseObject):
+
+class BaseUser(BaseEntity):
     id: Optional[int] = None
     email: str
     phone: Optional[str] = None
@@ -30,7 +31,9 @@ class User(BaseObject):
     mls_connected: Optional[bool] = None
     mls_username: Optional[str] = None
     mls_password: Optional[str] = None
-    skyslope_connection_status: ServiceConnectionStatus = ServiceConnectionStatus.NOT_CONNECTED
+    skyslope_connection_status: ServiceConnectionStatus = (
+        ServiceConnectionStatus.NOT_CONNECTED
+    )
     skyslope_username: Optional[str] = None
     skyslope_password: Optional[str] = None
     idx_website_domain: Optional[str] = None
@@ -71,13 +74,13 @@ class User(BaseObject):
     kvcore_token_expiry: Optional[str] = None
     created: Optional[str] = None
 
-    user_orm: Optional[UserRowOrm] = None
-    user_details_orm: Optional[UserOrm] = None
+    user_orm: Optional[UserRowModel] = None
+    user_details_orm: Optional[UserModel] = None
 
     @classmethod
-    async def read(cls, id: int) -> "User":
+    async def read(cls, id: int) -> "BaseUser":
         db = Database()
-        user = await db.read(UserRowOrm, id, eager_load=["user_details"])
+        user = await db.read(UserRowModel, id, eager_load=["user_details"])
         return cls(
             id=user.id,
             email=user.email,
@@ -136,10 +139,10 @@ class User(BaseObject):
             kvcore_token_expiry=user.kvcore_token_expiry,
             created=user.created,
             user_orm=user,
-            user_details_orm=user.details
+            user_details_orm=user.details,
         )
 
-    async def create(self) -> "User":
+    async def create(self) -> "BaseUser":
         if self.id:
             raise ValueError("User already exists")
         db = Database()
@@ -155,96 +158,102 @@ class User(BaseObject):
     @classmethod
     async def update(cls, id: int, updates: Dict[str, Any]):
         db = Database()
-        
+
         user_updates = {}
         user_details_updates = {}
-        
+
         for key, value in updates.items():
-            if hasattr(UserRowOrm, key):
+            if hasattr(UserRowModel, key):
                 user_updates[key] = value
-            elif hasattr(UserOrm, key):
+            elif hasattr(UserModel, key):
                 user_details_updates[key] = value
 
         async with db.get_session() as session:
-            await db.update_fields(UserRowOrm, id, user_updates, session)
-            await db.update_fields(UserOrm, id, user_details_updates, session)
+            await db.update_fields(UserRowModel, id, user_updates, session)
+            await db.update_fields(UserModel, id, user_details_updates, session)
 
     @classmethod
-    async def batch_read(cls, user_ids: List[int]) -> List["User"]:
+    async def batch_read(cls, user_ids: List[int]) -> List["BaseUser"]:
         db = Database()
-        users = await db.batch_query(UserRowOrm, {"id": user_ids})
+        users = await db.batch_query(UserRowModel, {"id": user_ids})
         return [cls(**user.to_dict()) for user in users]
 
     @classmethod
     async def delete(cls, id: int):
         """
-        Teams enable some objects to have multiple users, meaning we can't just cascade deletes.
-        In this method we check all the users objects and delete them if they no longer have any users.
-        
-        So we'll want to fetch all the people, properties, deals associated with a user, check if the users list is empty and delete if so.
-        Those will cascade deletes accordingly to their relationships
+        Delete a user and cascade delete associated entities (teams, people, properties, deals)
+        if no other users are associated with them.
+
+        Args:
+            id (int): The ID of the user to delete.
         """
         db = Database()
 
-        people_sql = """
-        SELECT p.id AS person_id, p.user_ids AS person_user_ids
-        FROM user_person_association upa
-        LEFT JOIN person_details pd ON upa.person_id = pd.id
-        LEFT JOIN people p ON pd.id = p.id
-        WHERE upa.user_id = :user_id;
-        """
-        deals_sql = """
-        SELECT d.id AS deal_id, d.user_ids AS deal_user_ids
-        FROM user_deal_association uda
-        LEFT JOIN deal_details dd ON uda.deal_id = dd.id
-        LEFT JOIN deals d ON dd.id = d.id
-        WHERE uda.user_id = :user_id;
-        """
-        properties_sql = """
-        SELECT pr.id AS property_id, pr.user_ids AS property_user_ids
-        FROM user_property_association upra
-        LEFT JOIN property_details prd ON upra.property_id = prd.id
-        LEFT JOIN properties pr ON prd.id = pr.id
-        WHERE upra.user_id = :user_id;
-        """
-        teams_sql = """
-        SELECT td.id AS team_id, td.user_ids AS team_user_ids
-        FROM user_team_association uta
-        LEFT JOIN team_details td ON uta.team_id = td.id
-        WHERE uta.user_id = :user_id;
+        # SQL query to count the number of users associated with each entity type for the given user
+        count_entities_sql = """
+        SELECT 'team' AS entity_type, team_id AS entity_id, COUNT(user_id) AS count_of_users
+        FROM user_team_association
+        WHERE user_id = :user_id
+        GROUP BY team_id
+
+        UNION ALL
+
+        SELECT 'person' AS entity_type, person_id AS entity_id, COUNT(user_id) AS count_of_users
+        FROM user_person_association
+        WHERE user_id = :user_id
+        GROUP BY person_id
+
+        UNION ALL
+
+        SELECT 'property' AS entity_type, property_id AS entity_id, COUNT(user_id) AS count_of_users
+        FROM user_property_association
+        WHERE user_id = :user_id
+        GROUP BY property_id
+
+        UNION ALL
+
+        SELECT 'deal' AS entity_type, deal_id AS entity_id, COUNT(user_id) AS count_of_users
+        FROM user_deal_association
+        WHERE user_id = :user_id
+        GROUP BY deal_id;
         """
 
-        async with db.get_session() as session:
-            people_result = await db.execute_raw_sql(people_sql, {"user_id": id}, session)
-            deals_result = await db.execute_raw_sql(deals_sql, {"user_id": id}, session)
-            properties_result = await db.execute_raw_sql(properties_sql, {"user_id": id}, session)
-            teams_result = await db.execute_raw_sql(teams_sql, {"user_id": id}, session)
+        # Execute the raw SQL query with the user ID parameter
+        entities_result = await db.execute_raw_sql(count_entities_sql, {"user_id": id})
 
-
+        delete_team_ids = []
         delete_person_ids = []
         delete_deal_ids = []
         delete_property_ids = []
-        delete_team_ids = []
 
-        for person_id, person_user_ids in people_result:
-            if not person_user_ids:
-                delete_person_ids.append(person_id)
-        for deal_id, deal_user_ids in deals_result:
-            if not deal_user_ids:
-                delete_deal_ids.append(deal_id)
-        for property_id, property_user_ids in properties_result:
-            if not property_user_ids:
-                delete_property_ids.append(property_id)
-        for team_id, team_user_ids in teams_result:
-            if not team_user_ids:
-                delete_team_ids.append(team_id)
+        # Determine which entities should be deleted based on the count of users
+        for entity in entities_result:
+            if entity.count_of_users == 0:
+                if entity.entity_type == "team":
+                    delete_team_ids.append(entity.entity_id)
+                elif entity.entity_type == "person":
+                    delete_person_ids.append(entity.entity_id)
+                elif entity.entity_type == "deal":
+                    delete_deal_ids.append(entity.entity_id)
+                elif entity.entity_type == "property":
+                    delete_property_ids.append(entity.entity_id)
 
+        # Perform the deletions in a database session
         async with db.get_session() as session:
-            await db.delete_batch(PersonOrm, {"id": delete_person_ids}, session)
-            await db.delete_batch(DealOrm, {"id": delete_deal_ids}, session)
-            await db.delete_batch(PropertyOrm, {"id": delete_property_ids}, session)
-            await db.delete_batch(TeamOrm, {"id": delete_team_ids}, session)
-            await db.delete(UserOrm, {"id": id}, session)
+            async with session.begin():  # Ensure atomic transaction
+                if delete_team_ids:
+                    await db.delete_batch(TeamModel, {"id": delete_team_ids}, session)
+                if delete_person_ids:
+                    await db.delete_batch(
+                        PersonModel, {"id": delete_person_ids}, session
+                    )
+                if delete_deal_ids:
+                    await db.delete_batch(DealModel, {"id": delete_deal_ids}, session)
+                if delete_property_ids:
+                    await db.delete_batch(
+                        PropertyModel, {"id": delete_property_ids}, session
+                    )
+                await db.delete(UserModel, {"id": id}, session)
 
     def to_dict(self):
         return {
@@ -308,19 +317,16 @@ class User(BaseObject):
             "custom_property_types": self.custom_property_types,
             "custom_transaction_types": self.custom_transaction_types,
             "custom_transaction_statuses": self.custom_transaction_statuses,
-            "custom_participant_roles": self.custom_participant_roles
+            "custom_participant_roles": self.custom_participant_roles,
         }
 
     def _assemble_orm(self):
-        user = UserRowOrm(
-            password=self.password,
+        user = UserRowModel(
             email=self.email,
             phone=self.phone,
             first_name=self.first_name,
             middle_name=self.middle_name,
-            last_name=self.last_name
+            last_name=self.last_name,
         )
-        user_details = UserOrm(
-            user=user
-        )
+        user_details = UserModel(password=self.password, row=user)
         return user, user_details

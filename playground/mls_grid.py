@@ -3,7 +3,7 @@ import requests
 access_token = "95643d10e32cc799d8653e9d3bd8e250f30844c1"
 headers = {
     "Authorization": f"Bearer {access_token}",
-    "Accept-Encoding": "gzip, deflate"
+    "Accept-Encoding": "gzip, deflate",
 }
 
 # Ensure proper URL encoding

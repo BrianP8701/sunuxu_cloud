@@ -1,9 +1,9 @@
 # api/base/delete_transaction/main.py
 import azure.functions as func
 
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -17,8 +17,8 @@ async def delete_transaction(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        await db.batch_delete(DealOrm, {"id": data})
+        await db.batch_delete(DealModel, {"id": data})
     else:
-        await db.delete(DealOrm, {"id": data})
+        await db.delete(DealModel, {"id": data})
 
     return func.HttpResponse(status_code=200, mimetype="application/json")

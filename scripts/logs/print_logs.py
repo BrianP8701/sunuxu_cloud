@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
 import os
-from dotenv import load_dotenv
+from datetime import datetime, timedelta
+
 from azure.identity import DefaultAzureCredential
 from azure.monitor.query import LogsQueryClient, LogsQueryStatus
+from dotenv import load_dotenv
 
 load_dotenv()
 

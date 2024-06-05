@@ -1,8 +1,10 @@
-from typing import Optional, Dict, Any  
+from typing import Optional
 
-from core.models.rows.user import UserRowOrm
-from core.utils.strings import assemble_name
+from core.database import Database
+from core.models.rows.user import UserRowModel
 from core.objects.rows.base_row import BaseRow
+from core.utils.strings import assemble_name
+
 
 class UserRow(BaseRow):
     id: int
@@ -11,17 +13,25 @@ class UserRow(BaseRow):
     name: Optional[str]
     avatar: Optional[str]
 
-    orm: UserRowOrm
+    orm: UserRowModel
 
     @classmethod
-    def from_orm(cls, user: UserRowOrm) -> "UserRow":
+    async def query(cls, user_id: int):
+        """Get the users row"""
+        db = Database()
+
+        user_row = await db.get(UserRowModel, user_id)
+        return cls.from_orm(user_row)
+
+    @classmethod
+    def from_orm(cls, orm: UserRowModel) -> "UserRow":
         return cls(
-            id=user.id,
-            email=user.email,
-            phone=user.phone,
-            name=assemble_name(user.first_name, user.middle_name, user.last_name),
-            avatar=user.avatar,
-            orm=user
+            id=orm.id,
+            email=orm.email,
+            phone=orm.phone,
+            name=assemble_name(orm.first_name, orm.middle_name, orm.last_name),
+            avatar=orm.avatar,
+            orm=orm,
         )
 
     def to_dict(self):
@@ -32,8 +42,3 @@ class UserRow(BaseRow):
             "name": self.name,
             "avatar": self.avatar,
         }
-    
-    @classmethod
-    def query(cls, user_id: int, sort_by: str, ascending: bool, page_size: int, offset: int, include: Dict[str, Any]):
-        """ Might or might not need this """
-        pass

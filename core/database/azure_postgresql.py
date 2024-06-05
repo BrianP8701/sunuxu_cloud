@@ -1,17 +1,18 @@
-import os
-from dotenv import load_dotenv
 import asyncio
+import os
 from functools import wraps
-from typing import List, Type, Any, Optional, Dict
+from typing import Any, Dict, List, Optional, Type
 
-from sqlalchemy.orm import joinedload
-from sqlalchemy.exc import DisconnectionError, SQLAlchemyError, OperationalError
-from sqlmodel import SQLModel, select
+from dotenv import load_dotenv
+from sqlalchemy.exc import (DisconnectionError, OperationalError,
+                            SQLAlchemyError)
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.sql import text
+from sqlmodel import SQLModel, select
 
 load_dotenv()
+
 
 def retry_on_disconnection(retries=3, delay=2):
     def decorator(func):
@@ -39,6 +40,7 @@ def retry_on_disconnection(retries=3, delay=2):
         return wrapper
 
     return decorator
+
 
 class AzurePostgreSQLDatabase:
     _instance = None
@@ -89,7 +91,11 @@ class AzurePostgreSQLDatabase:
     @retry_on_disconnection()
     async def list_tables(self) -> List[str]:
         async with self.engine.begin() as conn:
-            result = await conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema='public'"))
+            result = await conn.execute(
+                text(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+                )
+            )
             tables = result.fetchall()
             return [table[0] for table in tables]
 
@@ -99,7 +105,11 @@ class AzurePostgreSQLDatabase:
             tables = await self.list_tables()
             for table in tables:
                 print(f"Dropping table {table}")
-                await conn.run_sync(lambda conn: conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE")))
+                await conn.run_sync(
+                    lambda conn: conn.execute(
+                        text(f"DROP TABLE IF EXISTS {table} CASCADE")
+                    )
+                )
                 print(f"Dropped table {table}")
 
     @retry_on_disconnection()
@@ -111,7 +121,9 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
-    async def create(self, model: SQLModel, session: Optional[AsyncSession] = None) -> SQLModel:
+    async def create(
+        self, model: SQLModel, session: Optional[AsyncSession] = None
+    ) -> SQLModel:
         async with (session or self.sessionmaker()) as session:
             session.add(model)
             await session.commit()
@@ -119,13 +131,21 @@ class AzurePostgreSQLDatabase:
             return model
 
     @retry_on_disconnection()
-    async def update(self, model: SQLModel, session: Optional[AsyncSession] = None) -> None:
+    async def update(
+        self, model: SQLModel, session: Optional[AsyncSession] = None
+    ) -> None:
         async with (session or self.sessionmaker()) as session:
             await session.merge(model)
             await session.commit()
 
     @retry_on_disconnection()
-    async def update_fields(self, model_class: Type[SQLModel], id: int, updates: Dict[str, Any], session: Optional[AsyncSession] = None) -> None:
+    async def update_fields(
+        self,
+        model_class: Type[SQLModel],
+        id: int,
+        updates: Dict[str, Any],
+        session: Optional[AsyncSession] = None,
+    ) -> None:
         """
         Update specific fields of a database entry identified by id.
         :param model_class: The SQLModel class of the database model.
@@ -147,7 +167,12 @@ class AzurePostgreSQLDatabase:
                 raise ValueError(f"No record found with ID {id}")
 
     @retry_on_disconnection()
-    async def delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[AsyncSession] = None) -> None:
+    async def delete(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict,
+        session: Optional[AsyncSession] = None,
+    ) -> None:
         async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             for key, value in conditions.items():
@@ -158,7 +183,12 @@ class AzurePostgreSQLDatabase:
             await session.commit()
 
     @retry_on_disconnection()
-    async def delete_by_id(self, model_class: Type[SQLModel], id: int, session: Optional[AsyncSession] = None) -> None:
+    async def delete_by_id(
+        self,
+        model_class: Type[SQLModel],
+        id: int,
+        session: Optional[AsyncSession] = None,
+    ) -> None:
         """
         Delete a record by its ID.
         :param model_class: The SQLModel class of the database model.
@@ -186,7 +216,7 @@ class AzurePostgreSQLDatabase:
         order_by: Any = None,
         eager_load: List[str] = None,
         session: Optional[AsyncSession] = None,
-    ) -> List[SQLModel]:
+    ) -> List[Any]:
         async with (session or self.sessionmaker()) as session:
             if columns:
                 query = select([getattr(model_class, column) for column in columns])
@@ -217,12 +247,12 @@ class AzurePostgreSQLDatabase:
 
     @retry_on_disconnection()
     async def read(
-        self, 
-        model_class: Type[SQLModel], 
-        id: int, 
-        columns: List[str] = None, 
-        eager_load: List[str] = None, 
-        session: Optional[AsyncSession] = None
+        self,
+        model_class: Type[SQLModel],
+        id: int,
+        columns: List[str] = None,
+        eager_load: List[str] = None,
+        session: Optional[AsyncSession] = None,
     ) -> SQLModel:
         async with (session or self.sessionmaker()) as session:
             if columns:
@@ -239,7 +269,29 @@ class AzurePostgreSQLDatabase:
             return result.scalars().first()
 
     @retry_on_disconnection()
-    async def exists(self, model_class: Type[SQLModel], conditions: dict = None, session: Optional[AsyncSession] = None) -> bool:
+    async def add_association(
+        self, association_model: SQLModel, session: Optional[AsyncSession] = None
+    ) -> SQLModel:
+        """
+        Add a new record to an association table.
+
+        :param association_model: The instance of the association model to add.
+        :param session: Optional; an existing database session.
+        :return: The added association model instance.
+        """
+        async with (session or self.sessionmaker()) as session:
+            session.add(association_model)
+            await session.commit()
+            await session.refresh(association_model)
+            return association_model
+
+    @retry_on_disconnection()
+    async def exists(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict = None,
+        session: Optional[AsyncSession] = None,
+    ) -> bool:
         async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             if conditions:
@@ -249,7 +301,12 @@ class AzurePostgreSQLDatabase:
             return result.scalars().first() is not None
 
     @retry_on_disconnection()
-    async def execute_raw_sql(self, sql: str, params: Optional[dict] = None, session: Optional[AsyncSession] = None) -> Any:
+    async def execute_raw_sql(
+        self,
+        sql: str,
+        params: Optional[dict] = None,
+        session: Optional[AsyncSession] = None,
+    ) -> Any:
         async with (session or self.sessionmaker()) as session:
             result = await session.execute(text(sql), params)
             if result.returns_rows:
@@ -259,7 +316,9 @@ class AzurePostgreSQLDatabase:
                 return None
 
     @retry_on_disconnection()
-    async def perform_transaction(self, operations: callable, session: Optional[AsyncSession] = None) -> None:
+    async def perform_transaction(
+        self, operations: callable, session: Optional[AsyncSession] = None
+    ) -> None:
         async with (session or self.sessionmaker()) as session:
             try:
                 await operations(session)
@@ -269,13 +328,20 @@ class AzurePostgreSQLDatabase:
                 raise e
 
     @retry_on_disconnection()
-    async def batch_create(self, models: List[SQLModel], session: Optional[AsyncSession] = None) -> None:
+    async def batch_create(
+        self, models: List[SQLModel], session: Optional[AsyncSession] = None
+    ) -> None:
         async with (session or self.sessionmaker()) as session:
             session.add_all(models)
             await session.commit()
 
     @retry_on_disconnection()
-    async def batch_delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[AsyncSession] = None) -> None:
+    async def batch_delete(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict,
+        session: Optional[AsyncSession] = None,
+    ) -> None:
         async with (session or self.sessionmaker()) as session:
             query = select(model_class)
             for attr, value in conditions.items():
@@ -290,12 +356,12 @@ class AzurePostgreSQLDatabase:
 
     @retry_on_disconnection()
     async def batch_read(
-        self, 
-        model_class: Type[SQLModel], 
-        ids: List[int], 
-        columns: List[str] = None, 
-        eager_load: List[str] = None, 
-        session: Optional[AsyncSession] = None
+        self,
+        model_class: Type[SQLModel],
+        ids: List[int],
+        columns: List[str] = None,
+        eager_load: List[str] = None,
+        session: Optional[AsyncSession] = None,
     ) -> List[SQLModel]:
         async with (session or self.sessionmaker()) as session:
             if columns:
@@ -311,6 +377,20 @@ class AzurePostgreSQLDatabase:
 
             result = await session.execute(query)
             return result.scalars().all()
+
+    @retry_on_disconnection()
+    async def batch_add_associations(
+        self, associations: List[SQLModel], session: Optional[AsyncSession] = None
+    ) -> None:
+        """
+        Add multiple records to an association table in a batch.
+
+        :param associations: A list of association model instances to add.
+        :param session: Optional; an existing database session.
+        """
+        async with (session or self.sessionmaker()) as session:
+            session.add_all(associations)
+            await session.commit()
 
     @retry_on_disconnection()
     async def query_with_user_and_conditions(
@@ -363,4 +443,3 @@ class AzurePostgreSQLDatabase:
 
             result = await session.execute(query)
             return result.scalars().all()
-

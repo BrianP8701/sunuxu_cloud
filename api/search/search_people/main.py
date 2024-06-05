@@ -1,9 +1,11 @@
 # /api/crm/search_people/main.py
-from api.api_utils import api_error_handler, return_server_error
-import azure.functions as func
 import json
 import logging
 import traceback
+
+import azure.functions as func
+
+from api.api_utils import api_error_handler, return_server_error
 from core.database import Database
 from core.models import *
 
@@ -51,7 +53,7 @@ async def search_people(req: func.HttpRequest) -> func.HttpResponse:
             "id",
         ]
 
-        data = await db.similarity_search(PersonOrm, columns=columns, **conditions)
+        data = await db.similarity_search(PersonModel, columns=columns, **conditions)
 
         formatted_data = [
             {

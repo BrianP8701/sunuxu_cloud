@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Type, Optional, Dict
+from typing import Any, Dict, List, Optional, Type
+
 from sqlalchemy.orm import declarative_base
 from sqlmodel import SQLModel
 
@@ -43,7 +44,12 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[Any] = None) -> None:
+    async def delete(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict,
+        session: Optional[Any] = None,
+    ) -> None:
         """
         Deletes a record from the database.
 
@@ -81,7 +87,12 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def exists(self, model_class: Type[SQLModel], conditions: dict = None, session: Optional[Any] = None) -> bool:
+    async def exists(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict = None,
+        session: Optional[Any] = None,
+    ) -> bool:
         """
         Checks if a record exists in the database.
 
@@ -104,7 +115,9 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def perform_transaction(self, operations: callable, session: Optional[Any] = None) -> None:
+    async def perform_transaction(
+        self, operations: callable, session: Optional[Any] = None
+    ) -> None:
         """
         Performs a series of operations within a database transaction.
 
@@ -123,7 +136,9 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def delete_by_id(self, model_class: Type[SQLModel], id: int, session: Optional[Any] = None) -> None:
+    async def delete_by_id(
+        self, model_class: Type[SQLModel], id: int, session: Optional[Any] = None
+    ) -> None:
         """
         Deletes a record by its ID.
 
@@ -134,7 +149,13 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def update_fields(self, model_class: Type[SQLModel], id: int, updates: Dict[str, Any], session: Optional[Any] = None) -> None:
+    async def update_fields(
+        self,
+        model_class: Type[SQLModel],
+        id: int,
+        updates: Dict[str, Any],
+        session: Optional[Any] = None,
+    ) -> None:
         """
         Updates specific fields of a database entry identified by id.
 
@@ -146,7 +167,9 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def batch_insert(self, models: List[SQLModel], session: Optional[Any] = None) -> None:
+    async def batch_insert(
+        self, models: List[SQLModel], session: Optional[Any] = None
+    ) -> None:
         """
         Inserts multiple records into the database in a batch.
 
@@ -156,7 +179,12 @@ class AbstractSQLDatabase(ABC):
         pass
 
     @abstractmethod
-    async def batch_delete(self, model_class: Type[SQLModel], conditions: dict, session: Optional[Any] = None) -> None:
+    async def batch_delete(
+        self,
+        model_class: Type[SQLModel],
+        conditions: dict,
+        session: Optional[Any] = None,
+    ) -> None:
         """
         Deletes multiple records from the database in a batch.
 
@@ -168,12 +196,12 @@ class AbstractSQLDatabase(ABC):
 
     @abstractmethod
     async def batch_get(
-        self, 
-        model_class: Type[SQLModel], 
-        ids: List[int], 
-        columns: List[str] = None, 
-        eager_load: List[str] = None, 
-        session: Optional[Any] = None
+        self,
+        model_class: Type[SQLModel],
+        ids: List[int],
+        columns: List[str] = None,
+        eager_load: List[str] = None,
+        session: Optional[Any] = None,
     ) -> List[SQLModel]:
         """
         Retrieves multiple records by their IDs.
@@ -216,12 +244,12 @@ class AbstractSQLDatabase(ABC):
 
     @abstractmethod
     async def read(
-        self, 
-        model_class: Type[SQLModel], 
-        id: int, 
-        columns: List[str] = None, 
-        eager_load: List[str] = None, 
-        session: Optional[Any] = None
+        self,
+        model_class: Type[SQLModel],
+        id: int,
+        columns: List[str] = None,
+        eager_load: List[str] = None,
+        session: Optional[Any] = None,
     ) -> SQLModel:
         """
         Reads a single record by its ID.

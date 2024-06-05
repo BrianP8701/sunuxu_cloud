@@ -1,10 +1,11 @@
 # api/base/get_person/main.py
-import azure.functions as func
 import json
 
+import azure.functions as func
+
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -18,9 +19,9 @@ async def get_person(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        results = await db.batch_query(PersonOrm, {"id": data})
+        results = await db.batch_query(PersonModel, {"id": data})
     else:
-        results = await db.query(PersonOrm, {"id": data})
+        results = await db.query(PersonModel, {"id": data})
 
     if not results:
         return func.HttpResponse(

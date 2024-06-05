@@ -1,7 +1,8 @@
 import unittest
+from io import BytesIO
+
 import requests
 from pandas import read_excel
-from io import BytesIO
 
 from tests.utils.get_url import get_function_url
 

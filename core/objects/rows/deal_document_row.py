@@ -1,32 +1,46 @@
-from typing import Dict, Any
+from typing import Dict
 
-from core.models.deal_document import DealDocumentOrm
-from core.objects.rows.base_row import BaseRow
+from core.database import Database
 from core.enums.deal_document_status import DealDocumentStatus
+from core.models.deal_document import DealDocumentModel
+from core.objects.rows.base_row import BaseRow
+
 
 class DealDocumentRow(BaseRow):
     id: int
     name: str
     url: str
     status: DealDocumentStatus
-    
-    participants: Dict[str, str] # Person name -> Status
 
-    orm: DealDocumentOrm
+    participants: Dict[str, str]  # Person name -> Status
+
+    orm: DealDocumentModel
 
     @classmethod
-    def from_orm(cls, deal_document: DealDocumentOrm):
+    async def query(cls, deal_id: int):
+        """Get all deal documents for a deal"""
+        db = Database()
+        sql = """
+        SELECT dd.*
+        FROM deal_documents dd
+        WHERE dd.deal_id = :deal_id
+        """
+        params = {"deal_id": deal_id}
+        result = await db.execute_raw_sql(sql, params)
+        return [cls.from_orm(DealDocumentModel(**row)) for row in result]
+
+    @classmethod
+    def from_orm(cls, orm: DealDocumentModel):
         participants = {
-            assoc.participant.name: assoc.status
-            for assoc in deal_document.participants
+            assoc.participant.name: assoc.status for assoc in orm.participants
         }
         return cls(
-            id=deal_document.id,
-            name=deal_document.name,
+            id=orm.id,
+            name=orm.name,
             participants=participants,
-            url=deal_document.url,
-            status=deal_document.status,
-            orm=deal_document
+            url=orm.url,
+            status=orm.status,
+            orm=orm,
         )
 
     def to_dict(self):
@@ -35,5 +49,5 @@ class DealDocumentRow(BaseRow):
             "name": self.name,
             "participants": self.participants,
             "status": self.status,
-            "url": self.url
+            "url": self.url,
         }

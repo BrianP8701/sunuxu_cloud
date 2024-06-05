@@ -1,11 +1,13 @@
 # api/authentication/signup/main.py
-import azure.functions as func
 import json
 
+import azure.functions as func
+
+from api.api_utils import (api_error_handler, parse_request_body,
+                           return_server_error)
 from core.database import Database
-from core.models import UserRowOrm
+from core.models import UserRowModel
 from core.utils.security import generate_tokens, hash_password
-from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
 blueprint = func.Blueprint()
 
@@ -17,10 +19,10 @@ async def signup(req: func.HttpRequest) -> func.HttpResponse:
 
     req_body = parse_request_body(req)
 
-    if await db.exists(UserRowOrm, {"email": req_body["email"]}):
+    if await db.exists(UserRowModel, {"email": req_body["email"]}):
         return return_server_error("Email already exists.", status_code=400)
 
-    user = UserRowOrm(
+    user = UserRowModel(
         email=req_body["email"],
         phone=req_body["phone"],
         first_name=req_body["first_name"],

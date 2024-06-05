@@ -1,10 +1,11 @@
 # scripts/database/generate_fake_data.py
-from faker import Faker
 import random
-from core.models import *
 
-from core.utils.security import hash_password
+from faker import Faker
+
 from core.database import Database
+from core.models import *
+from core.utils.security import hash_password
 
 db = Database()
 fake = Faker()
@@ -16,7 +17,7 @@ def generate_user(user_id, email):
     else:
         middle_name = None
 
-    return UserRowOrm(
+    return UserRowModel(
         id=user_id,
         email=email,
         password=hash_password("p"),
@@ -32,7 +33,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonOrm(
+    return PersonModel(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -43,7 +44,7 @@ def generate_person(user_id):
 
 
 def generate_person_row(user_id, person_id):
-    return PersonRowOrm(
+    return PersonRowModel(
         user_id=user_id,
         id=person_id,
         name=fake.name(),
@@ -67,7 +68,7 @@ def generate_person_row(user_id, person_id):
 
 
 def generate_property(user_id: int):
-    return PropertyOrm(
+    return PropertyModel(
         user_id=user_id,
         street_number=fake.building_number(),
         street_name=fake.street_name(),
@@ -101,7 +102,7 @@ def generate_property(user_id: int):
 
 
 def generate_property_row(user_id, property_id):
-    return PropertyRowOrm(
+    return PropertyRowModel(
         user_id=user_id,
         id=property_id,
         address=fake.address(),
@@ -127,7 +128,7 @@ def generate_property_row(user_id, property_id):
 
 
 def generate_transaction(user_id):
-    return DealOrm(
+    return DealModel(
         user_id=user_id,
         description=fake.text(),
         notes=fake.text(),
@@ -135,7 +136,7 @@ def generate_transaction(user_id):
 
 
 def generate_transaction_row(user_id, transaction_id):
-    return DealRowOrm(
+    return DealRowModel(
         user_id=user_id,
         id=transaction_id,
         name=random.choice([fake.address(), fake.company(), fake.name()]),

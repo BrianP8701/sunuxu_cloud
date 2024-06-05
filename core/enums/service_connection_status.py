@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ServiceConnectionStatus(str, Enum):
     CONNECTED = "connected"
     PENDING = "pending"

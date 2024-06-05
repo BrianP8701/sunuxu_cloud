@@ -1,21 +1,29 @@
-from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import Enum as SqlEnum, Column, Integer, ForeignKey, JSON
 from datetime import datetime
+from typing import TYPE_CHECKING, List, Optional
 
-from core.models.associations import UserPropertyAssociation
-from core.models.associations import PropertyOwnerAssociation, PropertyOccupantAssociation
+from sqlalchemy import JSON, Column
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import ForeignKey, Integer
+from sqlmodel import Field, Relationship, SQLModel
+
 from core.enums.property_attached_type import PropertyAttachedType
+from core.models.associations import (PropertyOccupantAssociation,
+                                      PropertyOwnerAssociation,
+                                      UserPropertyAssociation)
 
 if TYPE_CHECKING:
-    from core.models.entities.user import UserOrm
-    from core.models.rows.property import PropertyRowOrm
-    from core.models.rows.deal import DealRowOrm
-    from core.models.rows.person import PersonRowOrm
+    from core.models.entities.deal import DealModel
+    from core.models.entities.person import PersonModel
+    from core.models.entities.user import UserModel
+    from core.models.rows.property import PropertyRowModel
 
-class PropertyOrm(SQLModel, table=True):
+
+class PropertyModel(SQLModel, table=True):
     __tablename__ = "properties"
-    id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("properties.id", ondelete="CASCADE"), primary_key=True))
+    id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(Integer, ForeignKey("properties.id"), primary_key=True),
+    )
 
     street_number: str = Field(max_length=255, nullable=False)
     street_name: str = Field(max_length=255, nullable=False)
@@ -42,7 +50,11 @@ class PropertyOrm(SQLModel, table=True):
     list_end_date: Optional[datetime] = None
     expiration_date: Optional[datetime] = None
 
-    attached_type: Optional[PropertyAttachedType] = Field(sa_column=Column(SqlEnum(PropertyAttachedType, name="property_attached_types"), default=None))
+    attached_type: Optional[PropertyAttachedType] = Field(
+        sa_column=Column(
+            SqlEnum(PropertyAttachedType, name="property_attached_types"), default=None
+        )
+    )
     section: Optional[str] = None
     school_district: Optional[str] = None
     property_tax: Optional[float] = None
@@ -52,7 +64,18 @@ class PropertyOrm(SQLModel, table=True):
     notes: Optional[str] = None
     description: Optional[str] = None
 
-    users: List["UserOrm"] = Relationship(back_populates="properties", link_model=UserPropertyAssociation)
-    deals: List["DealRowOrm"] = Relationship()
-    owners: List["PersonRowOrm"] = Relationship(link_model=PropertyOwnerAssociation)
-    occupants: List["PersonRowOrm"] = Relationship(link_model=PropertyOccupantAssociation)
+    # All the deals associated with the property
+    deals: List["DealModel"] = Relationship(back_populates="property")
+
+    # Many to many, one property can have many owners and occupants
+    owners: List["PersonModel"] = Relationship(link_model=PropertyOwnerAssociation)
+    occupants: List["PersonModel"] = Relationship(
+        link_model=PropertyOccupantAssociation
+    )
+
+    users: List["UserModel"] = Relationship(
+        back_populates="properties", link_model=UserPropertyAssociation
+    )
+    row: "PropertyRowModel" = Relationship(
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
+    )

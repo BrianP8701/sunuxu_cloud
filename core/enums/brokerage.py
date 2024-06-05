@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Brokerage(Enum):
     EXP_REALTY = "exp_realty"
     COMPASS = "compass"

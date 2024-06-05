@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ParticipantRole(Enum):
     BUYER = "buyer"
     SELLER = "seller"

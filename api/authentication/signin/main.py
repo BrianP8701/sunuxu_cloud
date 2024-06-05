@@ -1,11 +1,13 @@
 # api/authentication/signin/main.py
-import azure.functions as func
 import json
 
+import azure.functions as func
+
+from api.api_utils import (api_error_handler, parse_request_body,
+                           return_server_error)
 from core.database import Database
-from core.models import UserRowOrm
+from core.models import UserRowModel
 from core.utils.security import check_password, generate_tokens
-from api.api_utils import parse_request_body, api_error_handler, return_server_error
 
 blueprint = func.Blueprint()
 
@@ -17,12 +19,12 @@ async def signin(req: func.HttpRequest) -> func.HttpResponse:
 
     req_body = parse_request_body(req)
 
-    if not await db.exists(UserRowOrm, {"email": req_body["email"]}):
+    if not await db.exists(UserRowModel, {"email": req_body["email"]}):
         return return_server_error(
             "An account with this email does not exist.", status_code=400
         )
 
-    user = await db.query(UserRowOrm, {"email": req_body["email"]})
+    user = await db.query(UserRowModel, {"email": req_body["email"]})
     user = user[0]
 
     if not check_password(user.password, req_body["password"]):

@@ -1,5 +1,6 @@
-import requests
 import unittest
+
+import requests
 
 from tests.utils.get_url import get_function_url
 

@@ -1,24 +1,22 @@
-from typing import  List, Optional, Dict, Any
-from pydantic import BaseModel
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from core.enums.person_type import PersonType
-from core.models.rows.person import PersonRowOrm
-from core.models.entities.person import PersonOrm
 from core.database import Database
-from core.objects.objects.message import Message
-from core.objects.rows.deal_row import DealRow
+from core.enums.person_type import PersonType
+from core.models.associations import UserPersonAssociation
+from core.models.entities.person import PersonModel
+from core.models.rows.person import PersonRowModel
+from core.models.rows.property import PropertyRowModel
+from core.models.rows.user import UserRowModel
+from core.objects.base_entities.base_entity import BaseEntity
+from core.objects.base_entities.message import Message
 from core.objects.rows.deal_row import DealRow
 from core.objects.rows.property_row import PropertyRow
-from core.models.rows.property import PropertyRowOrm
-from core.models.rows.user import UserRowOrm
 from core.objects.rows.user_row import UserRow
-from core.models.associations import UserPersonAssociation
 from core.utils.strings import assemble_name
-from core.objects.objects.base_object import BaseObject
-from core.objects.rows.person_row import PersonRow
 
-class Person(BaseObject):
+
+class BasePerson(BaseEntity):
     id: int
     first_name: str
     middle_name: Optional[str]
@@ -51,24 +49,37 @@ class Person(BaseObject):
     updated: Optional[datetime]
     viewed: Optional[datetime]
 
-    person_orm: Optional[PersonRowOrm]
-    person_details_orm: Optional[PersonOrm]
+    person_orm: Optional[PersonRowModel]
+    person_details_orm: Optional[PersonModel]
 
     @classmethod
     async def read(cls, id: int):
         db = Database()
-        person = await db.read(PersonRowOrm, id, eager_load=[
-            'person_details', 
-            'person_details.residence', 
-            'person_details.portfolio', 
-            'person_details.deals', 
-            'person_details.users'
-        ])
+        person = await db.read(
+            PersonRowModel,
+            id,
+            eager_load=[
+                "person_details",
+                "person_details.residence",
+                "person_details.portfolio",
+                "person_details.deals",
+                "person_details.users",
+            ],
+        )
 
-        first_page_messages = Message.read(relationship_id=person.id, page_size=25, offset=0)
+        first_page_messages = Message.read(
+            relationship_id=person.id, page_size=25, offset=0
+        )
         deals = [DealRow.from_orm(deal) for deal in person.person_details.deals]
-        residence = PropertyRow.from_orm(person.person_details.residence) if person.person_details.residence else None
-        portfolio = [PropertyRow.from_orm(property) for property in person.person_details.portfolio]
+        residence = (
+            PropertyRow.from_orm(person.person_details.residence)
+            if person.person_details.residence
+            else None
+        )
+        portfolio = [
+            PropertyRow.from_orm(property)
+            for property in person.person_details.portfolio
+        ]
         users = [UserRow.from_orm(user) for user in person.person_details.users]
 
         return cls(
@@ -99,7 +110,7 @@ class Person(BaseObject):
             portfolio=portfolio,
             users=users,
             person_orm=person,
-            person_details_orm=person.person_details        
+            person_details_orm=person.person_details,
         )
 
     def to_dict(self):
@@ -112,7 +123,9 @@ class Person(BaseObject):
             "phone": self.phone,
             "type": self.type.value,
             "active": self.active,
-            "last_activity": self.last_activity.isoformat() if self.last_activity else None,
+            "last_activity": self.last_activity.isoformat()
+            if self.last_activity
+            else None,
             "created": self.created.isoformat() if self.created else None,
             "updated": self.updated.isoformat() if self.updated else None,
             "viewed": self.viewed.isoformat() if self.viewed else None,
@@ -120,15 +133,18 @@ class Person(BaseObject):
             "notes": self.notes,
             "language": self.language,
             "messages": [message.to_dict() for message in self.messages],
-            "deals": {deal.to_dict(): participant.to_dict() for deal, participant in self.deals.items()},
+            "deals": {
+                deal.to_dict(): participant.to_dict()
+                for deal, participant in self.deals.items()
+            },
             "residence": self.residence.to_dict() if self.residence else None,
             "portfolio": [property.to_dict() for property in self.portfolio],
-            "users": [user.to_dict() for user in self.users]
+            "users": [user.to_dict() for user in self.users],
         }
 
     async def create(self):
-        """ 
-        Inserts a new person into the database 
+        """
+        Inserts a new person into the database
         Doesen't make relationships other than users
         """
         db = Database()
@@ -145,10 +161,12 @@ class Person(BaseObject):
         self.person_details_orm = person_details
 
     @classmethod
-    async def batch_create(cls, objects: List['Person']):
+    async def batch_create(cls, objects: List["BasePerson"]):
         db = Database()
         people_orm = [person._assemble_person_orm() for person in objects]
-        people_details_orm = [person._assemble_person_details_orm() for person in objects]
+        people_details_orm = [
+            person._assemble_person_details_orm() for person in objects
+        ]
 
         async with db.get_session() as session:
             await db.batch_create(people_orm, session)
@@ -157,7 +175,7 @@ class Person(BaseObject):
     async def set_residence(self, property_id: int):
         db = Database()
         person_details = self.person_details_orm
-        property = await db.read(PropertyRowOrm, property_id)
+        property = await db.read(PropertyRowModel, property_id)
 
         person_details.residence = property
 
@@ -176,7 +194,7 @@ class Person(BaseObject):
     async def add_to_portfolio(self, property_id: int):
         db = Database()
         person_details = self.person_details_orm
-        property = await db.read(PropertyRowOrm, property_id)
+        property = await db.read(PropertyRowModel, property_id)
 
         person_details.portfolio.append(property)
 
@@ -186,7 +204,7 @@ class Person(BaseObject):
     async def remove_from_portfolio(self, property_id: int):
         db = Database()
         person_details = self.person_details_orm
-        property = await db.read(PropertyRowOrm, property_id)
+        property = await db.read(PropertyRowModel, property_id)
 
         person_details.portfolio.remove(property)
 
@@ -196,12 +214,16 @@ class Person(BaseObject):
     async def add_user(self, user_id: int):
         db = Database()
         person = self.person_orm
-        user = await db.read(UserRowOrm, user_id)
+        user = await db.read(UserRowModel, user_id)
 
         person.user_ids.append(user.id)
         person.users.append(user)
 
-        await db.update_fields(PersonRowOrm, self.id, {'user_ids': person.user_ids, 'users': person.users})
+        await db.update_fields(
+            PersonRowModel,
+            self.id,
+            {"user_ids": person.user_ids, "users": person.users},
+        )
 
     @classmethod
     async def update(cls, id: int, updates: Dict[str, Any]):
@@ -211,47 +233,50 @@ class Person(BaseObject):
         person_details_updates = {}
 
         for key, value in updates.items():
-            if hasattr(PersonRowOrm, key):
+            if hasattr(PersonRowModel, key):
                 person_updates[key] = value
-            if hasattr(PersonOrm, key):
+            if hasattr(PersonModel, key):
                 person_details_updates[key] = value
 
         async with db.get_session() as session:
             if person_updates:
-                await db.update_fields(PersonRowOrm, id, person_updates, session)
+                await db.update_fields(PersonRowModel, id, person_updates, session)
             if person_details_updates:
-                await db.update_fields(PersonOrm, id, person_details_updates, session)
+                await db.update_fields(PersonModel, id, person_details_updates, session)
 
     @classmethod
     async def delete(cls, id: int):
         db = Database()
-        await db.delete_by_id(PersonRowOrm, id)
+        await db.delete_by_id(PersonRowModel, id)
 
     def _assemble_person_orm(self):
-        """ Creates a new PersonOrm object from the Person object """
+        """Creates a new PersonOrm object from the Person object"""
         person_data = {
-            'name': assemble_name(self.first_name, self.middle_name, self.last_name),
-            'email': self.email,
-            'phone': self.phone,
-            'type': self.type,
-            'active': self.active,
-            'last_activity': self.last_activity,
-            'created': self.created,
-            'updated': self.updated,
-            'viewed': self.viewed,
+            "name": assemble_name(self.first_name, self.middle_name, self.last_name),
+            "email": self.email,
+            "phone": self.phone,
+            "type": self.type,
+            "active": self.active,
+            "last_activity": self.last_activity,
+            "created": self.created,
+            "updated": self.updated,
+            "viewed": self.viewed,
         }
         person_details_data = {
-            'first_name': self.first_name,
-            'middle_name': self.middle_name,
-            'last_name': self.last_name,
-            'notes': self.notes,
-            'language': self.language,
-            'source': self.source,
-            'signature': self.signature,
-            'viewed_properties': self.viewed_properties
+            "first_name": self.first_name,
+            "middle_name": self.middle_name,
+            "last_name": self.last_name,
+            "notes": self.notes,
+            "language": self.language,
+            "source": self.source,
+            "signature": self.signature,
+            "viewed_properties": self.viewed_properties,
         }
-        
-        user_associations = [UserPersonAssociation(user_id=user_id, person_id=self.id) for user_id in self.user_ids]
-        person_details_data['users'] = user_associations
 
-        return PersonRowOrm(**person_data), PersonOrm(**person_details_data)
+        user_associations = [
+            UserPersonAssociation(user_id=user_id, person_id=self.id)
+            for user_id in self.user_ids
+        ]
+        person_details_data["users"] = user_associations
+
+        return PersonRowModel(**person_data), PersonModel(**person_details_data)

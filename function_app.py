@@ -3,7 +3,6 @@ import azure.functions as func
 from dotenv import load_dotenv
 
 from api import get_blueprints
-
 from core.models import *
 
 load_dotenv()

@@ -1,9 +1,9 @@
 # api/base/update_transaction/main.py
 import azure.functions as func
 
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -17,7 +17,7 @@ async def update_transaction(req: func.HttpRequest) -> func.HttpResponse:
 
     data = req.get_json()
 
-    transaction = DealOrm(
+    transaction = DealModel(
         id=data.get("id"),
         user_id=data.get("user_id"),
         property_id=data.get("property_id"),

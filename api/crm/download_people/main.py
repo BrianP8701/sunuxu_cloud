@@ -1,11 +1,12 @@
 # api/crm/download_people/main.py
-import azure.functions as func
-import pandas as pd
 from io import BytesIO
 
+import azure.functions as func
+import pandas as pd
+
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -21,7 +22,7 @@ async def download_people(req: func.HttpRequest) -> func.HttpResponse:
     columns = data.get("columns")
 
     people = await db.batch_query(
-        PersonOrm, conditions={"id": people_ids}, columns=columns
+        PersonModel, conditions={"id": people_ids}, columns=columns
     )
 
     print(people)

@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class MessageSourceType(Enum):
     DEV = "dev"
     CHANGELOG = "changelog"

@@ -1,6 +1,8 @@
 import os
 from typing import BinaryIO
-from azure.storage.blob import BlobServiceClient, BlobProperties, BlobLeaseClient
+
+from azure.storage.blob import (BlobLeaseClient, BlobProperties,
+                                BlobServiceClient)
 from dotenv import load_dotenv
 
 from core.database.abstract_blob_storage import AbstractBlobStorage

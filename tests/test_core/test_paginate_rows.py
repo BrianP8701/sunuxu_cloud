@@ -9,70 +9,18 @@ from core.utils.paginate_rows import paginate_rows
 @pytest.mark.asyncio
 async def test_paginate_properties():
     include_types = {
-        "unknown": True, 
-        "condo": True, 
-        "coop": True, 
+        "unknown": True,
+        "condo": True,
+        "coop": True,
         "residential": True,
         "commercial": True,
         "land": True,
         "hoa": True,
         "industrial": True,
         "rental": True,
-        "other": True
+        "other": True,
     }
-    include_statuses = {
-        "active": True,
-        "inactive": False
-    }
-
-    conditions = {}
-    if include_types:
-        include_types_list = []
-        for type_ in include_types:
-            if type_ == "unknown" and include_types[type_]:
-                include_types_list.append(None)
-            elif include_types[type_]:
-                include_types_list.append(type_)
-        conditions["type"] = include_types_list
-
-    if include_statuses:
-        include_statuses_list = []
-        for status in include_statuses:
-            if status == "active" and include_statuses[status]:
-                include_statuses_list.append(True)
-            elif status == "inactive" and include_statuses[status]:
-                include_statuses_list.append(False)
-        conditions["active"] = include_statuses_list     
-
-    conditions["user_id"] = 1 
-
-    properties, total_items, total_pages = await paginate_rows(
-        PropertyRowOrm,
-        page_number=0,
-        page_size=10,
-        sort_by="created",
-        sort_ascending=True,
-        **conditions
-    )
-
-    assert properties is not None
-    assert len(properties) <= 10
-    assert total_items is not None
-    assert total_pages is not None
-    
-@pytest.mark.database
-@pytest.mark.asyncio
-async def test_paginate_people():
-    include_types = {
-        "unknown": True, 
-        "client": True, 
-        "agent": True,
-        "other": True
-    }
-    include_statuses = {
-        "active": True,
-        "inactive": False
-    }
+    include_statuses = {"active": True, "inactive": False}
 
     conditions = {}
     if include_types:
@@ -93,10 +41,52 @@ async def test_paginate_people():
                 include_statuses_list.append(False)
         conditions["active"] = include_statuses_list
 
-    conditions["user_id"] = 1 
+    conditions["user_id"] = 1
+
+    properties, total_items, total_pages = await paginate_rows(
+        PropertyRowModel,
+        page_number=0,
+        page_size=10,
+        sort_by="created",
+        sort_ascending=True,
+        **conditions
+    )
+
+    assert properties is not None
+    assert len(properties) <= 10
+    assert total_items is not None
+    assert total_pages is not None
+
+
+@pytest.mark.database
+@pytest.mark.asyncio
+async def test_paginate_people():
+    include_types = {"unknown": True, "client": True, "agent": True, "other": True}
+    include_statuses = {"active": True, "inactive": False}
+
+    conditions = {}
+    if include_types:
+        include_types_list = []
+        for type_ in include_types:
+            if type_ == "unknown" and include_types[type_]:
+                include_types_list.append(None)
+            elif include_types[type_]:
+                include_types_list.append(type_)
+        conditions["type"] = include_types_list
+
+    if include_statuses:
+        include_statuses_list = []
+        for status in include_statuses:
+            if status == "active" and include_statuses[status]:
+                include_statuses_list.append(True)
+            elif status == "inactive" and include_statuses[status]:
+                include_statuses_list.append(False)
+        conditions["active"] = include_statuses_list
+
+    conditions["user_id"] = 1
 
     people, total_items, total_pages = await paginate_rows(
-        PersonRowOrm,
+        PersonRowModel,
         page_number=0,
         page_size=10,
         sort_by="created",
@@ -109,12 +99,13 @@ async def test_paginate_people():
     assert total_items is not None
     assert total_pages is not None
 
+
 @pytest.mark.database
 @pytest.mark.asyncio
 async def test_paginate_transactions():
     include_types = {
-        "sell": True, 
-        "buy": True, 
+        "sell": True,
+        "buy": True,
         "dual": False,
     }
     include_statuses = {
@@ -122,7 +113,7 @@ async def test_paginate_transactions():
         "closed": False,
         "withdrawn": True,
         "off_market": True,
-        "unknown": True
+        "unknown": True,
     }
 
     conditions = {}

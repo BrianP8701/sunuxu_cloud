@@ -1,10 +1,11 @@
 # api/base/get_transaction/main.py
-import azure.functions as func
 import json
 
+import azure.functions as func
+
+from api.api_utils import api_error_handler
 from core.database import Database
 from core.models import *
-from api.api_utils import api_error_handler
 
 blueprint = func.Blueprint()
 
@@ -18,9 +19,9 @@ async def get_transaction(req: func.HttpRequest) -> func.HttpResponse:
     data = req.get_json()["id"]
 
     if isinstance(data, list):
-        results = await db.batch_query(DealOrm, {"id": data})
+        results = await db.batch_query(DealModel, {"id": data})
     else:
-        results = await db.query(DealOrm, {"id": data})
+        results = await db.query(DealModel, {"id": data})
 
     return func.HttpResponse(
         body=json.dumps({"data": [result.to_dict() for result in results]}),

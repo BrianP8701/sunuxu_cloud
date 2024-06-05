@@ -1,18 +1,19 @@
 # scripts/database/generate_fake_data.py
-from faker import Faker
-import random
-from core.models import *
 import asyncio
+import random
 
-from core.utils.security import hash_password
+from faker import Faker
+
 from core.database import Database
+from core.models import *
+from core.utils.security import hash_password
 
 db = Database()
 fake = Faker()
 
 
 def generate_property(user_id: int):
-    return PropertyOrm(
+    return PropertyModel(
         user_id=user_id,
         address=fake.address(),
         street_number=fake.building_number(),
@@ -69,7 +70,7 @@ def generate_user(user_id, email):
     else:
         middle_name = None
 
-    return UserRowOrm(
+    return UserRowModel(
         id=user_id,
         email=email,
         password=hash_password("p"),
@@ -81,7 +82,7 @@ def generate_user(user_id, email):
 
 
 def generate_person(user_id):
-    return PersonOrm(
+    return PersonModel(
         user_id=user_id,
         first_name=fake.first_name(),
         middle_name=fake.first_name(),
@@ -108,7 +109,7 @@ def generate_person(user_id):
 
 
 def generate_transaction(user_id):
-    return DealOrm(
+    return DealModel(
         user_id=user_id,
         type=random.choice(["sale", "rent", "lease", "buy", "other"]),
         status=random.choice(

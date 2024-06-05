@@ -1,13 +1,13 @@
 # api/google_places/address_autocomplete/main.py
-import azure.functions as func
-import aiohttp
-import os
 import json
+import os
 
+import aiohttp
+import azure.functions as func
 from dotenv import load_dotenv
 
-from core.models import *
 from api.api_utils import api_error_handler
+from core.models import *
 
 load_dotenv()
 blueprint = func.Blueprint()

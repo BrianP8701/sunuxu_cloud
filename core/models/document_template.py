@@ -1,8 +1,9 @@
-from sqlmodel import Field, SQLModel, Column, JSON
-from typing import Optional, Dict, List, Any
+from typing import Any, Dict, List, Optional
+
+from sqlmodel import JSON, Column, Field, SQLModel
 
 
-class DocumentTemplateOrm(SQLModel, table=True):
+class DocumentTemplateModel(SQLModel, table=True):
     __tablename__ = "document_templates"
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

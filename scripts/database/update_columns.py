@@ -1,5 +1,6 @@
 import asyncio
 import os
+
 from dotenv import load_dotenv
 
 from core.database import Database
@@ -8,6 +9,7 @@ from core.models import *
 # load_dotenv()
 # db_url = os.getenv("AZURE_POSTGRES_CONN_STRING")
 # print(db_url)
+
 
 async def update_columns():
     db = Database()

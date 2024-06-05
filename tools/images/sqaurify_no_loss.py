@@ -1,5 +1,6 @@
-from PIL import Image
 import os
+
+from PIL import Image
 
 
 def make_image_square(image_path):
