@@ -1,7 +1,14 @@
+from typing import Any, Dict, List
+from datetime import datetime
+
 from core.database import Database
+from core.enums import PropertyType, PropertyAttachedType
 from core.models.rows.person import PersonRowModel
+from core.models.rows.property import PropertyRowModel
 from core.objects.base_entities.base_property import BaseProperty
-from core.objects.entities.person import Person
+from core.models.entities.property import PropertyModel
+from core.models.associations import UserPropertyAssociation, PropertyOwnerAssociation, PropertyOccupantAssociation
+from core.utils.strings import assemble_address
 
 
 class Property(BaseProperty):

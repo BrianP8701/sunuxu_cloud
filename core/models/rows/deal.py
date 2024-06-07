@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, DateTime
-from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import Index, func
+from sqlalchemy import Column, DateTime, Index, func, Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
@@ -23,12 +21,12 @@ class DealRowModel(SQLModel, table=True):
     )
     status: DealStatus = Field(
         sa_column=Column(
-            SqlEnum(DealStatus), default=DealStatus.UNKNOWN, nullable=False, index=True
+            SqlEnum(DealStatus), default=DealStatus.unknown, nullable=False, index=True
         )
     )
     type: DealType = Field(
         sa_column=Column(
-            SqlEnum(DealType), default=DealType.UNKNOWN, nullable=False, index=True
+            SqlEnum(DealType), default=DealType.unknown, nullable=False, index=True
         )
     )
 

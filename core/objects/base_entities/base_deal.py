@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar
 
 from core.database import Database
-from core.enums import DealStatus, DealType
-from core.enums.deal_category import DealCategory
+from core.enums import DealStatus, DealType, DealCategory, ParticipantRole
 from core.models.associations import UserDealAssociation
 from core.models.entities.deal import DealModel
 from core.models.rows.deal import DealRowModel
@@ -46,17 +45,16 @@ class BaseDeal(BaseEntity):
     deal_model: Optional[DealModel]
 
     @classmethod
-    async def create(cls: Type[T], user_id: int, data: Dict[str, Any]) -> T:
+    async def create(cls: Type[T], data: Dict[str, Any]) -> T:
         """
         Creates a new deal entry in the database.
 
-        :param user_id:
-            The ID of the user creating the deal.
         :param data:
             A dictionary containing the deal details:
-            - 'category' (DealCategory): Indicates if the deal is a listing. Must be 'buy', 'sell', or 'dual'. (Required)
-            - 'status' (DealStatus): The current status of the deal. (Required)
-            - 'type' (DealType): The type of the deal (Buy, Sell, or Dual). (Required)
+            - 'user_ids' (List[int]): A list of IDs of the users associated with the deal. (Required)
+            - 'category' (str): Indicates if the deal is a listing. DealCategory enum. (Required)
+            - 'status' (str): The current status of the deal. DealStatus enum. (Required)
+            - 'type' (str): The type of the deal (Buy, Sell, or Dual). DealType enum. (Required)
             - 'participants' (Optional[Dict[int, str]]): Person IDs to participant roles. Required if category is 'buy'. (Conditional)
             - 'property_id' (Optional[int]): ID of the property the deal is for. Required if category is 'sell' or 'dual'. (Conditional)
             - 'transaction_platform' (Optional[str]): The platform used for the transaction. (Optional)
@@ -88,10 +86,10 @@ class BaseDeal(BaseEntity):
 
         deal_row = DealRowModel(
             name=name,
-            category=data["category"],
-            status=data["status"],
-            type=data["type"],
-            user_ids=[user_id],
+            category=DealCategory(data["category"]),
+            status=DealStatus(data["status"]),
+            type=DealType(data["type"]),
+            user_ids=data["user_ids"],
         )
 
         deal = DealModel(
@@ -102,7 +100,7 @@ class BaseDeal(BaseEntity):
 
         # Prepare associations for participants
         participant_associations = [
-            DealParticipantAssociation(deal_id=deal.id, person_id=person_id, role=role)
+            DealParticipantAssociation(deal_id=deal.id, person_id=person_id, role=ParticipantRole(role))
             for person_id, role in data["participants"].items()
         ]
 
@@ -115,7 +113,10 @@ class BaseDeal(BaseEntity):
             ]
 
         # Prepare association for the user
-        user_association = UserDealAssociation(user_id=user_id, deal_id=deal.id)
+        user_associations = [
+            UserDealAssociation(user_id=user_id, deal_id=deal.id)
+            for user_id in data["user_ids"]
+        ]
 
         async with db.get_session() as session:
             try:
@@ -125,7 +126,7 @@ class BaseDeal(BaseEntity):
                 await db.batch_add_associations(
                     participant_associations
                     + document_associations
-                    + [user_association],
+                    + user_associations,
                     session,
                 )
             except Exception as e:
@@ -201,9 +202,9 @@ class BaseDeal(BaseEntity):
 
         :param updates:
             A dictionary containing the deal details to update:
-            - 'category' (Optional[DealCategory]): Indicates if the deal is a listing. Must be 'buy', 'sell', or 'dual'. (Optional)
-            - 'status' (Optional[DealStatus]): The current status of the deal. (Optional)
-            - 'type' (Optional[DealType]): The type of the deal (Buy, Sell, or Dual). (Optional)
+            - 'category' (Optional[str]): Indicates if the deal is a listing. DealCategory enum. (Optional)
+            - 'status' (Optional[str]): The current status of the deal. DealStatus enum. (Optional)
+            - 'type' (Optional[str]): The type of the deal (Buy, Sell, or Dual). DealType enum. (Optional)
             - 'transaction_platform' (Optional[str]): The platform used for the transaction. (Optional)
             - 'notes' (Optional[str]): Additional notes regarding the deal. (Optional)
         """
@@ -226,7 +227,14 @@ class BaseDeal(BaseEntity):
                     f"{key} is not a valid deal update. Must be one of {', '.join(valid_updates)}. To update participants, property, documents, or users, use the appropriate methods."
                 )
             if hasattr(DealRowModel, key):
-                deal_row_updates[key] = value
+                if key == "category":
+                    deal_row_updates[key] = DealCategory(value)
+                elif key == "status":
+                    deal_row_updates[key] = DealStatus(value)
+                elif key == "type":
+                    deal_row_updates[key] = DealType(value)
+                else:
+                    deal_row_updates[key] = value
             if hasattr(DealModel, key):
                 deal_updates[key] = value
 
@@ -248,6 +256,114 @@ class BaseDeal(BaseEntity):
     async def delete(cls: Type[T], id: int) -> None:
         db = Database()
         await db.delete_by_id(DealModel, id)
+
+    @classmethod
+    async def batch_create(cls, data: List[Dict[str, Any]]) -> List[T]:
+        """
+        Create multiple deals for multiple users.
+
+        :param data:
+            A list of dictionaries, each containing the data to be created for the deal.
+        """
+        db = Database()
+        deals = []
+        deal_rows = []
+        participant_associations = []
+        document_associations = []
+        user_associations = []
+
+        for deal_data in data:
+            # Validate category
+            if deal_data["category"] not in ["buy", "sell", "dual"]:
+                raise ValueError(
+                    f'{deal_data["category"]} is not a valid deal category. Must be sell, buy or dual.'
+                )
+
+            # Setting row name depending on if it is a Buy, Sell or Dual deal
+            if deal_data["category"] in ["dual", "sell"]:
+                property_id = deal_data["property_id"]
+                address_result = await db.query(
+                    PropertyRowModel, conditions={"id": property_id}, columns=["address"]
+                )
+                name = address_result[0].address
+            elif deal_data["category"] == "buy":
+                participants = deal_data["participants"]
+                participant_name_results = await db.query(
+                    PersonRowModel,
+                    conditions={"id": list(participants.keys())},
+                    columns=["name"],
+                )
+                name = " ".join([f"{p.name}" for p in participant_name_results])
+
+            deal_row = DealRowModel(
+                name=name,
+                category=DealCategory(deal_data["category"]),
+                status=DealStatus(deal_data["status"]),
+                type=DealType(deal_data["type"]),
+                user_ids=deal_data["user_ids"],
+            )
+            deal_rows.append(deal_row)
+
+            deal = DealModel(
+                transaction_platform=deal_data.get("transaction_platform"),
+                notes=deal_data.get("notes"),
+                property_id=deal_data["property_id"],
+            )
+            deals.append(deal)
+
+            # Prepare associations for participants
+            participant_associations.extend([
+                DealParticipantAssociation(deal_id=deal.id, person_id=person_id, role=ParticipantRole(role))
+                for person_id, role in deal_data["participants"].items()
+            ])
+
+            # Prepare associations for documents if any
+            if "documents" in deal_data:
+                document_associations.extend([
+                    DealDocumentAssociation(deal_id=deal.id, document_id=document_id)
+                    for document_id in deal_data["documents"]
+                ])
+
+            # Prepare association for the users
+            for user_id in deal_data["user_ids"]:
+                user_associations.append(UserDealAssociation(user_id=user_id, deal_id=deal.id))
+
+        async with db.get_session() as session:
+            try:
+                await db.batch_create(deal_rows, session)
+                for deal, deal_row in zip(deals, deal_rows):
+                    deal.row = deal_row
+                await db.batch_create(deals, session)
+                await db.batch_add_associations(
+                    participant_associations + document_associations + user_associations,
+                    session,
+                )
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        return [await cls.read(deal.id) for deal in deals]
+
+    @classmethod
+    async def batch_delete(cls, ids: List[int]) -> None:
+        """
+        Delete multiple deals by their IDs.
+
+        :param ids:
+            A list of deal IDs to delete.
+        """
+        db = Database()
+        async with db.get_session() as session:
+            try:
+                await db.batch_delete(DealModel, {"id": ids}, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -102,6 +102,7 @@ class AzurePostgreSQLDatabase:
     @retry_on_disconnection()
     async def delete_tables(self):
         async with self.engine.begin() as conn:
+            # Delete tables
             tables = await self.list_tables()
             for table in tables:
                 print(f"Dropping table {table}")
@@ -111,6 +112,33 @@ class AzurePostgreSQLDatabase:
                     )
                 )
                 print(f"Dropped table {table}")
+
+            # Delete types
+            result = await conn.execute(
+                text(
+                    """
+                    SELECT typname 
+                    FROM pg_type 
+                    WHERE typnamespace = 'public'::regnamespace
+                    AND typname NOT IN (
+                        SELECT objid::regtype::text 
+                        FROM pg_depend 
+                        WHERE deptype = 'e'
+                    )
+                    """
+                )
+            )
+            types = result.fetchall()
+            for type_ in types:
+                type_name = type_[0]
+                if type_name.startswith('_'):
+                    continue  # Skip array types
+                print(f"Dropping type {type_name}")
+                try:
+                    await conn.execute(text(f"DROP TYPE IF EXISTS {type_name} CASCADE"))
+                    print(f"Dropped type {type_name}")
+                except Exception as e:
+                    print(f"Failed to drop type {type_name}: {e}")
 
     @retry_on_disconnection()
     async def clear_tables(self, session: Optional[AsyncSession] = None) -> None:
@@ -127,7 +155,6 @@ class AzurePostgreSQLDatabase:
         async with (session or self.sessionmaker()) as session:
             session.add(model)
             await session.commit()
-            await session.refresh(model)
             return model
 
     @retry_on_disconnection()
@@ -255,7 +282,7 @@ class AzurePostgreSQLDatabase:
         model_class: Type[SQLModel],
         id: int,
         columns: List[str] = None,
-        eager_load: List[str] = None,
+        eager_load: List[Any] = None,
         session: Optional[AsyncSession] = None,
     ) -> SQLModel:
         async with (session or self.sessionmaker()) as session:

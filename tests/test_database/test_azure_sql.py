@@ -10,7 +10,6 @@ load_dotenv()
 @pytest.fixture
 async def db_instance():
     db = AzurePostgreSQLDatabase()
-    print("Database instance created.")
     yield db
     await db.dispose_instance()
 

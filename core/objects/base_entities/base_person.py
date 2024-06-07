@@ -2,12 +2,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from core.database import Database
-from core.enums.person_type import PersonType
-from core.models.associations import UserPersonAssociation
+from core.enums import PersonType, ParticipantRole
+from core.models.associations import UserPersonAssociation, PropertyOwnerAssociation
 from core.models.entities.person import PersonModel
 from core.models.rows.person import PersonRowModel
-from core.models.rows.property import PropertyRowModel
-from core.models.rows.user import UserRowModel
 from core.objects.base_entities.base_entity import BaseEntity
 from core.objects.entities.message import Message
 from core.objects.rows.deal_row import DealRow
@@ -20,31 +18,31 @@ T = TypeVar("T", bound="BasePerson")
 
 
 class BasePerson(BaseEntity):
-    id: int
+    id: int = None
 
     # Row Fields
     name: str
-    email: Optional[str]
-    phone: Optional[str]
+    email: Optional[str] = None
+    phone: Optional[str] = None
     type: PersonType
     active: bool
-    last_activity: datetime
+    last_activity: Optional[datetime] = None
 
-    created: datetime
-    updated: Optional[datetime]
-    viewed: Optional[datetime]
+    created: datetime = None
+    updated: Optional[datetime] = None
+    viewed: Optional[datetime] = None
 
     user_ids: List[int]
 
     # Entity Fields
     first_name: str
-    middle_name: Optional[str]
+    middle_name: Optional[str] = None
     last_name: str
 
-    notes: str
-    language: str
+    notes: Optional[str] = None
+    language: Optional[str] = None
 
-    deals: Optional[List[DealRow]] = []
+    deals: Optional[Dict[DealRow, ParticipantRole]] = {}
     residence_id: Optional[int] = None
     residence: Optional[PropertyRow] = None
     portfolio: Optional[List[PropertyRow]] = []
@@ -52,18 +50,17 @@ class BasePerson(BaseEntity):
 
     messages: Optional[List[Message]] = []
 
-    person_row_model: Optional[PersonRowModel]
-    person_model: Optional[PersonModel]
+    person_row_model: Optional[PersonRowModel] = None
+    person_model: Optional[PersonModel] = None
 
     @classmethod
-    async def create(cls: Type[T], user_id: int, data: Dict[str, Any]) -> T:
+    async def create(cls: Type[T], data: Dict[str, Any]) -> T:
         """
         Creates a new person entry in the database.
 
-        :param user_id:
-            The ID of the user creating the person.
         :param data:
             A dictionary containing the person details:
+            - 'user_ids' (List[int]): A list of IDs of the users associated with the person. (Required)
             - 'first_name' (str): The first name of the person. (Required)
             - 'last_name' (str): The last name of the person. (Required)
             - 'middle_name' (Optional[str]): The middle name of the person. (Optional)
@@ -72,6 +69,8 @@ class BasePerson(BaseEntity):
             - 'type' (PersonType): The type of the person. (Required)
             - 'notes' (Optional[str]): Additional notes regarding the person. (Optional)
             - 'language' (Optional[str]): The language of the person. (Optional)
+            - 'residence_id' (Optional[int]): The ID of the property that the person resides in. (Optional)
+            - 'portfolio_ids' (Optional[List[int]]): A list of IDs of the properties that the person owns. (Optional)
         """
         db = Database()
 
@@ -81,10 +80,10 @@ class BasePerson(BaseEntity):
             ),
             email=data.get("email"),
             phone=data.get("phone"),
-            type=data["type"],
+            type=PersonType(data["type"]),
             active=True,
             created=datetime.utcnow(),
-            user_ids=[user_id],
+            user_ids=data["user_ids"],
         )
 
         person = PersonModel(
@@ -93,16 +92,28 @@ class BasePerson(BaseEntity):
             last_name=data["last_name"],
             notes=data.get("notes"),
             language=data.get("language", "english"),
+            residence_id=data.get("residence_id")
         )
 
-        user_association = UserPersonAssociation(user_id=user_id, person_id=person.id)
+        user_associations = [
+            UserPersonAssociation(user_id=user_id, person_id=person.id)
+            for user_id in data["user_ids"]
+        ]
 
+        # Prepare portfolio associations if any
+        portfolio_associations = [
+            PropertyOwnerAssociation(property_id=property_id, person_id=person.id)
+            for property_id in data.get("portfolio_ids", [])
+        ]
+
+        # Add portfolio associations to the session
         async with db.get_session() as session:
             try:
                 await db.create(PersonRowModel, person_row, session)
                 person.row = person_row
                 await db.create(PersonModel, person, session)
-                await db.add_association(user_association, session)
+                await db.batch_add_associations(user_associations, session)
+                await db.batch_add_associations(portfolio_associations, session)  # Add this line
             except Exception as e:
                 await session.rollback()
                 raise e
@@ -125,7 +136,8 @@ class BasePerson(BaseEntity):
                         "residence.row",
                         "portfolio.row",
                         "deals.row",
-                        "deals.deal_participant_association" "users.row",
+                        "deals.deal_participant_association", 
+                        "users.row",
                     ],
                 )
                 await db.update_fields(
@@ -142,7 +154,9 @@ class BasePerson(BaseEntity):
             source_id=source_id, limit=25, offset=0
         )
 
-        deals = [DealRow.from_model(deal.row) for deal in person.deals]
+        # Transform deals to include ParticipantRole
+        deals = {DealRow.from_model(deal.row): ParticipantRole(deal.deal_participant_association.role) for deal in person.deals}
+
         residence = (
             PropertyRow.from_model(person.residence.row)
             if person.residence.row
@@ -189,7 +203,7 @@ class BasePerson(BaseEntity):
             - 'first_name' (Optional[str]): The first name of the person. (Optional)
             - 'middle_name' (Optional[str]): The middle name of the person. (Optional)
             - 'last_name' (Optional[str]): The last name of the person. (Optional)
-            - 'type' (Optional[PersonType]): The type of the person. (Optional)
+            - 'type' (Optional[str]): The type of the person. PersonType enum. (Optional)
             - 'active' (Optional[bool]): Whether the person is active. (Optional)
             - 'last_activity' (Optional[datetime]): The last activity of the person. (Optional)
             - 'notes' (Optional[str]): Additional notes regarding the person. (Optional)
@@ -201,7 +215,10 @@ class BasePerson(BaseEntity):
 
         for key, value in updates.items():
             if hasattr(PersonRowModel, key):
-                person_updates[key] = value
+                if key == "type":
+                    person_updates[key] = PersonType(value)
+                else:
+                    person_updates[key] = value
             if hasattr(PersonModel, key):
                 person_details_updates[key] = value
 
@@ -248,6 +265,88 @@ class BasePerson(BaseEntity):
             else:
                 await session.commit()
 
+
+    @classmethod
+    async def batch_create(cls, data: List[Dict[str, Any]]) -> List[T]:
+        """
+        Create multiple people.
+
+        :param data:
+            A list of dictionaries, each containing the data to be created for a person.
+        """
+        db = Database()
+        persons = []
+        person_rows = []
+        user_associations = []
+        portfolio_associations = []
+
+        for person_data in data:
+            person_row = PersonRowModel(
+                name=assemble_name(
+                    person_data["first_name"], person_data.get("middle_name"), person_data["last_name"]
+                ),
+                email=person_data.get("email"),
+                phone=person_data.get("phone"),
+                type=PersonType(person_data["type"]),
+                active=True,
+                created=datetime.utcnow(),
+                user_ids=person_data["user_ids"],
+            )  
+            person_rows.append(person_row)
+
+            person = PersonModel(
+                first_name=person_data["first_name"],
+                middle_name=person_data.get("middle_name"),
+                last_name=person_data["last_name"],
+                notes=person_data.get("notes"),
+                language=person_data.get("language", "english"),
+                residence_id=person_data.get("residence_id")
+            )
+            persons.append(person)
+
+            for user_id in person_data["user_ids"]:
+                user_associations.append(UserPersonAssociation(user_id=user_id, person_id=person.id))
+
+            for property_id in person_data.get("portfolio_ids", []):
+                portfolio_associations.append(PropertyOwnerAssociation(property_id=property_id, person_id=person.id))
+
+        async with db.get_session() as session:
+            try:
+                await db.batch_create(person_rows, session)
+                for person, person_row in zip(persons, person_rows):
+                    person.row = person_row
+                await db.batch_create(persons, session)
+                await db.batch_add_associations(user_associations, session)
+                await db.batch_add_associations(portfolio_associations, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        return [await cls.read(person.id, user_id) for person in persons for user_id in person.user_ids]
+
+    @classmethod
+    async def batch_delete(cls, ids: List[int], user_id: int) -> None:
+        """
+        Delete multiple persons by their IDs.
+
+        :param ids:
+            A list of person IDs to delete.
+        """
+        db = Database()
+        async with db.get_session() as session:
+            try:
+                await db.batch_delete(PersonModel, {"id": ids}, session)
+                for id in ids:
+                    source_id = cantor_pairing(user_id, id)
+                    await Message.delete_by_source_id(source_id, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -270,8 +369,8 @@ class BasePerson(BaseEntity):
             "language": self.language,
             "messages": [message.to_dict() for message in self.messages],
             "deals": {
-                deal.to_dict(): participant.to_dict()
-                for deal, participant in self.deals.items()
+                deal.to_dict(): role.value
+                for deal, role in self.deals.items()
             },
             "residence": self.residence.to_dict() if self.residence else None,
             "portfolio": [property.to_dict() for property in self.portfolio],

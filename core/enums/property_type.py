@@ -2,12 +2,12 @@ from enum import Enum
 
 
 class PropertyType(Enum):
-    RESIDENTIAL = "residential"
-    CONDO = "condo"
-    COOP = "coop"
-    COMMERCIAL = "commercial"
-    LAND = "land"
-    INDUSTRIAL = "industrial"
-    RENTAL = "rental"
-    CUSTOM = "custom"
-    UNKNOWN = "unknown"
+    residential = "residential"
+    condo = "condo"
+    coop = "coop"
+    commercial = "commercial"
+    land = "land"
+    industrial = "industrial"
+    rental = "rental"
+    custom = "custom"
+    unknown = "unknown"

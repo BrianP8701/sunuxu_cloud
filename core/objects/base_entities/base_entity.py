@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Type, TypeVar
+from typing import Any, Dict, Generic, List, Type, TypeVar
 
 from pydantic import BaseModel
 
@@ -16,9 +16,13 @@ class BaseEntity(BaseModel, ABC, Generic[T]):
     removes any sensitive information.
     """
 
+
+    """
+    ----------------------- CRUD Operations -----------------------
+    """
     @classmethod
     @abstractmethod
-    async def create(cls: Type[T], user_id: int, data: Dict[str, Any]) -> T:
+    async def create(cls: Type[T], data: Dict[str, Any]) -> T:
         """
         Create a new entity.
         """
@@ -57,6 +61,30 @@ class BaseEntity(BaseModel, ABC, Generic[T]):
         """
         pass
 
+
+    """
+    ----------------------- Batch Operations -----------------------
+    """
+    @classmethod
+    @abstractmethod
+    async def batch_create(cls: Type[T], data: List[Dict[str, Any]]) -> List[T]:
+        """
+        Create multiple entities in a single transaction.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    async def batch_delete(cls: Type[T], ids: List[int]) -> None:
+        """
+        Delete multiple entities in a single transaction.
+        """
+        pass
+
+
+    """
+    ----------------------- Other -----------------------
+    """
     @abstractmethod
     def to_dict(self) -> Dict[str, Any]:
         """

@@ -18,7 +18,7 @@ class PersonModel(SQLModel, table=True):
     __tablename__ = "people"
     id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("people.id"), primary_key=True),
+        sa_column=Column(Integer, ForeignKey("person_rows.id"), primary_key=True)
     )
 
     first_name: str = Field(max_length=255, nullable=False, index=True)
@@ -30,9 +30,9 @@ class PersonModel(SQLModel, table=True):
 
     # All the deals associated with the person
     deals: List["DealModel"] = Relationship(
-        back_populates="people",
+        back_populates="participants",
         link_model=DealParticipantAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={"cascade": "all"},
     )
 
     # The property where the person lives. A person can only have one residence.
@@ -41,7 +41,7 @@ class PersonModel(SQLModel, table=True):
     )
     residence: Optional["PropertyModel"] = Relationship(
         sa_relationship_kwargs={
-            "primaryjoin": "PersonOrm.residence_id == PropertyOrm.id",
+            "primaryjoin": "PersonModel.residence_id == PropertyModel.id",
             "uselist": False,
         }
     )
@@ -49,14 +49,19 @@ class PersonModel(SQLModel, table=True):
     # All the properties this person owns (portfolio)
     portfolio: List["PropertyModel"] = Relationship(
         link_model=PropertyOwnerAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={"cascade": "all", "overlaps": "owners"}
     )
 
     users: List["UserModel"] = Relationship(
         back_populates="people",
         link_model=UserPersonAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={"cascade": "all"},
     )
     row: "PersonRowModel" = Relationship(
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={
+            "uselist": False,
+            "single_parent": True,
+            "cascade": "all, delete-orphan",
+            "back_populates": None 
+        }
     )

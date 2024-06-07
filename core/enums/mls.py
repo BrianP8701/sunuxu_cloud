@@ -2,6 +2,281 @@ from enum import Enum
 
 
 class Mls(Enum):
+    baldwin_county_association_of_realtors = "baldwin county association of realtors"
+    covington_association_of_realtors = "covington association of realtors"
+    cullman_association_of_realtors = "cullman association of realtors"
+    dothan_mls = "dothan mls"
+    east_alabama_board_of_realtors = "east alabama board of realtors"
+    eufaula_board_of_realtors = "eufaula board of realtors"
+    greater_alabama_mls = "greater alabama mls"
+    gulf_coast_mls = "gulf coast mls"
+    lake_martin_area_association_of_realtors = (
+        "lake martin area association of realtors"
+    )
+    lee_county_association_of_realtors = "lee county association of realtors"
+    monroe_county_board_of_realtors = "monroe county board of realtors"
+    montgomery_area_association_of_realtors = "montgomery area association of realtors"
+    north_alabama_mls = "north alabama mls"
+    shoals_area_association_of_realtors = "shoals area association of realtors"
+    valley_mls = "valley mls"
+    walker_county_area_board_of_realtors = "walker county area board of realtors"
+    west_alabama_mls = "west alabama mls"
+    wiregrass_board_of_realtors = "wiregrass board of realtors"
+    alaska_mls = "alaska mls (akmls)"
+    greater_fairbanks_mls = "greater fairbanks mls"
+    southeast_alaska_mls = "southeast alaska mls"
+    arizona_regional_mls = "arizona regional mls (armls)"
+    central_arizona_board_of_realtors = "central arizona board of realtors"
+    lake_havasu_association_of_realtors = "lake havasu association of realtors"
+    mls_of_southern_arizona = "mls of southern arizona (mlssaz)"
+    northern_arizona_association_of_realtors = (
+        "northern arizona association of realtors"
+    )
+    prescott_area_association_of_realtors = "prescott area association of realtors"
+    sedona_verde_valley_association_of_realtors = (
+        "sedona verde valley association of realtors"
+    )
+    southeast_arizona_mls = "southeast arizona mls (seazmls)"
+    western_arizona_realtor_data_exchange = (
+        "western arizona realtor data exchange (wardex)"
+    )
+    white_mountain_association_of_realtors = "white mountain association of realtors"
+    yuma_association_of_realtors = "yuma association of realtors"
+    batesville_board_of_realtors = "batesville board of realtors"
+    cooperative_arkansas_realtors = "cooperative arkansas realtors"
+    fort_smith_board_of_realtors = "fort smith board of realtors"
+    harrison_district_board_of_realtors = "harrison district board of realtors"
+    hot_springs_board_of_realtors = "hot springs board of realtors"
+    johnson_county_board_of_realtors_inc = "johnson county board of realtors inc"
+    north_central_board_of_realtors = "north central board of realtors"
+    northwest_arkansas_board_of_realtors = "northwest arkansas board of realtors"
+    russellville_board_of_realtors = "russellville board of realtors"
+    texarkana_board_of_realtors = "texarkana board of realtors"
+    bakersfield_association_of_realtors = "bakersfield association of realtors"
+    bay_area_real_estate_info_services = "bay area real estate info services (bareis)"
+    bay_east_association_of_realtors = "bay east association of realtors"
+    big_bear_association_of_realtors = "big bear association of realtors"
+    calaveras_county_association_of_realtors = (
+        "calaveras county association of realtors"
+    )
+    california_desert_association_of_realtors = (
+        "california desert association of realtors"
+    )
+    california_regional_mls = "california regional mls (crmls)"
+    coastal_mendocino_association_of_realtors = (
+        "coastal mendocino association of realtors"
+    )
+    combined_la_westside_mls = "combined la westside mls (claw)"
+    conejo_simi_moorpark_association_of_realtors = (
+        "conejo simi moorpark association of realtors"
+    )
+    contra_costa_association_of_realtors = "contra costa association of realtors"
+    del_norte_association_of_realtors = "del norte association of realtors"
+    el_dorado_board_of_realtors = "el dorado board of realtors"
+    fresno_association_of_realtors = "fresno association of realtors"
+    greater_antelope_valley_association_of_realtors = (
+        "greater antelope valley association of realtors"
+    )
+    humboldt_association_of_realtors = "humboldt association of realtors"
+    idyllwild_association_of_realtors = "idyllwild association of realtors"
+    imperial_county_association_of_realtors = "imperial county association of realtors"
+    itech_mls = "itech mls"
+    kern_river_lake_isabella_board_of_realtors = (
+        "kern river lake isabella board of realtors"
+    )
+    kings_county_board_of_realtors = "kings county board of realtors"
+    lassen_association_of_realtors = "lassen association of realtors"
+    mammoth_lakes_board_of_realtors = "mammoth lakes board of realtors"
+    mls_listings = "mls listings"
+    north_santa_barbara_county_regional_mls = "north santa barbara county regional mls"
+    ojai_valley_board_of_realtors = "ojai valley board of realtors"
+    ridgecrest_area_association_of_realtors = "ridgecrest area association of realtors"
+    rim_o_the_world_association_of_realtors = "rim o’ the world association of realtors"
+    san_diego_mls = "san diego mls"
+    san_francisco_association_of_realtors = "san francisco association of realtors"
+    santa_barbara_mls = "santa barbara mls"
+    shasta_association_of_realtors = "shasta association of realtors"
+    siskiyou_association_of_realtors = "siskiyou association of realtors"
+    south_tahoe_association_of_realtors = "south tahoe association of realtors"
+    sutter_yuba_association_of_realtors = "sutter-yuba association of realtors"
+    tahoe_sierra_board_of_realtors = "tahoe sierra board of realtors"
+    tehachapi_area_association_of_realtors = "tehachapi area association of realtors"
+    tehama_county_association_of_realtors = "tehama county association of realtors"
+    trinity_county_association_of_realtors = "trinity county association of realtors"
+    tulare_county_association_of_realtors = "tulare county association of realtors"
+    tuolumne_county_association_of_realtors = "tuolumne county association of realtors"
+    victor_valley_mls = "victor valley mls"
+    aspen_glenwood_springs_mls = "aspen glenwood springs mls"
+    colorado_real_estate_network = "colorado real estate network (cren)"
+    grand_county_board_of_realtors = "grand county board of realtors"
+    grand_junction_area_realtor_association = "grand junction area realtor association"
+    information_and_real_estate_services = "information and real estate services (ires)"
+    pikes_peak_association_of_realtors = "pikes peak association of realtors"
+    pueblo_association_of_realtors = "pueblo association of realtors"
+    royal_gorge_association_of_realtors = "royal gorge association of realtors"
+    summit_association_of_realtors = "summit association of realtors"
+    telluride_mls = "telluride mls"
+    vail_board_of_realtors = "vail board of realtors."
+    darien_board_of_realtors = "darien board of realtors"
+    greenwich_association_of_realtors = "greenwich association of realtors"
+    new_canaan_board_of_realtors_inc = "new canaan board of realtors inc"
+    smart_mls = "smart mls"
+    sussex_county_association_of_realtors_bright_mls = (
+        "sussex county association of realtors/ bright mls"
+    )
+    amelia_island_nassau_county_association_of_realtors = (
+        "amelia island nassau county association of realtors"
+    )
+    beaches_mls_jupiter_tequesta_mls = "beaches mls jupiter tequesta mls"
+    brevard_mls = "brevard mls"
+    central_panhandle_association_of_realtors = (
+        "central panhandle association of realtors"
+    )
+    daytona_beach_area_association_of_realtors = (
+        "daytona beach area association of realtors"
+    )
+    dixie_gilchrist_levy_mls = "dixie-gilchrist-levy mls"
+    emerald_coast_association_of_realtors = "emerald coast association of realtors"
+    flagler_county_association_of_realtors = "flagler county association of realtors"
+    gainesville_alachua_county_association_of_realtors = (
+        "gainesville alachua county association of realtors"
+    )
+    heartland_association_of_realtors = "heartland association of realtors"
+    hernando_county_association_of_realtors = "hernando county association of realtors"
+    key_west_association_of_realtors = "key west association of realtors"
+    marathon_and_lower_keys_association_of_realtors = (
+        "marathon and lower keys association of realtors"
+    )
+    marco_island_area_association_of_realtors = (
+        "marco island area association of realtors"
+    )
+    martin_county_realtors_of_the_treasure_coast = (
+        "martin county realtors of the treasure coast"
+    )
+    naples_area_board_of_realtors = "naples area board of realtors"
+    navarre_area_board_of_realtorsnew_smyrna_beach_board_of_realtors = (
+        "navarre area board of realtorsnew smyrna beach board of realtors"
+    )
+    north_florida_mls = "north florida mls (nflmls)"
+    ocala_marion_county_association_of_realtors = (
+        "ocala/marion county association of realtors"
+    )
+    palm_beach_board_of_realtors = "palm beach board of realtors"
+    pensacola_association_of_realtors = "pensacola association of realtors"
+    realtor_association_of_indian_river_county = (
+        "realtor association of indian river county"
+    )
+    realtors_association_of_citrus_county_inc = (
+        "realtors association of citrus county, inc."
+    )
+    realtors_association_of_franklin_and_gulf_counties = (
+        "realtors association of franklin and gulf counties"
+    )
+    florida_gulf_coast_multiple_listing_service = (
+        "florida gulf coast multiple listing service"
+    )
+    sanibel_and_captiva_islands_association_of_realtors = (
+        "sanibel and captiva islands association of realtors"
+    )
+    sef_shared_mls_database = "sef shared mls database"
+    st_augustine_and_st_john_s_county_board_of_realtors = (
+        "st. augustine & st. john’s county board of realtors"
+    )
+    stellar_mls = "stellar mls"
+    florida_keys_board_of_realtors = "florida keys board of realtors"
+    altamaha_basin_board_of_realtors = "altamaha basin board of realtors"
+    americus_board_of_realtors = "americus board of realtors"
+    carpet_capital_association_of_realtors = "carpet capital association of realtors"
+    central_georgia_mls = "central georgia mls (cgmls)"
+    classic_mls = "classic mls"
+    columbus_board_of_realtors = "columbus board of realtors"
+    crisp_area_board_of_realtors = "crisp area board of realtors"
+    douglas_coffee_county_board_of_realtors = "douglas coffee county board of realtors"
+    dublin_board_of_realtors = "dublin board of realtors"
+    first_mls = "first mls (fmls)"
+    georgia_mls = "georgia mls (gamls)"
+    golden_isles_association_of_realtors = "golden isles association of realtors"
+    greater_augusta_association_of_realtors = "greater augusta association of realtors"
+    hinesville_board_of_realtors = "hinesville board of realtors"
+    lake_country_board_of_realtors = "lake country board of realtors"
+    middle_georgia_mls = "middle georgia mls"
+    moultrie_board_of_realtors = "moultrie board of realtors"
+    northeast_georgia_board_of_realtors = "northeast georgia board of realtors"
+    savannah_board_of_realtors = "savannah board of realtors"
+    south_georgia_mls = "south georgia mls"
+    southwest_georgia_mls = "southwest georgia mls"
+    thomasville_area_board_of_realtors = "thomasville area board of realtors"
+    tift_area_board_of_realtors = "tift area board of realtors"
+    west_metro_board_of_realtors = "west metro board of realtors"
+    hawaii_information_service = "hawaii information service"
+    realtors_association_of_maui = "realtors association of maui"
+    coeur_d_alene_mls = "coeur d’alene mls"
+    greater_pocatello_association_of_realtors = (
+        "greater pocatello association of realtors"
+    )
+    intermountain_mls = "intermountain mls (imls)"
+    lewis_clark_association_of_realtors = "lewis clark association of realtors"
+    mini_cassia_association_of_realtors = "mini-cassia association of realtors"
+    mountain_central_association_of_realtors = (
+        "mountain central association of realtors"
+    )
+    selkirk_association_of_realtors = "selkirk association of realtors"
+    snake_river_regional_mls = "snake river regional mls"
+    sun_valley_board_of_realtors = "sun valley board of realtors"
+    capital_area_association_of_realtors = "capital area association of realtors"
+    central_illinois_board_of_realtors = "central illinois board of realtors"
+    logan_county_board_of_realtors = "logan county board of realtors"
+    midwest_real_estate_data = "midwest real estate data (mred)"
+    quincy_association_of_realtors = "quincy association of realtors"
+    realtor_association_of_northwestern_illinois = (
+        "realtor association of northwestern illinois"
+    )
+    rockford_area_association_of_realtors = "rockford area association of realtors"
+    crossroads_association_of_realtors = "crossroads association of realtors"
+    east_central_indiana_board_of_realtors_inc = (
+        "east central indiana board of realtors inc"
+    )
+    greater_northwest_indiana_association_of_realtors = (
+        "greater northwest indiana association of realtors"
+    )
+    indiana_regional_mls = "indiana regional mls (irmls)"
+    jefferson_county_board_of_realtors = "jefferson county board of realtors"
+    metropolitan_indianapolis_board_of_realtors = (
+        "metropolitan indianapolis board of realtors (mibor)"
+    )
+    richmond_association_of_realtors = "richmond association of realtors"
+    southeastern_indiana_board_of_realtors = "southeastern indiana board of realtors"
+    southern_indiana_realtors_association = "southern indiana realtors association"
+    terre_haute_area_association_of_realtors = (
+        "terre haute area association of realtors"
+    )
+    cedar_rapids_area_association_of_realtors = (
+        "cedar rapids area association of realtors"
+    )
+    central_iowa_board_of_realtors_inc = "central iowa board of realtors, inc."
+    des_moines_area_association_of_realtors_inc = (
+        "des moines area association of realtors, inc."
+    )
+    east_central_iowa_association_of_realtors = (
+        "east central iowa association of realtors"
+    )
+    fort_dodge_board_of_realtors = "fort dodge board of realtors"
+    iowa_association_of_realtors = "iowa association of realtors"
+    iowa_city_area_association_of_realtors = "iowa city area association of realtors"
+    iowa_great_lakes_board_of_realtors = "iowa great lakes board of realtors"
+    muscatine_multiple_listing_service = "muscatine multiple listing service"
+    northeast_iowa_regional_board_of_realtors = (
+        "northeast iowa regional board of realtors"
+    )
+    southwest_iowa_association_of_realtors = "southwest iowa association of realtors"
+    flint_hills_association_of_realtors = "flint hills association of realtors"
+    garden_city_board_of_realtors = "garden city board of realtors"
+    hays_board_of_realtors = "hays board of realtors"
+    heartland_mls = "heartland mls"
+    kansas_association_of_realtors = "kansas association of realtors"
+    lawrence_board_of_realtors = "lawrence board of realtors"
+    mid_kansas_mls = "mid kansas mls"
+    pittsburg_board_of_realtors = "pittsburg board of realtors"
     BALDWIN_COUNTY_ASSOCIATION_OF_REALTORS = "Baldwin County Association of REALTORS"
     COVINGTON_ASSOCIATION_OF_REALTORS = "Covington Association of REALTORS"
     CULLMAN_ASSOCIATION_OF_REALTORS = "Cullman Association of REALTORS"

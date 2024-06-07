@@ -20,19 +20,19 @@ from .rows.user import UserRowModel
 
 
 class Models:
-    UserOrm = UserModel
-    UserRowOrm = UserRowModel
-    TeamOrm = TeamModel
-    PersonOrm = PersonModel
-    PersonRowOrm = PersonRowModel
-    PropertyOrm = PropertyModel
-    PropertyRowOrm = PropertyRowModel
-    DealOrm = DealModel
-    DealRowOrm = DealRowModel
-    TeamRowOrm = TeamRowModel
-    DealDocumentOrm = DealDocumentModel
-    DocumentTemplateOrm = DocumentTemplateModel
-    MessageOrm = MessageModel
+    UserModel = UserModel
+    UserRowModel = UserRowModel
+    TeamModel = TeamModel
+    PersonModel = PersonModel
+    PersonRowModel = PersonRowModel
+    PropertyModel = PropertyModel
+    PropertyRowModel = PropertyRowModel
+    DealModel = DealModel
+    DealRowModel = DealRowModel
+    TeamRowModel = TeamRowModel
+    DealDocumentModel = DealDocumentModel
+    DocumentTemplateModel = DocumentTemplateModel
+    MessageModel = MessageModel
     UserPersonAssociation = UserPersonAssociation
     UserPropertyAssociation = UserPropertyAssociation
     UserDealAssociation = UserDealAssociation

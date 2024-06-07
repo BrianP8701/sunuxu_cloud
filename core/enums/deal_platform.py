@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class DealPlatform(Enum):
-    SKYSLOPE = "skyslope"
-    DOTLOOP = "dotloop"
+    skyslope = "skyslope"
+    dotloop = "dotloop"

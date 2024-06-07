@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from core.database import Database
 from core.enums.deal_platform import DealPlatform
@@ -13,7 +13,7 @@ from core.objects.base_entities.base_entity import BaseEntity
 
 
 class BaseUser(BaseEntity):
-    id: Optional[int] = None
+    id: int
     email: str
     phone: Optional[str] = None
     password: str
@@ -31,9 +31,7 @@ class BaseUser(BaseEntity):
     mls_connected: Optional[bool] = None
     mls_username: Optional[str] = None
     mls_password: Optional[str] = None
-    skyslope_connection_status: ServiceConnectionStatus = (
-        ServiceConnectionStatus.NOT_CONNECTED
-    )
+    skyslope_connection_status: ServiceConnectionStatus = None
     skyslope_username: Optional[str] = None
     skyslope_password: Optional[str] = None
     idx_website_domain: Optional[str] = None
@@ -74,11 +72,23 @@ class BaseUser(BaseEntity):
     kvcore_token_expiry: Optional[str] = None
     created: Optional[str] = None
 
-    user_orm: Optional[UserRowModel] = None
-    user_details_orm: Optional[UserModel] = None
+    user_row_model: Optional[UserRowModel] = None
+    user_model: Optional[UserModel] = None
 
     @classmethod
-    async def create(cls, user_id: int, data: Dict[str, Any]) -> "BaseUser":
+    async def create(cls, data: Dict[str, Any]) -> "BaseUser":
+        """
+        Creates a new user entry in the database.
+
+        :param data: A dictionary containing the user details:
+            - 'email' (str): The email of the user. (Required)
+            - 'phone' (Optional[str]): The phone number of the user. (Optional)
+            - 'first_name' (str): The first name of the user. (Required)
+            - 'middle_name' (Optional[str]): The middle name of the user. (Optional)
+            - 'last_name' (str): The last name of the user. (Required)
+            - 'password' (str): The password of the user. (Required)
+        :return: An instance of BaseUser.
+        """
         db = Database()
 
         user_row = UserRowModel(
@@ -89,21 +99,24 @@ class BaseUser(BaseEntity):
             last_name=data["last_name"],
         )
 
-        user_details = UserModel(password=data["password"], row=user_row)
+        user = UserModel(password=data["password"], row=user_row)
 
         async with db.get_session() as session:
-            await db.batch_create([user_row, user_details], session)
+            user_row = await db.create(user_row, session)
+            user.row = user_row
+            user.id = user_row.id
+            user = await db.create(user, session)
 
         return cls(
             id=user_row.id,
-            email=user_row.email,
-            phone=user_row.phone,
-            first_name=user_row.first_name,
-            middle_name=user_row.middle_name,
-            last_name=user_row.last_name,
-            password=user_details.password,
-            user_orm=user_row,
-            user_details_orm=user_details,
+            email=data["email"],
+            phone=data.get("phone"),
+            first_name=data["first_name"],
+            middle_name=data.get("middle_name"),
+            last_name=data["last_name"],
+            password=data["password"],
+            user_row_model=user_row,
+            user_model=user,
         )
 
     @classmethod
@@ -167,8 +180,8 @@ class BaseUser(BaseEntity):
             kvcore_access_token=user.kvcore_access_token,
             kvcore_token_expiry=user.kvcore_token_expiry,
             created=user.created,
-            user_orm=user,
-            user_details_orm=user.details,
+            user_row_model=user,
+            user_model=user.details,
         )
 
     @classmethod
@@ -238,7 +251,7 @@ class BaseUser(BaseEntity):
 
         # Determine which entities should be deleted based on the count of users
         for entity in entities_result:
-            if entity.count_of_users == 0:
+            if entity.count_of_users == 1:
                 if entity.entity_type == "team":
                     delete_team_ids.append(entity.entity_id)
                 elif entity.entity_type == "person":
@@ -264,6 +277,76 @@ class BaseUser(BaseEntity):
                         PropertyModel, {"id": delete_property_ids}, session
                     )
                 await db.delete(UserModel, {"id": id}, session)
+
+    @classmethod
+    async def batch_create(cls, data: List[Dict[str, Any]]) -> List["BaseUser"]:
+        """
+        Creates multiple user entries in the database.
+
+        :param data: A list of dictionaries, each containing the user details:
+            - 'email' (str): The email of the user. (Required)
+            - 'phone' (Optional[str]): The phone number of the user. (Optional)
+            - 'first_name' (str): The first name of the user. (Required)
+            - 'middle_name' (Optional[str]): The middle name of the user. (Optional)
+            - 'last_name' (str): The last name of the user. (Required)
+            - 'password' (str): The password of the user. (Required)
+        :return: A list of BaseUser instances.
+        """
+        db = Database()
+        user_rows = []
+        users = []
+
+        for user_data in data:
+            user_row = UserRowModel(
+                email=user_data["email"],
+                phone=user_data.get("phone"),
+                first_name=user_data["first_name"],
+                middle_name=user_data.get("middle_name"),
+                last_name=user_data["last_name"],
+            )
+            user_rows.append(user_row)
+
+            user = UserModel(password=user_data["password"], row=user_row)
+            users.append(user)
+
+        async with db.get_session() as session:
+            try:
+                await db.batch_create(user_rows, session)
+                for user, user_row in zip(users, user_rows):
+                    user.row = user_row
+                await db.batch_create(users, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        return [cls(
+            id=user.id,
+            email=user.row.email,
+            phone=user.row.phone,
+            first_name=user.row.first_name,
+            middle_name=user.row.middle_name,
+            last_name=user.row.last_name,
+            password=user.password,
+            user_row_model=user.row,
+            user_model=user,
+        ) for user in users]
+
+    @classmethod
+    async def batch_delete(cls, ids: List[int]):
+        """
+        Batch delete users by individually processing each user to ensure that all associated
+        entities are correctly handled and updated. This method is necessary because each user
+        might have different associations that need to be checked and potentially deleted in a
+        cascading manner. Deleting users one by one using the existing `delete` method ensures
+        that these complex dependencies are managed correctly.
+
+        Args:
+            ids (List[int]): The IDs of the users to delete.
+        """
+        for user_id in ids:
+            await cls.delete(user_id)
 
     def to_dict(self):
         return {

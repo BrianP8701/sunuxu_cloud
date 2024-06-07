@@ -21,7 +21,7 @@ class PersonRowModel(SQLModel, table=True):
     type: PersonType = Field(
         sa_column=Column(
             SqlEnum(PersonType, name="person_type_enum", nullable=False),
-            default="?",
+            default=PersonType.unknown,
             index=True,
         )
     )

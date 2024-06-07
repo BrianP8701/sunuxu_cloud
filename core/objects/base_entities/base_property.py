@@ -9,7 +9,7 @@ from core.objects.base_entities.base_entity import BaseEntity
 from core.utils.strings import assemble_address
 
 if TYPE_CHECKING:
-    from core.models.associations import UserPropertyAssociation
+    from core.models.associations import UserPropertyAssociation, PropertyOwnerAssociation, PropertyOccupantAssociation
     from core.objects.rows.deal_row import DealRow
     from core.objects.rows.person_row import PersonRow
     from core.objects.rows.user_row import UserRow
@@ -72,14 +72,13 @@ class BaseProperty(BaseEntity):
     property_model: Optional[PropertyModel]
 
     @classmethod
-    async def create(cls: Type[T], user_id: int, data: Dict[str, Any]) -> T:
+    async def create(cls: Type[T], data: Dict[str, Any]) -> T:
         """
         Creates a new property entry in the database.
 
-        :param user_id:
-            The ID of the user creating the property.
         :param data:
             A dictionary containing the property details:
+            - 'user_ids' (List[int]): A list of IDs of the users associated with the property. (Required)
             - 'street_number' (str): The street number of the property. (Required)
             - 'street_name' (str): The street name of the property. (Required)
             - 'street_suffix' (str): The street suffix of the property. (Required)
@@ -88,29 +87,10 @@ class BaseProperty(BaseEntity):
             - 'zip_code' (str): The zip code of the property. (Required)
             - 'country' (str): The country where the property is located. (Required)
             - 'unit' (Optional[str]): The unit number of the property. (Optional)
-            - 'mls_number' (Optional[str]): The MLS number of the property. (Optional)
-            - 'type' (PropertyType): The type of the property. (Required)
-            - 'google_place_id' (Optional[str]): The Google Place ID of the property. (Optional)
-            - 'mls' (Optional[str]): The MLS of the property. (Optional)
-            - 'bedrooms' (Optional[int]): The number of bedrooms in the property. (Optional)
-            - 'bathrooms' (Optional[int]): The number of bathrooms in the property. (Optional)
-            - 'floors' (Optional[int]): The number of floors in the property. (Optional)
-            - 'rooms' (Optional[int]): The number of rooms in the property. (Optional)
-            - 'kitchens' (Optional[int]): The number of kitchens in the property. (Optional)
-            - 'families' (Optional[int]): The number of families the property can accommodate. (Optional)
-            - 'lot_sqft' (Optional[int]): The lot size in square feet. (Optional)
-            - 'building_sqft' (Optional[int]): The building size in square feet. (Optional)
-            - 'year_built' (Optional[int]): The year the property was built. (Optional)
-            - 'list_start_date' (Optional[datetime]): The start date of the listing. (Optional)
-            - 'list_end_date' (Optional[datetime]): The end date of the listing. (Optional)
-            - 'expiration_date' (Optional[datetime]): The expiration date of the listing. (Optional)
-            - 'attached_type' (Optional[PropertyAttachedType]): The attached type of the property. (Optional)
-            - 'section' (Optional[str]): The section of the property. (Optional)
-            - 'school_district' (Optional[str]): The school district of the property. (Optional)
-            - 'property_tax' (Optional[float]): The property tax amount. (Optional)
-            - 'pictures' (Optional[List[str]]): A list of picture URLs/ids. (Optional)
-            - 'notes' (Optional[str]): Additional notes regarding the property. (Optional)
-            - 'description' (Optional[str]): A description of the property. (Optional)
+            - 'type' (str): The type of the property. PropertyType enum. (Required)
+            - 'owner_ids' (Optional[List[int]]): A list of IDs of the people who own the property. (Optional)
+            - 'occupant_ids' (Optional[List[int]]): A list of IDs of the people who occupy the property. (Optional)
+            ...
         """
         db = Database()
 
@@ -128,10 +108,10 @@ class BaseProperty(BaseEntity):
         property_row = PropertyRowModel(
             address=address,
             mls_number=data.get("mls_number"),
-            type=data["type"],
+            type=PropertyType(data["type"]),
             active=True,
             created=datetime.utcnow(),
-            user_ids=[user_id],
+            user_ids=data["user_ids"],
         )
 
         property = PropertyModel(
@@ -157,7 +137,7 @@ class BaseProperty(BaseEntity):
             list_start_date=data.get("list_start_date"),
             list_end_date=data.get("list_end_date"),
             expiration_date=data.get("expiration_date"),
-            attached_type=data.get("attached_type"),
+            attached_type=PropertyAttachedType(data.get("attached_type")) if data.get("attached_type") else None,
             section=data.get("section"),
             school_district=data.get("school_district"),
             property_tax=data.get("property_tax"),
@@ -166,16 +146,30 @@ class BaseProperty(BaseEntity):
             description=data.get("description"),
         )
 
-        user_association = UserPropertyAssociation(
-            user_id=user_id, property_id=property.id
-        )
+        user_associations = [
+            UserPropertyAssociation(user_id=user_id, property_id=property.id)
+            for user_id in data["user_ids"]
+        ]
+        
+        # Prepare owner associations if any
+        owner_associations = [
+            PropertyOwnerAssociation(property_id=property.id, person_id=owner_id)
+            for owner_id in data.get("owner_ids", [])
+        ]
+
+        # Prepare occupant associations if any
+        occupant_associations = [
+            PropertyOccupantAssociation(property_id=property.id, person_id=occupant_id)
+            for occupant_id in data.get("occupant_ids", [])
+        ]
 
         async with db.get_session() as session:
             try:
                 await db.create(PropertyRowModel, property_row, session)
                 property.row = property_row
                 await db.create(PropertyModel, property, session)
-                await db.add_association(user_association, session)
+                await db.batch_add_associations(user_associations, session)
+                await db.batch_add_associations(owner_associations + occupant_associations, session)  # Add this line
             except Exception as e:
                 await session.rollback()
                 raise e
@@ -283,7 +277,7 @@ class BaseProperty(BaseEntity):
             - 'country' (Optional[str]): The country where the property is located. (Optional)
             - 'unit' (Optional[str]): The unit number of the property. (Optional)
             - 'mls_number' (Optional[str]): The MLS number of the property. (Optional)
-            - 'type' (Optional[PropertyType]): The type of the property. (Optional)
+            - 'type' (Optional[str]): The type of the property. PropertyType enum. (Optional)
             - 'google_place_id' (Optional[str]): The Google Place ID of the property. (Optional)
             - 'mls' (Optional[str]): The MLS of the property. (Optional)
             - 'bedrooms' (Optional[int]): The number of bedrooms in the property. (Optional)
@@ -298,7 +292,7 @@ class BaseProperty(BaseEntity):
             - 'list_start_date' (Optional[datetime]): The start date of the listing. (Optional)
             - 'list_end_date' (Optional[datetime]): The end date of the listing. (Optional)
             - 'expiration_date' (Optional[datetime]): The expiration date of the listing. (Optional)
-            - 'attached_type' (Optional[PropertyAttachedType]): The attached type of the property. (Optional)
+            - 'attached_type' (Optional[str]): The attached type of the property. PropertyAttachedType enum. (Optional)
             - 'section' (Optional[str]): The section of the property. (Optional)
             - 'school_district' (Optional[str]): The school district of the property. (Optional)
             - 'property_tax' (Optional[float]): The property tax amount. (Optional)
@@ -313,9 +307,15 @@ class BaseProperty(BaseEntity):
 
         for key, value in updates.items():
             if hasattr(PropertyRowModel, key):
-                property_updates[key] = value
+                if key == "type":
+                    property_updates[key] = PropertyType(value)
+                else:
+                    property_updates[key] = value
             if hasattr(PropertyModel, key):
-                property_details_updates[key] = value
+                if key == "attached_type":
+                    property_details_updates[key] = PropertyAttachedType(value)
+                else:
+                    property_details_updates[key] = value
 
         # Check if address components are being updated
         if any(
@@ -383,6 +383,119 @@ class BaseProperty(BaseEntity):
                 raise e
             else:
                 await session.commit()
+
+    @classmethod
+    async def batch_create(cls, data: List[Dict[str, Any]]) -> List[T]:
+        """
+        Create multiple properties for multiple users.
+
+        :param data:
+            A list of dictionaries, each containing the data to be created for the property.
+        """
+        db = Database()
+        properties = []
+        property_rows = []
+        user_associations = []
+        owner_associations = []
+        occupant_associations = []
+
+        for property_data in data:
+            address = assemble_address(
+                property_data["street_number"],
+                property_data["street_name"],
+                property_data["street_suffix"],
+                property_data["city"],
+                property_data["state"],
+                property_data["zip_code"],
+                property_data["country"],
+                property_data.get("unit"),
+            )
+
+            property_row = PropertyRowModel(
+                address=address,
+                mls_number=property_data.get("mls_number"),
+                type=PropertyType(property_data["type"]),
+                active=True,
+                created=datetime.utcnow(),
+                user_ids=property_data["user_ids"],
+            )
+            property_rows.append(property_row)
+
+            property = PropertyModel(
+                street_number=property_data["street_number"],
+                street_name=property_data["street_name"],
+                street_suffix=property_data["street_suffix"],
+                city=property_data["city"],
+                unit=property_data.get("unit"),
+                state=property_data["state"],
+                zip_code=property_data["zip_code"],
+                country=property_data["country"],
+                google_place_id=property_data.get("google_place_id"),
+                mls=property_data.get("mls"),
+                bedrooms=property_data.get("bedrooms"),
+                bathrooms=property_data.get("bathrooms"),
+                floors=property_data.get("floors"),
+                rooms=property_data.get("rooms"),
+                kitchens=property_data.get("kitchens"),
+                families=property_data.get("families"),
+                lot_sqft=property_data.get("lot_sqft"),
+                building_sqft=property_data.get("building_sqft"),
+                year_built=property_data.get("year_built"),
+                list_start_date=property_data.get("list_start_date"),
+                list_end_date=property_data.get("list_end_date"),
+                expiration_date=property_data.get("expiration_date"),
+                attached_type=PropertyAttachedType(property_data.get("attached_type")) if property_data.get("attached_type") else None,
+                section=property_data.get("section"),
+                school_district=property_data.get("school_district"),
+                property_tax=property_data.get("property_tax"),
+                pictures=property_data.get("pictures"),
+                notes=property_data.get("notes"),
+                description=property_data.get("description"),
+            )
+            properties.append(property)
+
+            for user_id in property_data["user_ids"]:
+                user_associations.append(UserPropertyAssociation(user_id=user_id, property_id=property.id))
+
+            for owner_id in property_data.get("owner_ids", []):
+                owner_associations.append(PropertyOwnerAssociation(property_id=property.id, person_id=owner_id))
+
+            for occupant_id in property_data.get("occupant_ids", []):
+                occupant_associations.append(PropertyOccupantAssociation(property_id=property.id, person_id=occupant_id))
+
+        async with db.get_session() as session:
+            try:
+                await db.batch_create(property_rows, session)
+                for property, property_row in zip(properties, property_rows):
+                    property.row = property_row
+                await db.batch_create(properties, session)
+                await db.batch_add_associations(user_associations + owner_associations + occupant_associations, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
+        return [await cls.read(property.id) for property in properties]
+
+    @classmethod
+    async def batch_delete(cls, ids: List[int]) -> None:
+        """
+        Delete multiple properties by their IDs.
+
+        :param ids:
+            A list of property IDs to delete.
+        """
+        db = Database()
+        async with db.get_session() as session:
+            try:
+                await db.batch_delete(PropertyModel, {"id": ids}, session)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            else:
+                await session.commit()
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {

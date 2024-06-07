@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import Database
+from core.enums import MessageType
 from core.models import MessageModel
 from core.objects.base_entities.base_message import BaseMessage
 
@@ -33,7 +34,7 @@ class Message(BaseMessage):
             sort_by="id",
             ascending=False,
         )
-        return [cls.from_model(message) for message in messages_orm]
+        return [cls._from_model(message) for message in messages_orm]
 
     @classmethod
     async def expand_thread(cls, id: int) -> List["BaseMessage"]:
@@ -51,12 +52,12 @@ class Message(BaseMessage):
         message_ids = head_message.thread_message_ids
 
         if not message_ids:
-            return [cls.from_model(head_message)]
+            return [cls._from_model(head_message)]
 
         thread: List[MessageModel] = await db.batch_read(MessageModel, message_ids)
 
-        messages = [cls.from_model(head_message)] + [
-            cls.from_model(message) for message in thread
+        messages = [cls._from_model(head_message)] + [
+            cls._from_model(message) for message in thread
         ]
 
         return messages

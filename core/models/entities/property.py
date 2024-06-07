@@ -22,7 +22,34 @@ class PropertyModel(SQLModel, table=True):
     __tablename__ = "properties"
     id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("properties.id"), primary_key=True),
+        sa_column=Column(Integer, ForeignKey("property_rows.id"), primary_key=True)
+    )
+
+    # All the deals associated with the property
+    deals: List["DealModel"] = Relationship(back_populates="property")
+
+    # Many to many, one property can have many owners and occupants
+    owners: List["PersonModel"] = Relationship(
+        link_model=PropertyOwnerAssociation,
+        sa_relationship_kwargs={"cascade": "all", "overlaps": "portfolio"}
+    )
+    occupants: List["PersonModel"] = Relationship(
+        link_model=PropertyOccupantAssociation,
+        sa_relationship_kwargs={"cascade": "all"},
+    )
+
+    users: List["UserModel"] = Relationship(
+        back_populates="properties",
+        link_model=UserPropertyAssociation,
+        sa_relationship_kwargs={"cascade": "all"},
+    )
+    row: "PropertyRowModel" = Relationship(
+        sa_relationship_kwargs={
+            "uselist": False,
+            "single_parent": True,
+            "cascade": "all, delete-orphan",
+            "back_populates": None
+        }
     )
 
     street_number: str = Field(max_length=255, nullable=False)
@@ -63,25 +90,3 @@ class PropertyModel(SQLModel, table=True):
 
     notes: Optional[str] = None
     description: Optional[str] = None
-
-    # All the deals associated with the property
-    deals: List["DealModel"] = Relationship(back_populates="property")
-
-    # Many to many, one property can have many owners and occupants
-    owners: List["PersonModel"] = Relationship(
-        link_model=PropertyOwnerAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
-    )
-    occupants: List["PersonModel"] = Relationship(
-        link_model=PropertyOccupantAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
-    )
-
-    users: List["UserModel"] = Relationship(
-        back_populates="properties",
-        link_model=UserPropertyAssociation,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
-    )
-    row: "PropertyRowModel" = Relationship(
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
-    )

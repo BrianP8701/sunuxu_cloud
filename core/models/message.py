@@ -5,6 +5,7 @@ from sqlalchemy import Column
 from sqlalchemy import Enum as SqlEnum
 from sqlmodel import JSON, Field, SQLModel
 
+from core.enums.message_role import MessageRole
 from core.enums.message_source_type import MessageSourceType
 from core.enums.message_type import MessageType
 
@@ -24,6 +25,7 @@ class MessageModel(SQLModel, table=True):
     )
 
     type: MessageType
+    role: MessageRole
     content: str
     attachments: Optional[List[str]] = Field(default=None, sa_column=Column(JSON))
 

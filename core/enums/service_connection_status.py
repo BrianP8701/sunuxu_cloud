@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class ServiceConnectionStatus(str, Enum):
-    CONNECTED = "connected"
-    PENDING = "pending"
-    FAILED = "failed"
-    NOT_CONNECTED = "not_connected"
+    connected = "connected"
+    pending = "pending"
+    failed = "failed"
+    not_connected = "not_connected"

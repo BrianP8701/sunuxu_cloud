@@ -22,7 +22,7 @@ class PropertyRowModel(SQLModel, table=True):
             SqlEnum(PropertyType),
             index=True,
             nullable=False,
-            default=PropertyType.UNKNOWN,
+            default=PropertyType.unknown,
         )
     )
     active: bool = Field(default=False, index=True, nullable=False)

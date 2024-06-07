@@ -1,6 +1,7 @@
 from .brokerage import Brokerage
 from .deal_platform import DealPlatform
 from .deal_status import DealStatus
+from .deal_category import DealCategory
 from .deal_type import DealType
 from .message_type import MessageType
 from .mls import Mls
@@ -19,6 +20,7 @@ class Enums:
     PropertyType = PropertyType
     DealStatus = DealStatus
     DealType = DealType
+    DealCategory = DealCategory
     Brokerage = Brokerage
     ParticipantRole = ParticipantRole
     ParticipantDocumentStatus = ParticipantDocumentStatus

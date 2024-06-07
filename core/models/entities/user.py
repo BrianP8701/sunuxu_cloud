@@ -25,25 +25,30 @@ class UserModel(SQLModel, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("users.id"), primary_key=True),
+        sa_column=Column(Integer, ForeignKey("user_rows.id"), primary_key=True)
     )
     password: Optional[str] = Field(default=None, max_length=255)
 
     people: List["PersonModel"] = Relationship(
-        back_populates="users", link_model=UserPersonAssociation
+        back_populates="users", link_model=UserPersonAssociation, sa_relationship_kwargs={"cascade": "all"}
     )
     properties: List["PropertyModel"] = Relationship(
-        back_populates="users", link_model=UserPropertyAssociation
+        back_populates="users", link_model=UserPropertyAssociation, sa_relationship_kwargs={"cascade": "all"}
     )
     deals: List["DealModel"] = Relationship(
-        back_populates="users", link_model=UserDealAssociation
+        back_populates="users", link_model=UserDealAssociation, sa_relationship_kwargs={"cascade": "all"}
     )
     teams: List["TeamModel"] = Relationship(
-        back_populates="users", link_model=UserTeamAssociation
+        back_populates="users", link_model=UserTeamAssociation, sa_relationship_kwargs={"cascade": "all"}
     )
 
     row: "UserRowModel" = Relationship(
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={
+            "uselist": False,
+            "single_parent": True,
+            "cascade": "all, delete-orphan",
+            "back_populates": None
+        }
     )
 
     redux_version: Optional[int] = Field(default=None)
@@ -62,22 +67,22 @@ class UserModel(SQLModel, table=True):
     mls_username: Optional[str] = Field(default=None, max_length=255)
     mls_password: Optional[str] = Field(default=None, max_length=255)
 
-    skyslope_connection_status: Optional[ServiceConnectionStatus] = Field(
+    skyslope_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     skyslope_username: Optional[str] = Field(default=None, max_length=255)
     skyslope_password: Optional[str] = Field(default=None, max_length=255)
 
     idx_website_domain: Optional[str] = Field(default=None, max_length=255)
 
-    mls_connection_status: Optional[ServiceConnectionStatus] = Field(
+    mls_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
-    mls_api_connection_status: Optional[ServiceConnectionStatus] = Field(
+    mls_api_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
 
     default_mls: Optional[str] = Field(default=None, max_length=255)
@@ -85,9 +90,9 @@ class UserModel(SQLModel, table=True):
         sa_column=SqlEnum(DealPlatform)
     )
 
-    email_connection_status: Optional[ServiceConnectionStatus] = Field(
+    email_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     email_template: Optional[str] = Field(default=None)
     shared_email: Optional[str] = Field(default=None, max_length=255)
@@ -95,58 +100,58 @@ class UserModel(SQLModel, table=True):
     email_refresh_token: Optional[str] = Field(default=None, max_length=255)
     email_token_expiry: Optional[str] = Field(default=None)
 
-    instagram_connection_status: Optional[ServiceConnectionStatus] = Field(
+    instagram_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     instagram_access_token: Optional[str] = Field(default=None, max_length=255)
     instagram_token_expiry: Optional[str] = Field(default=None)
 
-    linkedin_connection_status: Optional[ServiceConnectionStatus] = Field(
+    linkedin_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     linkedin_access_token: Optional[str] = Field(default=None, max_length=255)
     linkedin_token_expiry: Optional[str] = Field(default=None)
 
-    facebook_connection_status: Optional[ServiceConnectionStatus] = Field(
+    facebook_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     facebook_access_token: Optional[str] = Field(default=None, max_length=255)
     facebook_token_expiry: Optional[str] = Field(default=None)
 
-    x_connection_status: Optional[ServiceConnectionStatus] = Field(
+    x_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     x_access_token: Optional[str] = Field(default=None, max_length=255)
     x_token_expiry: Optional[str] = Field(default=None)
 
-    google_business_connection_status: Optional[ServiceConnectionStatus] = Field(
+    google_business_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     google_business_access_token: Optional[str] = Field(default=None, max_length=255)
     google_business_token_expiry: Optional[str] = Field(default=None)
 
-    follow_up_boss_connection_status: Optional[ServiceConnectionStatus] = Field(
+    follow_up_boss_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     follow_up_boss_access_token: Optional[str] = Field(default=None, max_length=255)
     follow_up_boss_token_expiry: Optional[str] = Field(default=None)
 
-    brivity_connection_status: Optional[ServiceConnectionStatus] = Field(
+    brivity_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     brivity_access_token: Optional[str] = Field(default=None, max_length=255)
     brivity_token_expiry: Optional[str] = Field(default=None)
 
-    kvcore_connection_status: Optional[ServiceConnectionStatus] = Field(
+    kvcore_connection_status: ServiceConnectionStatus = Field(
         sa_column=SqlEnum(ServiceConnectionStatus),
-        default=ServiceConnectionStatus.NOT_CONNECTED,
+        default=ServiceConnectionStatus.not_connected,
     )
     kvcore_access_token: Optional[str] = Field(default=None, max_length=255)
     kvcore_token_expiry: Optional[str] = Field(default=None)

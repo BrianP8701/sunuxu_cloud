@@ -1,14 +1,11 @@
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from sqlalchemy import Enum as SqlEnum
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
 
 from core.enums.participant_document_status import ParticipantDocumentStatus
 from core.enums.participant_role import ParticipantRole
 from core.enums.team_role import TeamRole
-
-if TYPE_CHECKING:
-    from core.models.entities.person import PersonModel
 
 
 # User-Entity associations
@@ -84,7 +81,7 @@ class DocumentPersonAssociation(SQLModel, table=True):
     )
     status: ParticipantDocumentStatus = Field(
         sa_column=SqlEnum(ParticipantDocumentStatus, nullable=False),
-        default=ParticipantDocumentStatus.PENDING,
+        default=ParticipantDocumentStatus.pending,
     )
 
 
@@ -97,13 +94,3 @@ class DealParticipantAssociation(SQLModel, table=True):
         default=None, foreign_key="people.id", primary_key=True
     )
     role: ParticipantRole = Field(sa_column=SqlEnum(ParticipantRole, nullable=False))
-
-
-class DealDocumentAssociation(SQLModel, table=True):
-    __tablename__ = "deal_document_association"
-    deal_id: Optional[int] = Field(
-        default=None, foreign_key="deals.id", primary_key=True
-    )
-    document_id: Optional[int] = Field(
-        default=None, foreign_key="deal_documents.id", primary_key=True
-    )
